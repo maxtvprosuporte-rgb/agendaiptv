@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel de Renovação IPTV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000;
+      --bg-2: #070707;
+      --card: #0a0a0a;
+      --card-2: #0d0d0d;
+      --card-hi: #111111;
+      --text: #f5f5f5;
+      --text-dim: #cfcfcf;
+      --muted: #8a8a8a;
+      --primary: #39ff14;
+      --primary-2: #7dff5c;
+      --primary-soft: #b8ffad;
+      --danger: #ff5c5c;
+      --warning: #ffe45c;
+      --info: #5cf0ff;
+      --border: rgba(57,255,20,.12);
+      --border-strong: rgba(57,255,20,.32);
+      --border-faint: rgba(255,255,255,.06);
+      --shadow-sm: 0 4px 14px rgba(0,0,0,.4);
+      --shadow: 0 14px 40px rgba(0,0,0,.55);
+      --glow-sm: 0 0 10px rgba(57,255,20,.12);
+      --glow-md: 0 0 24px rgba(57,255,20,.18);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+      --font-body: 'Inter Tight', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      background-image:
+        radial-gradient(1200px 600px at 80% -10%, rgba(57,255,20,.06), transparent 60%),
+        radial-gradient(900px 500px at -10% 10%, rgba(57,255,20,.04), transparent 60%);
+    }
+
+    /* subtle grain */
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      pointer-events: none;
+      opacity: .035;
+      z-index: 0;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+
+    ::selection { background: rgba(57,255,20,.25); color: #fff; }
+
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: #040404; }
+    ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 999px; border: 2px solid #040404; }
+    ::-webkit-scrollbar-thumb:hover { background: #242424; }
+
+    .container {
+      width: min(1400px, calc(100% - 28px));
+      margin: 28px auto 56px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--border-faint);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-mark {
+      width: 46px; height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f1f0b, #050505);
+      border: 1px solid var(--border-strong);
+      display: grid; place-items: center;
+      box-shadow: var(--glow-sm), inset 0 0 0 1px rgba(255,255,255,.02);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute; inset: 6px;
+      border-radius: 10px;
+      border: 1px dashed rgba(57,255,20,.35);
+      animation: spin 14s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .brand-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 12px var(--primary);
+    }
+
+    .title h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-size: clamp(26px, 3.2vw, 40px);
+      line-height: 1;
+      color: #fff;
+    }
+    .title h1 span {
+      color: var(--primary);
+      text-shadow: 0 0 18px rgba(57,255,20,.35);
+    }
+    .title p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13.5px;
+      max-width: 620px;
+      letter-spacing: .01em;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* BUTTONS */
+    button, .btn {
+      font-family: var(--font-body);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 16px;
+      font-size: 13.5px;
+      font-weight: 600;
+      letter-spacing: .01em;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
+      min-height: 42px;
+      background: #0a0a0a;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      user-select: none;
+    }
+    button:hover, .btn:hover { transform: translateY(-1px); }
+    button:active, .btn:active { transform: translateY(0); }
+    button:focus-visible, .btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(57,255,20,.35);
+    }
+    button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #0d1d08, #060e04);
+      color: var(--primary);
+      border: 1px solid rgba(57,255,20,.45);
+      box-shadow: var(--glow-sm);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(180deg, #132c0c, #081206);
+      border-color: rgba(57,255,20,.65);
+      box-shadow: var(--glow-md);
+    }
+
+    .btn-secondary {
+      background: #0b0b0b;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .btn-secondary:hover {
+      background: #121212;
+      border-color: rgba(255,255,255,.18);
+    }
+
+    .btn-danger {
+      background: #0a0606;
+      color: #ffb5b5;
+      border: 1px solid rgba(255,92,92,.28);
+    }
+    .btn-danger:hover { background: #140808; border-color: rgba(255,92,92,.55); }
+
+    .btn-warning {
+      background: #0a0a03;
+      color: var(--warning);
+      border: 1px solid rgba(255,228,92,.25);
+    }
+    .btn-warning:hover { background: #141406; border-color: rgba(255,228,92,.5); }
+
+    .btn-info {
+      background: #03090a;
+      color: var(--info);
+      border: 1px solid rgba(92,240,255,.22);
+    }
+    .btn-info:hover { background: #061214; border-color: rgba(92,240,255,.45); }
+
+    .btn-whatsapp {
+      background: linear-gradient(180deg, #0d1d08, #060e04);
+      color: var(--primary);
+      border: 1px solid rgba(57,255,20,.38);
+    }
+    .btn-whatsapp:hover {
+      background: linear-gradient(180deg, #122a0b, #091106);
+      border-color: rgba(57,255,20,.6);
+      box-shadow: var(--glow-sm);
+    }
+
+    /* TABS */
+    .tabs {
+      display: inline-flex;
+      gap: 4px;
+      padding: 5px;
+      margin-bottom: 22px;
+      background: #060606;
+      border: 1px solid var(--border-faint);
+      border-radius: 999px;
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid transparent;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 13.5px;
+      min-height: 38px;
+      box-shadow: none;
+      letter-spacing: .01em;
+    }
+    .tab:hover { color: #fff; background: rgba(255,255,255,.03); }
+    .tab.active {
+      background: linear-gradient(180deg, #0e210a, #050a03);
+      color: var(--primary);
+      border-color: rgba(57,255,20,.4);
+      box-shadow: var(--glow-sm);
+    }
+
+    .panel { display: none; animation: fadeUp .35s ease both; }
+    .panel.active { display: block; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CARDS */
+    .list-box, .form-card, .table-card {
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      border: 1px solid var(--border-faint);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .table-card + .table-card,
+    .form-card + .form-card { margin-top: 18px; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-title h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+    .card-title .tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #050505;
+      border: 1px solid var(--border-faint);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .count-badge {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(57,255,20,.08);
+      color: var(--primary);
+      border: 1px solid rgba(57,255,20,.25);
+      padding: 5px 10px;
+      border-radius: 999px;
+      letter-spacing: .03em;
+    }
+    .count-badge.danger { background: rgba(255,92,92,.08); color: #ffb5b5; border-color: rgba(255,92,92,.25); }
+    .count-badge.warning { background: rgba(255,228,92,.08); color: var(--warning); border-color: rgba(255,228,92,.25); }
+
+    .card-hint {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 14px;
+    }
+
+    /* FORM */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      min-width: 0;
+    }
+    .field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,.08);
+      background: #040404;
+      color: #fff;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-family: var(--font-body);
+      outline: none;
+      min-height: 46px;
+      transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+    }
+    .field input::placeholder { color: #5a5a5a; }
+    .field input:hover, .field select:hover, .field textarea:hover {
+      border-color: rgba(255,255,255,.16);
+    }
+    .field input:focus, .field select:focus, .field textarea:focus,
+    .search:focus {
+      border-color: var(--border-strong);
+      box-shadow: 0 0 0 3px rgba(57,255,20,.1);
+      background: #070707;
+    }
+    .field textarea { min-height: 90px; resize: vertical; }
+
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+      align-items: center;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+      align-items: center;
+    }
+    .toolbar-left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+    }
+    .toolbar-left h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .search {
+      flex: 1 1 280px;
+      min-width: 240px;
+      max-width: 440px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,.08);
+      background: #040404;
+      color: #fff;
+      padding: 11px 14px;
+      font-size: 14px;
+      min-height: 44px;
+      outline: none;
+      font-family: var(--font-body);
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+    .search::placeholder { color: #5a5a5a; }
+
+    /* TABLE */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid var(--border-faint);
+      background: #030303;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1150px;
+    }
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      vertical-align: middle;
+      font-size: 13.5px;
+      color: var(--text);
+    }
+    tbody tr { transition: background-color .15s ease; }
+    tbody tr:hover { background: rgba(57,255,20,.025); }
+    tbody tr:last-child td { border-bottom: none; }
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      background: #060606;
+      backdrop-filter: blur(6px);
+    }
+    td.mono { font-family: var(--font-mono); font-size: 13px; }
+
+    .table-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .table-actions button {
+      padding: 8px 12px;
+      font-size: 12.5px;
+      min-height: 36px;
+    }
+
+    /* PILLS */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      letter-spacing: .02em;
+      white-space: nowrap;
+    }
+    .pill::before {
+      content: "";
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+    .pill-today    { background: rgba(255,92,92,.10); color: #ff9b9b; border-color: rgba(255,92,92,.3); }
+    .pill-tomorrow { background: rgba(255,228,92,.08); color: var(--warning); border-color: rgba(255,228,92,.28); }
+    .pill-week     { background: rgba(92,240,255,.08); color: var(--info); border-color: rgba(92,240,255,.28); }
+    .pill-ok       { background: rgba(57,255,20,.07); color: var(--primary-soft); border-color: rgba(57,255,20,.25); }
+    .pill-expired  { background: rgba(255,92,92,.12); color: #ff8787; border-color: rgba(255,92,92,.4); }
+
+    /* EMPTY STATE */
+    .empty-row td {
+      text-align: center;
+      color: var(--muted);
+      padding: 38px 20px;
+      font-size: 14px;
+    }
+    .empty-row .empty-icon {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .15em;
+      display: block;
+      margin-bottom: 6px;
+      opacity: .6;
+    }
+
+    .hidden { display: none !important; }
+
+    .pagination-bar {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .pagination-bar .page-info {
+      align-self: center;
+      color: var(--muted);
+      padding: 8px 6px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+    }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: #0a0a0a;
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: var(--shadow), var(--glow-sm);
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s ease;
+      pointer-events: none;
+      z-index: 100;
+      max-width: 90vw;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.error { border-color: rgba(255,92,92,.5); color: #ffb5b5; }
+
+    @media (max-width: 1100px) {
+      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 820px) {
+      .container { width: calc(100% - 16px); margin: 16px auto 40px; }
+      .topbar { align-items: stretch; }
+      .actions { width: 100%; }
+      .actions button, .actions .btn { flex: 1 1 calc(50% - 5px); }
+      .tabs { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; border-radius: 14px; }
+      .tab { border-radius: 10px; padding: 12px 10px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .list-box, .form-card, .table-card { padding: 16px; }
+      table { min-width: 980px; }
+      th, td { padding: 12px 10px; font-size: 13px; }
+      .table-actions button { flex: 1 1 calc(50% - 3px); }
+    }
+
+    @media (max-width: 520px) {
+      .title h1 { font-size: 24px; }
+      .tabs { grid-template-columns: 1fr; }
+      .actions button, .actions .btn { flex: 1 1 100%; }
+      .form-actions button { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><div class="brand-dot"></div></div>
+        <div class="title">
+          <h1>Painel <span>IPTV</span></h1>
+          <p>Gestão de renovações com cálculo automático e mensagem pronta para WhatsApp.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-secondary" id="exportBtn" data-testid="export-backup-btn">Exportar backup</button>
+        <label class="btn btn-secondary" for="importFile" data-testid="import-backup-label">Importar backup</label>
+        <input id="importFile" type="file" accept="application/json" class="hidden" data-testid="import-backup-input" />
+        <button class="btn-primary" id="newClientShortcut" data-testid="new-client-shortcut-btn">+ Novo cliente</button>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="cadastros" data-testid="tab-cadastros">Cadastros</button>
+      <button class="tab" data-tab="dashboard" data-testid="tab-dashboard">Painel</button>
+      <button class="tab" data-tab="clientes" data-testid="tab-clientes">Clientes</button>
+    </nav>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="panel">
+      <div class="table-card" style="margin-bottom:18px;">
+        <div class="card-header">
+          <div class="card-title">
+            <h2>Vencendo hoje</h2>
+            <span class="tag">D-Day</span>
+          </div>
+          <span class="count-badge danger" id="countToday" data-testid="count-today">0</span>
+        </div>
+        <p class="card-hint">Clientes cujo plano vence hoje. Até 20 por página.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Usuário</th>
+                <th>Plano</th>
+                <th>Valor</th>
+                <th>Renovação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="listTodayTable" data-testid="list-today-table"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar" id="paginationToday"></div>
+      </div>
+
+      <div class="table-card" style="margin-bottom:18px;">
+        <div class="card-header">
+          <div class="card-title">
+            <h2>Vence amanhã</h2>
+            <span class="tag">D-1</span>
+          </div>
+          <span class="count-badge warning" id="countTomorrow" data-testid="count-tomorrow">0</span>
+        </div>
+        <p class="card-hint">Previsão para o próximo dia. Até 20 por página.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Usuário</th>
+                <th>Plano</th>
+                <th>Valor</th>
+                <th>Renovação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="listTomorrowTable" data-testid="list-tomorrow-table"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar" id="paginationTomorrow"></div>
+      </div>
+
+      <div class="table-card">
+        <div class="card-header">
+          <div class="card-title">
+            <h2>Vence em 7 dias</h2>
+            <span class="tag">D-7</span>
+          </div>
+          <span class="count-badge" id="countWeek" data-testid="count-week">0</span>
+        </div>
+        <p class="card-hint">Aviso antecipado para a semana seguinte. Até 20 por página.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Usuário</th>
+                <th>Plano</th>
+                <th>Valor</th>
+                <th>Renovação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="listWeekTable" data-testid="list-week-table"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar" id="paginationWeek"></div>
+      </div>
+    </section>
+
+    <!-- CADASTROS -->
+    <section id="cadastros" class="panel active">
+      <div class="form-card">
+        <div class="card-header">
+          <div class="card-title">
+            <h2 id="formTitle">Cadastrar cliente</h2>
+            <span class="tag">Formulário</span>
+          </div>
+        </div>
+        <form id="clientForm" autocomplete="off">
+          <input type="hidden" id="clientId" />
+          <div class="form-grid">
+            <div class="field">
+              <label for="nome">Nome</label>
+              <input id="nome" required data-testid="input-nome" />
+            </div>
+            <div class="field">
+              <label for="telefone">Telefone</label>
+              <input id="telefone" placeholder="Ex.: 41999998888" data-testid="input-telefone" />
+            </div>
+            <div class="field">
+              <label for="aplicativo">Aplicativo</label>
+              <input id="aplicativo" placeholder="Ex.: XCIPTV" data-testid="input-aplicativo" />
+            </div>
+            <div class="field">
+              <label for="usuario">Usuário</label>
+              <input id="usuario" required data-testid="input-usuario" />
+            </div>
+            <div class="field">
+              <label for="senha">Senha</label>
+              <input id="senha" required data-testid="input-senha" />
+            </div>
+            <div class="field">
+              <label for="plano">Plano</label>
+              <input id="plano" placeholder="Ex.: Mensal" data-testid="input-plano" />
+            </div>
+            <div class="field">
+              <label for="valor">Valor</label>
+              <input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" />
+            </div>
+            <div class="field">
+              <label for="dataPagamento">Data do pagamento</label>
+              <input id="dataPagamento" type="date" data-testid="input-data-pagamento" />
+            </div>
+            <div class="field">
+              <label for="dataRenovacao">Próxima renovação</label>
+              <input id="dataRenovacao" type="date" data-testid="input-data-renovacao" />
+            </div>
+            <div class="field" style="grid-column: span 2;">
+              <label for="linkRenovacao">Link de renovação</label>
+              <input id="linkRenovacao" placeholder="https://..." data-testid="input-link-renovacao" />
+            </div>
+            <div class="field">
+              <label for="observacoes">Observações</label>
+              <input id="observacoes" placeholder="Opcional" data-testid="input-observacoes" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" data-testid="save-client-btn">Salvar cliente</button>
+            <button type="button" class="btn-secondary" id="clearFormBtn" data-testid="clear-form-btn">Limpar formulário</button>
+            <button type="button" class="btn-warning" id="calcRenewBtn" data-testid="calc-renew-btn">Calcular +30 dias</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section id="clientes" class="panel">
+      <div class="table-card">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <h2>Clientes cadastrados</h2>
+            <span class="count-badge" id="countClientes" data-testid="count-clientes">0</span>
+            <input id="searchClientesInput" class="search" placeholder="Buscar por nome, telefone, usuário, app ou plano" data-testid="search-clientes-input" />
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>App</th>
+                <th>Usuário</th>
+                <th>Plano</th>
+                <th>Valor</th>
+                <th>Pagamento</th>
+                <th>Renovação</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="clientesList" data-testid="clientes-list"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar" id="paginationClientes"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = 'iptv_clientes_v1';
+    let clients = [];
+    const ITEMS_PER_PAGE = 20;
+    const state = {
+      todayPage: 1,
+      tomorrowPage: 1,
+      weekPage: 1,
+      clientesPage: 1
+    };
+
+    const els = {
+      tabs: document.querySelectorAll('.tab'),
+      panels: document.querySelectorAll('.panel'),
+      countToday: document.getElementById('countToday'),
+      countTomorrow: document.getElementById('countTomorrow'),
+      countWeek: document.getElementById('countWeek'),
+      countClientes: document.getElementById('countClientes'),
+      listTodayTable: document.getElementById('listTodayTable'),
+      listTomorrowTable: document.getElementById('listTomorrowTable'),
+      listWeekTable: document.getElementById('listWeekTable'),
+      paginationToday: document.getElementById('paginationToday'),
+      paginationTomorrow: document.getElementById('paginationTomorrow'),
+      paginationWeek: document.getElementById('paginationWeek'),
+      clientForm: document.getElementById('clientForm'),
+      clientId: document.getElementById('clientId'),
+      nome: document.getElementById('nome'),
+      telefone: document.getElementById('telefone'),
+      aplicativo: document.getElementById('aplicativo'),
+      usuario: document.getElementById('usuario'),
+      senha: document.getElementById('senha'),
+      plano: document.getElementById('plano'),
+      valor: document.getElementById('valor'),
+      dataPagamento: document.getElementById('dataPagamento'),
+      dataRenovacao: document.getElementById('dataRenovacao'),
+      linkRenovacao: document.getElementById('linkRenovacao'),
+      observacoes: document.getElementById('observacoes'),
+      clientesList: document.getElementById('clientesList'),
+      searchClientesInput: document.getElementById('searchClientesInput'),
+      paginationClientes: document.getElementById('paginationClientes'),
+      clearFormBtn: document.getElementById('clearFormBtn'),
+      calcRenewBtn: document.getElementById('calcRenewBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      importFile: document.getElementById('importFile'),
+      newClientShortcut: document.getElementById('newClientShortcut'),
+      formTitle: document.getElementById('formTitle'),
+      toast: document.getElementById('toast')
+    };
+
+    // ------- TOAST -------
+    let toastTimer = null;
+    function showToast(message, isError = false) {
+      if (!els.toast) return;
+      els.toast.textContent = message;
+      els.toast.classList.toggle('error', !!isError);
+      els.toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2400);
+    }
+
+    // ------- STORAGE -------
+    function saveClients() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+      } catch (e) {
+        showToast('Falha ao salvar localmente.', true);
+      }
+    }
+
+    function loadClients() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) { clients = []; return; }
+      try {
+        const parsed = JSON.parse(raw);
+        clients = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        clients = [];
+      }
+    }
+
+    // ------- DATES -------
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function todayLocalDate() {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    function parseDate(value) {
+      if (!value) return null;
+      const parts = String(value).split('-').map(Number);
+      if (parts.length !== 3 || parts.some(isNaN)) return null;
+      const [y, m, d] = parts;
+      return new Date(y, m - 1, d);
+    }
+
+    function toInputDate(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const date = parseDate(value);
+      if (!date || isNaN(date.getTime())) return '—';
+      return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+    }
+
+    function addDays(date, days) {
+      const d = new Date(date);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+
+    function diffInDays(dateA, dateB) {
+      const ms = 24 * 60 * 60 * 1000;
+      const a = new Date(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+      const b = new Date(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+      return Math.round((a - b) / ms);
+    }
+
+    function calcRenewalFromPayment(paymentDateStr) {
+      const paymentDate = parseDate(paymentDateStr);
+      if (!paymentDate) return '';
+      return toInputDate(addDays(paymentDate, 30));
+    }
+
+    function getStatus(client) {
+      const due = parseDate(client.dataRenovacao);
+      if (!due) return { label: 'Sem data', cls: 'pill-week' };
+      const diff = diffInDays(due, todayLocalDate());
+      if (diff < 0) return { label: `Vencido há ${Math.abs(diff)}d`, cls: 'pill-expired' };
+      if (diff === 0) return { label: 'Vence hoje', cls: 'pill-today' };
+      if (diff === 1) return { label: 'Vence amanhã', cls: 'pill-tomorrow' };
+      if (diff <= 7) return { label: `Vence em ${diff}d`, cls: 'pill-week' };
+      return { label: `${diff}d restantes`, cls: 'pill-ok' };
+    }
+
+    // ------- UTILS -------
+    function escapeHtml(text) {
+      return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function generateId() {
+      if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+      return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    }
+
+    // ------- MESSAGE BUILDER (WhatsApp) -------
+    function buildMessage(client, when = 'today') {
+      let intro = '⏰ Seu plano *vence hoje!*';
+      if (when === 'tomorrow') intro = '⏳ Seu plano *vence amanhã!*';
+      if (when === 'week') intro = '📅 Seu plano *vence em 7 dias!*';
+
+      const lines = [
+        `👋 Olá *${client.nome || ''}*!`,
+        `${intro} Para evitar cortes, acesse o link abaixo. Após o pagamento e confirmação, o sistema vai ajustar automaticamente! ✅`,
+        ``,
+        `👤 *Usuário*: ${client.usuario || ''}`,
+        `🔑 *Senha*: ${client.senha || ''}`,
+        `📦 *Plano*: ${client.plano || ''}`,
+        `💰 *Valor*: ${client.valor || ''}`,
+        `🔗 *Link de renovação*: ${client.linkRenovacao || ''}`,
+        ``,
+        `🙏 Obrigado pela preferência!`
+      ];
+      return lines.join('\n');
+    }
+
+    function copyMessage(id, when = 'today') {
+      const client = clients.find(c => c.id === id);
+      if (!client) return;
+      const message = buildMessage(client, when);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(message)
+          .then(() => showToast(`Mensagem copiada para ${client.nome}`))
+          .catch(() => fallbackCopy(message, client.nome));
+      } else {
+        fallbackCopy(message, client.nome);
+      }
+    }
+
+    function fallbackCopy(text, name) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast(`Mensagem copiada para ${name}`);
+      } catch (e) {
+        showToast('Não foi possível copiar.', true);
+      }
+    }
+
+    function openWhatsApp(id, when = 'today') {
+      const client = clients.find(c => c.id === id);
+      if (!client) return;
+      const phone = String(client.telefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(buildMessage(client, when));
+      const url = phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`;
+      window.open(url, '_blank');
+    }
+
+    // Expose globals for inline handlers
+    window.openWhatsApp = openWhatsApp;
+    window.copyMessage = copyMessage;
+
+    // ------- TABS -------
+    function switchTab(tabName) {
+      els.tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
+      els.panels.forEach(panel => panel.classList.toggle('active', panel.id === tabName));
+    }
+
+    // ------- PAGINATION -------
+    function paginate(list, page) {
+      const totalPages = Math.max(1, Math.ceil(list.length / ITEMS_PER_PAGE));
+      const safePage = Math.min(Math.max(1, page), totalPages);
+      const start = (safePage - 1) * ITEMS_PER_PAGE;
+      const items = list.slice(start, start + ITEMS_PER_PAGE);
+      return { items, totalPages, safePage };
+    }
+
+    function renderPagination(targetEl, currentPage, totalPages, onChangeName) {
+      if (!targetEl) return;
+      if (totalPages <= 1) { targetEl.innerHTML = ''; return; }
+      targetEl.innerHTML = `
+        <button class="btn-secondary" onclick="${onChangeName}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Anterior</button>
+        <span class="page-info">Página ${currentPage} de ${totalPages}</span>
+        <button class="btn-secondary" onclick="${onChangeName}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Próxima →</button>
+      `;
+    }
+
+    // ------- DASHBOARD TABLES -------
+    function renderSimpleTable(targetEl, list, when) {
+      if (!list.length) {
+        targetEl.innerHTML = `
+          <tr class="empty-row">
+            <td colspan="7">
+              <span class="empty-icon">• • •</span>
+              Nenhum cliente nesta faixa.
+            </td>
+          </tr>`;
+        return;
+      }
+      targetEl.innerHTML = list.map(client => `
+        <tr>
+          <td>${escapeHtml(client.nome || '—')}</td>
+          <td class="mono">${escapeHtml(client.telefone || '—')}</td>
+          <td class="mono">${escapeHtml(client.usuario || '—')}</td>
+          <td>${escapeHtml(client.plano || '—')}</td>
+          <td class="mono">${escapeHtml(client.valor || '—')}</td>
+          <td class="mono">${escapeHtml(formatDate(client.dataRenovacao))}</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-whatsapp" onclick="openWhatsApp('${client.id}', '${when}')" data-testid="wa-btn-${client.id}">WhatsApp</button>
+              <button class="btn-secondary" onclick="copyMessage('${client.id}', '${when}')" data-testid="copy-btn-${client.id}">Copiar</button>
+              <button class="btn-info" onclick="editClient('${client.id}')" data-testid="edit-btn-${client.id}">Editar</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderDashboard() {
+      const today = todayLocalDate();
+      const dueToday = [], dueTomorrow = [], dueWeek = [];
+
+      clients.forEach(client => {
+        const due = parseDate(client.dataRenovacao);
+        if (!due) return;
+        const diff = diffInDays(due, today);
+        if (diff === 0) dueToday.push(client);
+        if (diff === 1) dueTomorrow.push(client);
+        if (diff === 7) dueWeek.push(client);
+      });
+
+      const sortByName = (a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+      dueToday.sort(sortByName);
+      dueTomorrow.sort(sortByName);
+      dueWeek.sort(sortByName);
+
+      if (els.countToday) els.countToday.textContent = dueToday.length;
+      if (els.countTomorrow) els.countTomorrow.textContent = dueTomorrow.length;
+      if (els.countWeek) els.countWeek.textContent = dueWeek.length;
+
+      const pagToday = paginate(dueToday, state.todayPage);
+      state.todayPage = pagToday.safePage;
+      renderSimpleTable(els.listTodayTable, pagToday.items, 'today');
+      renderPagination(els.paginationToday, pagToday.safePage, pagToday.totalPages, 'changeTodayPage');
+
+      const pagTomorrow = paginate(dueTomorrow, state.tomorrowPage);
+      state.tomorrowPage = pagTomorrow.safePage;
+      renderSimpleTable(els.listTomorrowTable, pagTomorrow.items, 'tomorrow');
+      renderPagination(els.paginationTomorrow, pagTomorrow.safePage, pagTomorrow.totalPages, 'changeTomorrowPage');
+
+      const pagWeek = paginate(dueWeek, state.weekPage);
+      state.weekPage = pagWeek.safePage;
+      renderSimpleTable(els.listWeekTable, pagWeek.items, 'week');
+      renderPagination(els.paginationWeek, pagWeek.safePage, pagWeek.totalPages, 'changeWeekPage');
+    }
+
+    // ------- CLIENTES TABLE (this was MISSING in the original code!) -------
+    function filterClients() {
+      const term = (els.searchClientesInput.value || '').trim().toLowerCase();
+      if (!term) return [...clients];
+      return clients.filter(c => {
+        const haystack = [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano]
+          .map(v => String(v || '').toLowerCase())
+          .join(' | ');
+        return haystack.includes(term);
+      });
+    }
+
+    function pickWhenByStatus(client) {
+      const due = parseDate(client.dataRenovacao);
+      if (!due) return 'today';
+      const diff = diffInDays(due, todayLocalDate());
+      if (diff === 1) return 'tomorrow';
+      if (diff > 1) return 'week';
+      return 'today';
+    }
+
+    function renderClientes() {
+      const filtered = filterClients();
+      filtered.sort((a, b) => {
+        const da = parseDate(a.dataRenovacao);
+        const db = parseDate(b.dataRenovacao);
+        if (da && db) return da - db;
+        if (da && !db) return -1;
+        if (!da && db) return 1;
+        return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+      });
+
+      if (els.countClientes) els.countClientes.textContent = filtered.length;
+
+      const pag = paginate(filtered, state.clientesPage);
+      state.clientesPage = pag.safePage;
+
+      if (!pag.items.length) {
+        els.clientesList.innerHTML = `
+          <tr class="empty-row">
+            <td colspan="10">
+              <span class="empty-icon">• • •</span>
+              ${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Comece pela aba Cadastros.' : 'Nenhum resultado para a busca.'}
+            </td>
+          </tr>`;
+      } else {
+        els.clientesList.innerHTML = pag.items.map(client => {
+          const status = getStatus(client);
+          const when = pickWhenByStatus(client);
+          return `
+            <tr>
+              <td>${escapeHtml(client.nome || '—')}</td>
+              <td class="mono">${escapeHtml(client.telefone || '—')}</td>
+              <td>${escapeHtml(client.aplicativo || '—')}</td>
+              <td class="mono">${escapeHtml(client.usuario || '—')}</td>
+              <td>${escapeHtml(client.plano || '—')}</td>
+              <td class="mono">${escapeHtml(client.valor || '—')}</td>
+              <td class="mono">${escapeHtml(formatDate(client.dataPagamento))}</td>
+              <td class="mono">${escapeHtml(formatDate(client.dataRenovacao))}</td>
+              <td><span class="pill ${status.cls}">${escapeHtml(status.label)}</span></td>
+              <td>
+                <div class="table-actions">
+                  <button class="btn-whatsapp" onclick="openWhatsApp('${client.id}', '${when}')">WhatsApp</button>
+                  <button class="btn-secondary" onclick="copyMessage('${client.id}', '${when}')">Copiar</button>
+                  <button class="btn-info" onclick="editClient('${client.id}')">Editar</button>
+                  <button class="btn-warning" onclick="registerPayment('${client.id}')">Pagou</button>
+                  <button class="btn-danger" onclick="deleteClient('${client.id}')">Excluir</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      renderPagination(els.paginationClientes, pag.safePage, pag.totalPages, 'changeClientesPage');
+    }
+
+    // ------- WINDOW HANDLERS -------
+    window.changeTodayPage = function(page) { state.todayPage = page; renderDashboard(); };
+    window.changeTomorrowPage = function(page) { state.tomorrowPage = page; renderDashboard(); };
+    window.changeWeekPage = function(page) { state.weekPage = page; renderDashboard(); };
+    window.changeClientesPage = function(page) { state.clientesPage = page; renderClientes(); };
+
+    function renderAll() {
+      saveClients();
+      renderDashboard();
+      renderClientes();
+    }
+
+    // ------- FORM -------
+    function resetForm() {
+      els.clientForm.reset();
+      els.clientId.value = '';
+      els.formTitle.textContent = 'Cadastrar cliente';
+    }
+
+    function getFormData() {
+      let dataPagamento = els.dataPagamento.value;
+      let dataRenovacao = els.dataRenovacao.value;
+      if (dataPagamento && !dataRenovacao) {
+        dataRenovacao = calcRenewalFromPayment(dataPagamento);
+      }
+      return {
+        id: els.clientId.value || generateId(),
+        nome: els.nome.value.trim(),
+        telefone: els.telefone.value.trim(),
+        aplicativo: els.aplicativo.value.trim(),
+        usuario: els.usuario.value.trim(),
+        senha: els.senha.value.trim(),
+        plano: els.plano.value.trim(),
+        valor: els.valor.value.trim(),
+        dataPagamento,
+        dataRenovacao,
+        linkRenovacao: els.linkRenovacao.value.trim(),
+        observacoes: els.observacoes.value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    function fillForm(client) {
+      els.clientId.value = client.id || '';
+      els.nome.value = client.nome || '';
+      els.telefone.value = client.telefone || '';
+      els.aplicativo.value = client.aplicativo || '';
+      els.usuario.value = client.usuario || '';
+      els.senha.value = client.senha || '';
+      els.plano.value = client.plano || '';
+      els.valor.value = client.valor || '';
+      els.dataPagamento.value = client.dataPagamento || '';
+      els.dataRenovacao.value = client.dataRenovacao || '';
+      els.linkRenovacao.value = client.linkRenovacao || '';
+      els.observacoes.value = client.observacoes || '';
+      els.formTitle.textContent = `Editando: ${client.nome || 'cliente'}`;
+      switchTab('cadastros');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.editClient = function(id) {
+      const client = clients.find(c => c.id === id);
+      if (!client) return;
+      fillForm(client);
+    };
+
+    window.deleteClient = function(id) {
+      const client = clients.find(c => c.id === id);
+      if (!client) return;
+      if (!confirm(`Excluir ${client.nome}?`)) return;
+      clients = clients.filter(c => c.id !== id);
+      renderAll();
+      showToast('Cliente excluído.');
+    };
+
+    window.registerPayment = function(id) {
+      const client = clients.find(c => c.id === id);
+      if (!client) return;
+      const today = toInputDate(todayLocalDate());
+      client.dataPagamento = today;
+      client.dataRenovacao = calcRenewalFromPayment(today);
+      client.updatedAt = new Date().toISOString();
+      renderAll();
+      showToast(`Pagamento registrado • Nova renovação: ${formatDate(client.dataRenovacao)}`);
+    };
+
+    els.clientForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = getFormData();
+      const index = clients.findIndex(c => c.id === formData.id);
+      if (index >= 0) clients[index] = formData;
+      else clients.push(formData);
+      renderAll();
+      resetForm();
+      showToast('Cliente salvo com sucesso.');
+    });
+
+    els.clearFormBtn.addEventListener('click', resetForm);
+
+    els.calcRenewBtn.addEventListener('click', () => {
+      if (!els.dataPagamento.value) {
+        showToast('Preencha a data do pagamento primeiro.', true);
+        return;
+      }
+      els.dataRenovacao.value = calcRenewalFromPayment(els.dataPagamento.value);
+      showToast('Renovação calculada (+30 dias).');
+    });
+
+    els.dataPagamento.addEventListener('change', () => {
+      if (els.dataPagamento.value) {
+        els.dataRenovacao.value = calcRenewalFromPayment(els.dataPagamento.value);
+      }
+    });
+
+    els.searchClientesInput.addEventListener('input', () => {
+      state.clientesPage = 1;
+      renderClientes();
+    });
+
+    els.tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+
+    els.exportBtn.addEventListener('click', () => {
+      const data = JSON.stringify(clients, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup_clientes_iptv_${toInputDate(todayLocalDate())}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Backup exportado.');
+    });
+
+    els.importFile.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const imported = JSON.parse(text);
+        if (!Array.isArray(imported)) throw new Error('Formato inválido');
+        clients = imported;
+        renderAll();
+        showToast('Backup importado com sucesso.');
+      } catch (err) {
+        showToast('Arquivo inválido.', true);
+      } finally {
+        event.target.value = '';
+      }
+    });
+
+    els.newClientShortcut.addEventListener('click', () => {
+      resetForm();
+      switchTab('cadastros');
+      els.nome.focus();
+    });
+
+    // ------- INIT -------
+    loadClients();
+
+    if (clients.length === 0) {
+      const demoToday = toInputDate(todayLocalDate());
+      const demoTomorrow = toInputDate(addDays(todayLocalDate(), 1));
+      const demoWeek = toInputDate(addDays(todayLocalDate(), 7));
+      clients = [
+        {
+          id: generateId(), nome: 'Cliente Exemplo Hoje', telefone: '5541999999999',
+          aplicativo: 'XCIPTV', usuario: 'clientehoje', senha: '123456',
+          plano: 'Mensal', valor: '30,00', dataPagamento: '', dataRenovacao: demoToday,
+          linkRenovacao: 'https://seulink.com/renovar/hoje', observacoes: ''
+        },
+        {
+          id: generateId(), nome: 'Cliente Exemplo Amanhã', telefone: '5541988888888',
+          aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321',
+          plano: 'Mensal', valor: '35,00', dataPagamento: '', dataRenovacao: demoTomorrow,
+          linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: ''
+        },
+        {
+          id: generateId(), nome: 'Cliente Exemplo 7 Dias', telefone: '5541977777777',
+          aplicativo: 'Bob Player', usuario: 'cliente7dias', senha: '789456',
+          plano: 'Mensal', valor: '25,00', dataPagamento: '', dataRenovacao: demoWeek,
+          linkRenovacao: 'https://seulink.com/renovar/7dias', observacoes: ''
+        }
+      ];
+      saveClients();
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
