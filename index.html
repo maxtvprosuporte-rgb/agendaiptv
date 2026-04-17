@@ -814,7 +814,6 @@
           <div class="form-actions">
             <button type="submit" class="btn-primary" data-testid="save-client-btn">Salvar cliente</button>
             <button type="button" class="btn-secondary" id="clearFormBtn" data-testid="clear-form-btn">Limpar formulário</button>
-            <button type="button" class="btn-warning" id="calcRenewBtn" data-testid="calc-renew-btn">Calcular +30 dias</button>
           </div>
         </form>
       </div>
@@ -898,7 +897,6 @@
       searchClientesInput: document.getElementById('searchClientesInput'),
       paginationClientes: document.getElementById('paginationClientes'),
       clearFormBtn: document.getElementById('clearFormBtn'),
-      calcRenewBtn: document.getElementById('calcRenewBtn'),
       exportBtn: document.getElementById('exportBtn'),
       importFile: document.getElementById('importFile'),
       formTitle: document.getElementById('formTitle'),
@@ -1371,15 +1369,6 @@
     });
 
     els.clearFormBtn.addEventListener('click', resetForm);
-
-    els.calcRenewBtn.addEventListener('click', () => {
-      if (!els.dataPagamento.value) {
-        showToast('Preencha a data do pagamento primeiro.', true);
-        return;
-      }
-      els.dataRenovacao.value = calcRenewalFromPayment(els.dataPagamento.value);
-      showToast('Renovação calculada (+30 dias).');
-    });
 
     els.dataPagamento.addEventListener('change', () => {
       if (els.dataPagamento.value) {
