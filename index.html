@@ -600,11 +600,11 @@
 
     <nav class="tabs" role="tablist">
       <button class="tab active" data-tab="cadastros" data-testid="tab-cadastros">Cadastros</button>
-      <button class="tab" data-tab="dashboard" data-testid="tab-dashboard">Painel</button>
+      <button class="tab" data-tab="dashboard" data-testid="tab-dashboard">Vencimento</button>
       <button class="tab" data-tab="clientes" data-testid="tab-clientes">Clientes</button>
     </nav>
 
-    <!-- DASHBOARD -->
+    <!-- VENCIMENTO (antigo PAINEL) -->
     <section id="dashboard" class="panel">
       <div class="table-card" style="margin-bottom:18px;">
         <div class="card-header">
@@ -665,12 +665,12 @@
       <div class="table-card">
         <div class="card-header">
           <div class="card-title">
-            <h2>Vence em 7 dias</h2>
+            <h2>Vence em até 7 dias</h2>
             <span class="tag">D-7</span>
           </div>
           <span class="count-badge" id="countWeek" data-testid="count-week">0</span>
         </div>
-        <p class="card-hint">Aviso antecipado para a semana seguinte. Até 20 por página.</p>
+        <p class="card-hint">Clientes com vencimento nos próximos 2 a 7 dias. Até 20 por página.</p>
         <div class="table-wrap">
           <table>
             <thead>
@@ -920,10 +920,16 @@
       return toInputDate(addDays(paymentDate, 30));
     }
 
-    function getStatus(client) {
+    // Dias restantes até o vencimento (positivo = ainda vai vencer, 0 = hoje, negativo = vencido)
+    function getDaysUntil(client) {
       const due = parseDate(client.dataRenovacao);
-      if (!due) return { label: 'Sem data', cls: 'pill-week' };
-      const diff = diffInDays(due, todayLocalDate());
+      if (!due) return null;
+      return diffInDays(due, todayLocalDate());
+    }
+
+    function getStatus(client) {
+      const diff = getDaysUntil(client);
+      if (diff === null) return { label: 'Sem data', cls: 'pill-week' };
       if (diff < 0) return { label: `Vencido há ${Math.abs(diff)}d`, cls: 'pill-expired' };
       if (diff === 0) return { label: 'Vence hoje', cls: 'pill-today' };
       if (diff === 1) return { label: 'Vence amanhã', cls: 'pill-tomorrow' };
@@ -947,19 +953,34 @@
     }
 
     // ------- MESSAGE BUILDER (WhatsApp) -------
-    function buildMessage(client, when = 'today') {
-      let intro = '⏰ Seu plano *vence hoje!*';
-      if (when === 'tomorrow') intro = '⏳ Seu plano *vence amanhã!*';
-      if (when === 'week') intro = '📅 Seu plano *vence em 7 dias!*';
+    // Mensagem padronizada, com cálculo dinâmico de dias até o vencimento
+    function buildMessage(client) {
+      const diff = getDaysUntil(client);
+
+      let introLine;
+      if (diff === null) {
+        introLine = `Seu plano *está próximo do vencimento!*`;
+      } else if (diff > 1) {
+        introLine = `Seu plano *vence em ${diff} dias!*`;
+      } else if (diff === 1) {
+        introLine = `Seu plano *vence em 1 dia!*`;
+      } else if (diff === 0) {
+        introLine = `Seu plano *vence hoje!*`;
+      } else if (diff === -1) {
+        introLine = `Seu plano *venceu há 1 dia!*`;
+      } else {
+        introLine = `Seu plano *venceu há ${Math.abs(diff)} dias!*`;
+      }
 
       const lines = [
-        `👋 Olá *${client.nome || ''}*!`,
-        `${intro} Para evitar cortes, acesse o link abaixo. Após o pagamento e confirmação, o sistema vai ajustar automaticamente! ✅`,
+        `👋 Olá *${client.nome || ''}*, ${introLine}`,
+        `Para evitar cortes, acesse o link abaixo, Após o pagamento e confirmação o sistema ajustar automaticamente novo vencimento!`,
         ``,
         `👤 *Usuário*: ${client.usuario || ''}`,
         `🔑 *Senha*: ${client.senha || ''}`,
         `📦 *Plano*: ${client.plano || ''}`,
         `💰 *Valor*: ${client.valor || ''}`,
+        ``,
         `🔗 *Link de renovação*: ${client.linkRenovacao || ''}`,
         ``,
         `🙏 Obrigado pela preferência!`
@@ -967,10 +988,10 @@
       return lines.join('\n');
     }
 
-    function copyMessage(id, when = 'today') {
+    function copyMessage(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
-      const message = buildMessage(client, when);
+      const message = buildMessage(client);
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(message)
           .then(() => showToast(`Mensagem copiada para ${client.nome}`))
@@ -996,17 +1017,14 @@
       }
     }
 
-    function openWhatsApp(id, when = 'today') {
+    function openWhatsApp(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
       const phone = String(client.telefone || '').replace(/\D/g, '');
-      const text = encodeURIComponent(buildMessage(client, when));
-      // Use api.whatsapp.com/send — formato oficial, preserva emojis (👋 📅 💰 etc.)
-      // wa.me às vezes re-codifica caracteres fora do BMP e gera � no destino.
+      const text = encodeURIComponent(buildMessage(client));
       const url = phone
         ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}`
         : `https://api.whatsapp.com/send?text=${text}`;
-      // Navegar via <a> clicado evita quebras de encoding em alguns browsers
       const a = document.createElement('a');
       a.href = url;
       a.target = '_blank';
@@ -1016,9 +1034,23 @@
       document.body.removeChild(a);
     }
 
+    // Renovar cliente — adiciona +30 dias à data de renovação atual (ou hoje, se não existir)
+    function renewClient(id) {
+      const client = clients.find(c => c.id === id);
+      if (!client) return;
+      const base = parseDate(client.dataRenovacao) || todayLocalDate();
+      const newRenewal = addDays(base, 30);
+      client.dataPagamento = toInputDate(todayLocalDate());
+      client.dataRenovacao = toInputDate(newRenewal);
+      client.updatedAt = new Date().toISOString();
+      renderAll();
+      showToast(`Renovado • Novo vencimento: ${formatDate(client.dataRenovacao)}`);
+    }
+
     // Expose globals for inline handlers
     window.openWhatsApp = openWhatsApp;
     window.copyMessage = copyMessage;
+    window.renewClient = renewClient;
 
     // ------- TABS -------
     function switchTab(tabName) {
@@ -1045,8 +1077,9 @@
       `;
     }
 
-    // ------- DASHBOARD TABLES -------
-    function renderSimpleTable(targetEl, list, when) {
+    // ------- VENCIMENTO TABLES -------
+    // Linha da aba Vencimento: WhatsApp + Copiar + Renovar
+    function renderVencimentoTable(targetEl, list) {
       if (!list.length) {
         targetEl.innerHTML = `
           <tr class="empty-row">
@@ -1067,9 +1100,9 @@
           <td class="mono">${escapeHtml(formatDate(client.dataRenovacao))}</td>
           <td>
             <div class="table-actions">
-              <button class="btn-whatsapp" onclick="openWhatsApp('${client.id}', '${when}')" data-testid="wa-btn-${client.id}">WhatsApp</button>
-              <button class="btn-secondary" onclick="copyMessage('${client.id}', '${when}')" data-testid="copy-btn-${client.id}">Copiar</button>
-              <button class="btn-info" onclick="editClient('${client.id}')" data-testid="edit-btn-${client.id}">Editar</button>
+              <button class="btn-whatsapp" onclick="openWhatsApp('${client.id}')" data-testid="wa-btn-${client.id}">WhatsApp</button>
+              <button class="btn-secondary" onclick="copyMessage('${client.id}')" data-testid="copy-btn-${client.id}">Copiar</button>
+              <button class="btn-primary" onclick="renewClient('${client.id}')" data-testid="renew-btn-${client.id}">Renovar</button>
             </div>
           </td>
         </tr>
@@ -1085,14 +1118,19 @@
         if (!due) return;
         const diff = diffInDays(due, today);
         if (diff === 0) dueToday.push(client);
-        if (diff === 1) dueTomorrow.push(client);
-        if (diff === 7) dueWeek.push(client);
+        else if (diff === 1) dueTomorrow.push(client);
+        else if (diff >= 2 && diff <= 7) dueWeek.push(client);
       });
 
-      const sortByName = (a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
-      dueToday.sort(sortByName);
-      dueTomorrow.sort(sortByName);
-      dueWeek.sort(sortByName);
+      const sortByRenewal = (a, b) => {
+        const da = parseDate(a.dataRenovacao);
+        const db = parseDate(b.dataRenovacao);
+        if (da && db && da - db !== 0) return da - db;
+        return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+      };
+      dueToday.sort(sortByRenewal);
+      dueTomorrow.sort(sortByRenewal);
+      dueWeek.sort(sortByRenewal);
 
       if (els.countToday) els.countToday.textContent = dueToday.length;
       if (els.countTomorrow) els.countTomorrow.textContent = dueTomorrow.length;
@@ -1100,21 +1138,21 @@
 
       const pagToday = paginate(dueToday, state.todayPage);
       state.todayPage = pagToday.safePage;
-      renderSimpleTable(els.listTodayTable, pagToday.items, 'today');
+      renderVencimentoTable(els.listTodayTable, pagToday.items);
       renderPagination(els.paginationToday, pagToday.safePage, pagToday.totalPages, 'changeTodayPage');
 
       const pagTomorrow = paginate(dueTomorrow, state.tomorrowPage);
       state.tomorrowPage = pagTomorrow.safePage;
-      renderSimpleTable(els.listTomorrowTable, pagTomorrow.items, 'tomorrow');
+      renderVencimentoTable(els.listTomorrowTable, pagTomorrow.items);
       renderPagination(els.paginationTomorrow, pagTomorrow.safePage, pagTomorrow.totalPages, 'changeTomorrowPage');
 
       const pagWeek = paginate(dueWeek, state.weekPage);
       state.weekPage = pagWeek.safePage;
-      renderSimpleTable(els.listWeekTable, pagWeek.items, 'week');
+      renderVencimentoTable(els.listWeekTable, pagWeek.items);
       renderPagination(els.paginationWeek, pagWeek.safePage, pagWeek.totalPages, 'changeWeekPage');
     }
 
-    // ------- CLIENTES TABLE (this was MISSING in the original code!) -------
+    // ------- CLIENTES TABLE -------
     function filterClients() {
       const term = (els.searchClientesInput.value || '').trim().toLowerCase();
       if (!term) return [...clients];
@@ -1124,15 +1162,6 @@
           .join(' | ');
         return haystack.includes(term);
       });
-    }
-
-    function pickWhenByStatus(client) {
-      const due = parseDate(client.dataRenovacao);
-      if (!due) return 'today';
-      const diff = diffInDays(due, todayLocalDate());
-      if (diff === 1) return 'tomorrow';
-      if (diff > 1) return 'week';
-      return 'today';
     }
 
     function renderClientes() {
@@ -1162,7 +1191,6 @@
       } else {
         els.clientesList.innerHTML = pag.items.map(client => {
           const status = getStatus(client);
-          const when = pickWhenByStatus(client);
           return `
             <tr>
               <td>${escapeHtml(client.nome || '—')}</td>
@@ -1176,11 +1204,10 @@
               <td><span class="pill ${status.cls}">${escapeHtml(status.label)}</span></td>
               <td>
                 <div class="table-actions">
-                  <button class="btn-whatsapp" onclick="openWhatsApp('${client.id}', '${when}')">WhatsApp</button>
-                  <button class="btn-secondary" onclick="copyMessage('${client.id}', '${when}')">Copiar</button>
-                  <button class="btn-info" onclick="editClient('${client.id}')">Editar</button>
-                  <button class="btn-warning" onclick="registerPayment('${client.id}')">Pagou</button>
-                  <button class="btn-danger" onclick="deleteClient('${client.id}')">Excluir</button>
+                  <button class="btn-info" onclick="editClient('${client.id}')" data-testid="edit-btn-${client.id}">Editar</button>
+                  <button class="btn-danger" onclick="deleteClient('${client.id}')" data-testid="delete-btn-${client.id}">Apagar</button>
+                  <button class="btn-secondary" onclick="copyMessage('${client.id}')" data-testid="copy-btn-c-${client.id}">Copiar</button>
+                  <button class="btn-whatsapp" onclick="openWhatsApp('${client.id}')" data-testid="wa-btn-c-${client.id}">WhatsApp</button>
                 </div>
               </td>
             </tr>
@@ -1264,17 +1291,6 @@
       clients = clients.filter(c => c.id !== id);
       renderAll();
       showToast('Cliente excluído.');
-    };
-
-    window.registerPayment = function(id) {
-      const client = clients.find(c => c.id === id);
-      if (!client) return;
-      const today = toInputDate(todayLocalDate());
-      client.dataPagamento = today;
-      client.dataRenovacao = calcRenewalFromPayment(today);
-      client.updatedAt = new Date().toISOString();
-      renderAll();
-      showToast(`Pagamento registrado • Nova renovação: ${formatDate(client.dataRenovacao)}`);
     };
 
     els.clientForm.addEventListener('submit', (e) => {
