@@ -796,6 +796,7 @@
 
   <script>
     const STORAGE_KEY = 'iptv_clientes_v1';
+    const INIT_FLAG_KEY = 'iptv_clientes_v1_initialized';
     let clients = [];
     const ITEMS_PER_PAGE = 20;
     const state = {
@@ -1368,7 +1369,11 @@
     // ------- INIT -------
     loadClients();
 
-    if (clients.length === 0) {
+    // Só semeia os exemplos na PRIMEIRA vez que o app roda.
+    // Depois disso, mesmo que o usuário apague todos os clientes, a lista
+    // vazia é respeitada e persistida.
+    const alreadyInitialized = localStorage.getItem(INIT_FLAG_KEY) === '1';
+    if (!alreadyInitialized && clients.length === 0) {
       const demoToday = toInputDate(todayLocalDate());
       const demoTomorrow = toInputDate(addDays(todayLocalDate(), 1));
       const demoWeek = toInputDate(addDays(todayLocalDate(), 7));
@@ -1394,6 +1399,9 @@
       ];
       saveClients();
     }
+    // Marca inicialização concluída — próximas aberturas respeitam qualquer
+    // estado do usuário (inclusive lista vazia).
+    localStorage.setItem(INIT_FLAG_KEY, '1');
 
     renderAll();
   </script>
