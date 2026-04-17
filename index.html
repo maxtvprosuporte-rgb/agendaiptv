@@ -1001,8 +1001,19 @@
       if (!client) return;
       const phone = String(client.telefone || '').replace(/\D/g, '');
       const text = encodeURIComponent(buildMessage(client, when));
-      const url = phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`;
-      window.open(url, '_blank');
+      // Use api.whatsapp.com/send — formato oficial, preserva emojis (👋 📅 💰 etc.)
+      // wa.me às vezes re-codifica caracteres fora do BMP e gera � no destino.
+      const url = phone
+        ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}`
+        : `https://api.whatsapp.com/send?text=${text}`;
+      // Navegar via <a> clicado evita quebras de encoding em alguns browsers
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     // Expose globals for inline handlers
