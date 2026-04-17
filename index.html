@@ -564,7 +564,7 @@
       .actions { width: 100%; }
       .actions button, .actions .btn { flex: 1 1 calc(50% - 5px); }
       .tabs { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; border-radius: 14px; }
-      .tab { border-radius: 10px; padding: 12px 10px; }
+      .tab { border-radius: 10px; padding: 12px 10px; font-size: 13px; }
       .form-grid { grid-template-columns: 1fr; }
       .list-box, .form-card, .table-card { padding: 16px; }
       table { min-width: 980px; }
@@ -572,11 +572,74 @@
       .table-actions button { flex: 1 1 calc(50% - 3px); }
     }
 
-    @media (max-width: 520px) {
+    /* MOBILE: converte tabelas em cards empilhados (sem scroll horizontal) */
+    @media (max-width: 640px) {
       .title h1 { font-size: 24px; }
-      .tabs { grid-template-columns: 1fr; }
-      .actions button, .actions .btn { flex: 1 1 100%; }
+      .title p { font-size: 12.5px; }
+      .actions button, .actions .btn { flex: 1 1 100%; font-size: 13px; }
+      .tabs { grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; }
+      .tab { padding: 10px 6px; font-size: 12.5px; min-height: 40px; }
+
       .form-actions button { flex: 1 1 100%; }
+
+      /* remove moldura fixa da tabela e deixa o tbody virar lista de cards */
+      .table-wrap { overflow-x: visible; border: none; background: transparent; }
+      table, thead, tbody, tr, td { display: block; width: 100%; }
+      table { min-width: 0; }
+      thead { display: none; }
+
+      tbody tr {
+        background: #0a0a0a;
+        border: 1px solid var(--border-faint);
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        box-shadow: var(--shadow-sm);
+      }
+      tbody tr:hover { background: #0a0a0a; }
+      tbody tr:last-child td { border-bottom: 1px dashed rgba(255,255,255,.06); }
+
+      tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        border: none;
+        border-bottom: 1px dashed rgba(255,255,255,.06);
+        font-size: 13.5px;
+        text-align: right;
+        word-break: break-word;
+      }
+      tbody td::before {
+        content: attr(data-label);
+        flex: 0 0 42%;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        text-align: left;
+      }
+      tbody td:last-child {
+        border-bottom: none;
+        padding-top: 10px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      tbody td:last-child::before { display: none; }
+      tbody td .table-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+      tbody td .table-actions button { flex: none; width: 100%; }
+
+      /* empty state volta a ocupar espaço no card */
+      tr.empty-row { background: transparent; border: 1px dashed var(--border-faint); }
+      tr.empty-row td { display: block; text-align: center; padding: 24px 10px; }
+      tr.empty-row td::before { display: none; }
+
+      .toolbar-left { gap: 8px; }
+      .search { max-width: 100%; }
+      .pagination-bar .page-info { order: -1; width: 100%; text-align: center; }
+      .card-title h2 { font-size: 17px; }
     }
   </style>
 </head>
@@ -594,7 +657,6 @@
         <button class="btn-secondary" id="exportBtn" data-testid="export-backup-btn">Exportar backup</button>
         <label class="btn btn-secondary" for="importFile" data-testid="import-backup-label">Importar backup</label>
         <input id="importFile" type="file" accept="application/json" class="hidden" data-testid="import-backup-input" />
-        <button class="btn-primary" id="newClientShortcut" data-testid="new-client-shortcut-btn">+ Novo cliente</button>
       </div>
     </header>
 
@@ -839,7 +901,6 @@
       calcRenewBtn: document.getElementById('calcRenewBtn'),
       exportBtn: document.getElementById('exportBtn'),
       importFile: document.getElementById('importFile'),
-      newClientShortcut: document.getElementById('newClientShortcut'),
       formTitle: document.getElementById('formTitle'),
       toast: document.getElementById('toast')
     };
@@ -958,29 +1019,33 @@
     function buildMessage(client) {
       const diff = getDaysUntil(client);
 
-      let introLine;
+      let statusTag;
       if (diff === null) {
-        introLine = `Seu plano *está próximo do vencimento!*`;
+        statusTag = `Próximo do vencimento`;
       } else if (diff > 1) {
-        introLine = `Seu plano *vence em ${diff} dias!*`;
+        statusTag = `Vence em ${diff} dias`;
       } else if (diff === 1) {
-        introLine = `Seu plano *vence em 1 dia!*`;
+        statusTag = `Vence em 1 dia`;
       } else if (diff === 0) {
-        introLine = `Seu plano *vence hoje!*`;
+        statusTag = `Vence hoje`;
       } else if (diff === -1) {
-        introLine = `Seu plano *venceu há 1 dia!*`;
+        statusTag = `Venceu há 1 dia`;
       } else {
-        introLine = `Seu plano *venceu há ${Math.abs(diff)} dias!*`;
+        statusTag = `Venceu há ${Math.abs(diff)} dias`;
       }
 
+      const valor = (client.valor || '').toString().trim();
+      const valorLinha = valor ? `R$ ${valor}` : '';
+
       const lines = [
-        `👋 Olá *${client.nome || ''}*, ${introLine}`,
-        `Para evitar cortes, acesse o link abaixo, Após o pagamento e confirmação o sistema ajustar automaticamente novo vencimento!`,
+        `👋 Olá *${client.nome || ''}* Seu plano *[${statusTag}]*`,
+        ``,
+        `Para evitar cortes, acesse o link abaixo e realize o pagamento e fique sem preocupações!`,
         ``,
         `👤 *Usuário*: ${client.usuario || ''}`,
         `🔑 *Senha*: ${client.senha || ''}`,
         `📦 *Plano*: ${client.plano || ''}`,
-        `💰 *Valor*: ${client.valor || ''}`,
+        `💰 *Valor*: ${valorLinha}`,
         ``,
         `🔗 *Link de renovação*: ${client.linkRenovacao || ''}`,
         ``,
@@ -1093,13 +1158,13 @@
       }
       targetEl.innerHTML = list.map(client => `
         <tr>
-          <td>${escapeHtml(client.nome || '—')}</td>
-          <td class="mono">${escapeHtml(client.telefone || '—')}</td>
-          <td class="mono">${escapeHtml(client.usuario || '—')}</td>
-          <td>${escapeHtml(client.plano || '—')}</td>
-          <td class="mono">${escapeHtml(client.valor || '—')}</td>
-          <td class="mono">${escapeHtml(formatDate(client.dataRenovacao))}</td>
-          <td>
+          <td data-label="Nome">${escapeHtml(client.nome || '—')}</td>
+          <td class="mono" data-label="Telefone">${escapeHtml(client.telefone || '—')}</td>
+          <td class="mono" data-label="Usuário">${escapeHtml(client.usuario || '—')}</td>
+          <td data-label="Plano">${escapeHtml(client.plano || '—')}</td>
+          <td class="mono" data-label="Valor">${escapeHtml(client.valor || '—')}</td>
+          <td class="mono" data-label="Renovação">${escapeHtml(formatDate(client.dataRenovacao))}</td>
+          <td data-label="Ações">
             <div class="table-actions">
               <button class="btn-whatsapp" onclick="openWhatsApp('${client.id}')" data-testid="wa-btn-${client.id}">WhatsApp</button>
               <button class="btn-secondary" onclick="copyMessage('${client.id}')" data-testid="copy-btn-${client.id}">Copiar</button>
@@ -1194,16 +1259,16 @@
           const status = getStatus(client);
           return `
             <tr>
-              <td>${escapeHtml(client.nome || '—')}</td>
-              <td class="mono">${escapeHtml(client.telefone || '—')}</td>
-              <td>${escapeHtml(client.aplicativo || '—')}</td>
-              <td class="mono">${escapeHtml(client.usuario || '—')}</td>
-              <td>${escapeHtml(client.plano || '—')}</td>
-              <td class="mono">${escapeHtml(client.valor || '—')}</td>
-              <td class="mono">${escapeHtml(formatDate(client.dataPagamento))}</td>
-              <td class="mono">${escapeHtml(formatDate(client.dataRenovacao))}</td>
-              <td><span class="pill ${status.cls}">${escapeHtml(status.label)}</span></td>
-              <td>
+              <td data-label="Nome">${escapeHtml(client.nome || '—')}</td>
+              <td class="mono" data-label="Telefone">${escapeHtml(client.telefone || '—')}</td>
+              <td data-label="App">${escapeHtml(client.aplicativo || '—')}</td>
+              <td class="mono" data-label="Usuário">${escapeHtml(client.usuario || '—')}</td>
+              <td data-label="Plano">${escapeHtml(client.plano || '—')}</td>
+              <td class="mono" data-label="Valor">${escapeHtml(client.valor || '—')}</td>
+              <td class="mono" data-label="Pagamento">${escapeHtml(formatDate(client.dataPagamento))}</td>
+              <td class="mono" data-label="Renovação">${escapeHtml(formatDate(client.dataRenovacao))}</td>
+              <td data-label="Status"><span class="pill ${status.cls}">${escapeHtml(status.label)}</span></td>
+              <td data-label="Ações">
                 <div class="table-actions">
                   <button class="btn-info" onclick="editClient('${client.id}')" data-testid="edit-btn-${client.id}">Editar</button>
                   <button class="btn-danger" onclick="deleteClient('${client.id}')" data-testid="delete-btn-${client.id}">Apagar</button>
@@ -1358,12 +1423,6 @@
       } finally {
         event.target.value = '';
       }
-    });
-
-    els.newClientShortcut.addEventListener('click', () => {
-      resetForm();
-      switchTab('cadastros');
-      els.nome.focus();
     });
 
     // ------- INIT -------
