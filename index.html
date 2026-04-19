@@ -742,6 +742,13 @@
       .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
+    /* Ensure modal edit form becomes single column earlier and neutralizes inline spans */
+    @media (max-width: 720px) {
+      .modal-content .form-grid { grid-template-columns: 1fr !important; }
+      .modal-content .form-grid .field[style*="span 2"],
+      .modal-content .form-grid .field[style*="span 3"] { grid-column: auto !important; }
+    }
+
     @media (max-width: 820px) {
       .container { width: calc(100% - 16px); margin: 16px auto 40px; }
       .topbar { align-items: stretch; }
@@ -1121,7 +1128,13 @@
           <div class="field"><label for="ec_plano">Plano</label><input id="ec_plano" data-testid="ec-plano" /></div>
           <div class="field"><label for="ec_valor">Valor</label><input id="ec_valor" placeholder="Ex.: 30,00" data-testid="ec-valor" /></div>
           <div class="field" id="ec_inicio_wrap"><label for="ec_dataInicio">Data de início</label><input type="date" id="ec_dataInicio" data-testid="ec-data-inicio" /></div>
-          <div class="field" id="ec_renovacao_wrap"><label for="ec_dataRenovacao">Data de renovação</label><input type="date" id="ec_dataRenovacao" data-testid="ec-data-renovacao" /></div>
+          <div class="field" id="ec_renovacao_wrap">
+            <label for="ec_dataRenovacao" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span>Data de renovação</span>
+              <button type="button" id="ec_btnPlus30" class="btn-secondary" style="padding:4px 8px; min-height:26px; font-size:11px; text-transform:none; letter-spacing:0;" title="Recalcular: início + 30 dias">+30 dias</button>
+            </label>
+            <input type="date" id="ec_dataRenovacao" data-testid="ec-data-renovacao" />
+          </div>
           <div class="field" style="grid-column: span 2;"><label for="ec_linkRenovacao">Link de ativação / renovação</label><input id="ec_linkRenovacao" placeholder="https://..." data-testid="ec-link" /></div>
           <div class="field" style="grid-column: span 3;"><label for="ec_observacoes">Observações</label><input id="ec_observacoes" data-testid="ec-observacoes" /></div>
         </div>
@@ -1769,6 +1782,21 @@
     }
     window.editClient = editClient;
 
+    // Auto-sincroniza Data de renovação = Data de início + 30 dias ao alterar início
+    (function wireEcDateSync() {
+      const inicio = document.getElementById('ec_dataInicio');
+      const renov = document.getElementById('ec_dataRenovacao');
+      const btn = document.getElementById('ec_btnPlus30');
+      if (!inicio || !renov) return;
+      const recalc = () => {
+        const d = parseDate(inicio.value);
+        if (!d) return;
+        renov.value = toInputDate(addDays(d, 30));
+      };
+      inicio.addEventListener('change', recalc);
+      if (btn) btn.addEventListener('click', recalc);
+    })();
+
     document.getElementById('formEditarCliente').addEventListener('submit', (e) => {
       e.preventDefault();
       const id = document.getElementById('ec_id').value;
@@ -1790,14 +1818,22 @@
         const prev = clients[idx];
         const dataInicio = document.getElementById('ec_dataInicio').value || prev.dataInicio || prev.dataPagamento || '';
         const dataRenovacao = document.getElementById('ec_dataRenovacao').value || prev.dataRenovacao || '';
+        const renovacaoChanged = dataRenovacao !== (prev.dataRenovacao || '');
         clients[idx] = {
           ...prev, ...base,
           dataInicio,
           dataPagamento: dataInicio || prev.dataPagamento || '',
           dataRenovacao,
+          // se a data de renovação mudou, considere como novo ciclo e reseta o indicador
+          msgSentAt: renovacaoChanged ? null : prev.msgSentAt,
           updatedAt: new Date().toISOString()
         };
         renderAll();
+        // atualiza imediatamente tudo que depende da data: gestão, gráfico, resumo, filtro de meses
+        atualizarSelectMesGestao();
+        atualizarGraficoClientes();
+        atualizarStatsFinanceiras();
+        gerarTextoWhatsAppGestao();
       } else {
         const idx = testes.findIndex(x => x.id === id);
         if (idx < 0) { showToast('Teste não encontrado.', true); return; }
