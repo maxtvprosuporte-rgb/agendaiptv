@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel de Renovação IPTV</title>
+  <title>Painel IPTV • Gestão + Calculadora</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root {
       --bg: #000000;
@@ -28,6 +30,7 @@
       --border-faint: rgba(255,255,255,.06);
       --shadow-sm: 0 4px 14px rgba(0,0,0,.4);
       --shadow: 0 14px 40px rgba(0,0,0,.55);
+      --shadow-xl: 0 20px 50px rgba(0,0,0,.65);
       --glow-sm: 0 0 10px rgba(57,255,20,.12);
       --glow-md: 0 0 24px rgba(57,255,20,.18);
       --radius: 18px;
@@ -52,7 +55,6 @@
         radial-gradient(900px 500px at -10% 10%, rgba(57,255,20,.04), transparent 60%);
     }
 
-    /* subtle grain */
     body::before {
       content: "";
       position: fixed; inset: 0;
@@ -63,7 +65,6 @@
     }
 
     ::selection { background: rgba(57,255,20,.25); color: #fff; }
-
     ::-webkit-scrollbar { width: 10px; height: 10px; }
     ::-webkit-scrollbar-track { background: #040404; }
     ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 999px; border: 2px solid #040404; }
@@ -76,7 +77,6 @@
       z-index: 1;
     }
 
-    /* TOPBAR */
     .topbar {
       display: flex;
       flex-wrap: wrap;
@@ -87,12 +87,7 @@
       padding-bottom: 22px;
       border-bottom: 1px solid var(--border-faint);
     }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+    .brand { display: flex; align-items: center; gap: 14px; }
     .brand-mark {
       width: 46px; height: 46px;
       border-radius: 14px;
@@ -110,13 +105,11 @@
       animation: spin 14s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .brand-dot {
       width: 10px; height: 10px; border-radius: 50%;
       background: var(--primary);
       box-shadow: 0 0 12px var(--primary);
     }
-
     .title h1 {
       margin: 0;
       font-family: var(--font-display);
@@ -126,10 +119,7 @@
       line-height: 1;
       color: #fff;
     }
-    .title h1 span {
-      color: var(--primary);
-      text-shadow: 0 0 18px rgba(57,255,20,.35);
-    }
+    .title h1 span { color: var(--primary); text-shadow: 0 0 18px rgba(57,255,20,.35); }
     .title p {
       margin: 8px 0 0;
       color: var(--muted);
@@ -137,7 +127,6 @@
       max-width: 620px;
       letter-spacing: .01em;
     }
-
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -145,7 +134,6 @@
       justify-content: flex-end;
     }
 
-    /* BUTTONS */
     button, .btn {
       font-family: var(--font-body);
       border: 1px solid var(--border);
@@ -167,10 +155,7 @@
     }
     button:hover, .btn:hover { transform: translateY(-1px); }
     button:active, .btn:active { transform: translateY(0); }
-    button:focus-visible, .btn:focus-visible {
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(57,255,20,.35);
-    }
+    button:focus-visible, .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(57,255,20,.35); }
     button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
     .btn-primary {
@@ -185,15 +170,24 @@
       box-shadow: var(--glow-md);
     }
 
+    .btn-success {
+      background: linear-gradient(180deg, #0d1d08, #060e04);
+      color: var(--primary);
+      border: 1px solid rgba(57,255,20,.5);
+      box-shadow: var(--glow-sm);
+    }
+    .btn-success:hover {
+      background: linear-gradient(180deg, #143410, #0a1808);
+      border-color: rgba(57,255,20,.75);
+      box-shadow: var(--glow-md);
+    }
+
     .btn-secondary {
       background: #0b0b0b;
       color: var(--text);
       border: 1px solid rgba(255,255,255,.08);
     }
-    .btn-secondary:hover {
-      background: #121212;
-      border-color: rgba(255,255,255,.18);
-    }
+    .btn-secondary:hover { background: #121212; border-color: rgba(255,255,255,.18); }
 
     .btn-danger {
       background: #0a0606;
@@ -227,9 +221,10 @@
       box-shadow: var(--glow-sm);
     }
 
-    /* TABS */
+    .btn-block { width: 100%; }
+
     .tabs {
-      display: inline-flex;
+      display: flex;
       gap: 4px;
       padding: 5px;
       margin-bottom: 22px;
@@ -237,20 +232,24 @@
       border: 1px solid var(--border-faint);
       border-radius: 999px;
       box-shadow: var(--shadow-sm);
-      flex-wrap: wrap;
+      overflow-x: auto;
+      scrollbar-width: thin;
     }
+    .tabs::-webkit-scrollbar { height: 6px; }
 
     .tab {
       background: transparent;
       color: var(--text-dim);
       border: 1px solid transparent;
-      padding: 10px 20px;
+      padding: 10px 18px;
       border-radius: 999px;
       font-weight: 600;
       font-size: 13.5px;
       min-height: 38px;
       box-shadow: none;
       letter-spacing: .01em;
+      flex: 0 0 auto;
+      white-space: nowrap;
     }
     .tab:hover { color: #fff; background: rgba(255,255,255,.03); }
     .tab.active {
@@ -267,8 +266,7 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* CARDS */
-    .list-box, .form-card, .table-card {
+    .list-box, .form-card, .table-card, .card {
       background: linear-gradient(180deg, var(--card), var(--card-2));
       border: 1px solid var(--border-faint);
       border-radius: var(--radius);
@@ -278,7 +276,8 @@
       overflow: hidden;
     }
     .table-card + .table-card,
-    .form-card + .form-card { margin-top: 18px; }
+    .form-card + .form-card,
+    .card + .card { margin-top: 18px; }
 
     .card-header {
       display: flex;
@@ -292,14 +291,22 @@
       display: flex;
       align-items: center;
       gap: 10px;
-    }
-    .card-title h2 {
-      margin: 0;
       font-family: var(--font-display);
       font-size: 20px;
       font-weight: 700;
       letter-spacing: -0.01em;
       color: #fff;
+    }
+    .card-title h2 { margin: 0; font: inherit; color: inherit; }
+    .card-title i {
+      width: 34px; height: 34px;
+      display: grid; place-items: center;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0f1f0b, #050505);
+      border: 1px solid var(--border-strong);
+      color: var(--primary);
+      font-size: 14px;
+      box-shadow: var(--glow-sm);
     }
     .card-title .tag {
       font-family: var(--font-mono);
@@ -327,32 +334,20 @@
     .count-badge.danger { background: rgba(255,92,92,.08); color: #ffb5b5; border-color: rgba(255,92,92,.25); }
     .count-badge.warning { background: rgba(255,228,92,.08); color: var(--warning); border-color: rgba(255,228,92,.25); }
 
-    .card-hint {
-      color: var(--muted);
-      font-size: 13px;
-      margin: 0 0 14px;
-    }
+    .card-hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
 
-    /* FORM */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
     }
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      min-width: 0;
-    }
+    .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
     .field label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-dim);
-      letter-spacing: .04em;
-      text-transform: uppercase;
+      font-size: 12px; font-weight: 600; color: var(--text-dim);
+      letter-spacing: .04em; text-transform: uppercase;
     }
-    .field input, .field select, .field textarea {
+    .field input, .field select, .field textarea,
+    .form-input, .form-select, .form-textarea {
       width: 100%;
       border-radius: var(--radius-sm);
       border: 1px solid rgba(255,255,255,.08);
@@ -365,77 +360,67 @@
       min-height: 46px;
       transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
     }
-    .field input::placeholder { color: #5a5a5a; }
-    .field input:hover, .field select:hover, .field textarea:hover {
-      border-color: rgba(255,255,255,.16);
-    }
+    .field input::placeholder,
+    .form-input::placeholder, .form-textarea::placeholder { color: #5a5a5a; }
+    .field input:hover, .field select:hover, .field textarea:hover,
+    .form-input:hover, .form-select:hover, .form-textarea:hover { border-color: rgba(255,255,255,.16); }
     .field input:focus, .field select:focus, .field textarea:focus,
+    .form-input:focus, .form-select:focus, .form-textarea:focus,
     .search:focus {
       border-color: var(--border-strong);
       box-shadow: 0 0 0 3px rgba(57,255,20,.1);
       background: #070707;
     }
-    .field textarea { min-height: 90px; resize: vertical; }
+    .field textarea, .form-textarea { min-height: 120px; resize: vertical; }
+
+    .form-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+    .form-label {
+      font-size: 12px; font-weight: 600; color: var(--text-dim);
+      letter-spacing: .04em; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .form-label i { color: var(--primary); }
 
     .form-actions {
-      display: flex;
-      flex-wrap: wrap;
+      display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; align-items: center;
+    }
+
+    .input-group-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
       gap: 10px;
-      margin-top: 18px;
-      align-items: center;
+      align-items: stretch;
     }
 
     .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 14px;
-      align-items: center;
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; align-items: center;
     }
     .toolbar-left {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      width: 100%;
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%;
     }
     .toolbar-left h2 {
-      margin: 0;
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
+      margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff;
     }
 
     .search {
-      flex: 1 1 280px;
-      min-width: 240px;
-      max-width: 440px;
+      flex: 1 1 280px; min-width: 240px; max-width: 440px;
       border-radius: var(--radius-sm);
       border: 1px solid rgba(255,255,255,.08);
-      background: #040404;
-      color: #fff;
-      padding: 11px 14px;
-      font-size: 14px;
-      min-height: 44px;
-      outline: none;
+      background: #040404; color: #fff;
+      padding: 11px 14px; font-size: 14px;
+      min-height: 44px; outline: none;
       font-family: var(--font-body);
       transition: border-color .18s ease, box-shadow .18s ease;
     }
     .search::placeholder { color: #5a5a5a; }
 
-    /* TABLE */
     .table-wrap {
       overflow-x: auto;
       border-radius: 14px;
       border: 1px solid var(--border-faint);
       background: #030303;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1150px;
-    }
+    table { width: 100%; border-collapse: collapse; min-width: 1150px; }
     th, td {
       padding: 14px 12px;
       text-align: left;
@@ -448,48 +433,25 @@
     tbody tr:hover { background: rgba(57,255,20,.025); }
     tbody tr:last-child td { border-bottom: none; }
     th {
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .09em;
-      font-weight: 700;
-      position: sticky;
-      top: 0;
-      background: #060606;
-      backdrop-filter: blur(6px);
+      color: var(--muted); font-size: 11px; text-transform: uppercase;
+      letter-spacing: .09em; font-weight: 700;
+      position: sticky; top: 0;
+      background: #060606; backdrop-filter: blur(6px);
     }
     td.mono { font-family: var(--font-mono); font-size: 13px; }
 
-    .table-actions {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .table-actions button {
-      padding: 8px 12px;
-      font-size: 12.5px;
-      min-height: 36px;
-    }
+    .table-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .table-actions button { padding: 8px 12px; font-size: 12.5px; min-height: 36px; }
 
-    /* PILLS */
     .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 11.5px;
-      font-weight: 600;
-      border: 1px solid transparent;
-      letter-spacing: .02em;
-      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; border-radius: 999px; font-size: 11.5px;
+      font-weight: 600; border: 1px solid transparent;
+      letter-spacing: .02em; white-space: nowrap;
     }
     .pill::before {
-      content: "";
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 6px currentColor;
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor; box-shadow: 0 0 6px currentColor;
     }
     .pill-today    { background: rgba(255,92,92,.10); color: #ff9b9b; border-color: rgba(255,92,92,.3); }
     .pill-tomorrow { background: rgba(255,228,92,.08); color: var(--warning); border-color: rgba(255,228,92,.28); }
@@ -497,59 +459,215 @@
     .pill-ok       { background: rgba(57,255,20,.07); color: var(--primary-soft); border-color: rgba(57,255,20,.25); }
     .pill-expired  { background: rgba(255,92,92,.12); color: #ff8787; border-color: rgba(255,92,92,.4); }
 
-    /* EMPTY STATE */
-    .empty-row td {
+    .empty-row td, .empty-state {
       text-align: center;
       color: var(--muted);
       padding: 38px 20px;
       font-size: 14px;
     }
     .empty-row .empty-icon {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: .15em;
-      display: block;
-      margin-bottom: 6px;
-      opacity: .6;
+      font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+      letter-spacing: .15em; display: block; margin-bottom: 6px; opacity: .6;
     }
+    .empty-state i { font-size: 40px; opacity: .4; margin-bottom: 10px; display: block; }
+    .empty-state p { margin: 0; font-weight: 500; }
 
     .hidden { display: none !important; }
 
     .pagination-bar {
-      display: flex;
-      gap: 10px;
-      margin-top: 14px;
-      flex-wrap: wrap;
-      align-items: center;
+      display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center;
     }
     .pagination-bar .page-info {
-      align-self: center;
-      color: var(--muted);
-      padding: 8px 6px;
-      font-family: var(--font-mono);
-      font-size: 12.5px;
+      align-self: center; color: var(--muted); padding: 8px 6px;
+      font-family: var(--font-mono); font-size: 12.5px;
     }
 
-    /* TOAST */
+    .list-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      background: #0a0a0a;
+      border: 1px solid var(--border-faint);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+    }
+    .list-item:hover { background: #101010; border-color: rgba(57,255,20,.18); transform: translateX(2px); }
+    .list-item-content { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+    .list-item-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: #050505; border: 1px solid var(--border-faint);
+      display: grid; place-items: center;
+      color: var(--primary); font-size: 16px;
+      flex: 0 0 auto;
+    }
+    .list-item-text { font-weight: 600; font-size: 14px; color: var(--text); }
+    .list-item-sub  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .list-item-badge {
+      font-family: var(--font-mono);
+      background: rgba(57,255,20,.08);
+      color: var(--primary);
+      border: 1px solid rgba(57,255,20,.25);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12.5px; font-weight: 700;
+    }
+
+    .cost-item, .assinatura-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 16px;
+      background: #0a0a0a;
+      border: 1px solid var(--border-faint);
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    .cost-name { font-size: 14px; font-weight: 600; }
+    .cost-name i { color: var(--primary); margin-right: 6px; }
+    .cost-value { font-family: var(--font-mono); color: var(--primary); font-weight: 700; font-size: 15px; }
+
+    .credit-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .credit-stat-card {
+      background: #0a0a0a;
+      border: 1px solid var(--border-faint);
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+    }
+    .credit-stat-value {
+      font-family: var(--font-mono);
+      font-size: 28px; font-weight: 700;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+    .credit-stat-label {
+      margin-top: 6px; font-size: 12px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
+    }
+
+    .radio-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .radio-option {
+      padding: 14px; border-radius: 12px;
+      background: #0a0a0a;
+      border: 1px solid var(--border-faint);
+      cursor: pointer; transition: all .2s ease;
+      text-align: center;
+      font-weight: 600; font-size: 13.5px; color: var(--text-dim);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .radio-option:hover { border-color: rgba(57,255,20,.3); color: #fff; }
+    .radio-option.active {
+      background: linear-gradient(180deg, #0e210a, #050a03);
+      color: var(--primary);
+      border-color: rgba(57,255,20,.45);
+      box-shadow: var(--glow-sm);
+    }
+    .radio-option input { display: none; }
+
+    .result-box {
+      background: #060606;
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      padding: 22px;
+      margin-top: 20px;
+      box-shadow: var(--glow-sm);
+    }
+    .result-section {
+      padding-bottom: 16px; margin-bottom: 16px;
+      border-bottom: 1px dashed rgba(255,255,255,.08);
+    }
+    .result-section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .result-section h3 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: 15px; font-weight: 700;
+      color: var(--text); display: flex; align-items: center; gap: 8px;
+    }
+    .result-section h3 i { color: var(--primary); font-size: 14px; }
+    .result-row {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; padding: 6px 0;
+      font-size: 14px;
+    }
+    .result-row.large { font-size: 16px; font-weight: 700; margin-top: 6px; }
+    .result-label { color: var(--text-dim); }
+    .result-value { font-family: var(--font-mono); color: var(--primary); font-weight: 700; }
+
+    .modal {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(4px);
+      z-index: 900;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 24px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-xl), var(--glow-sm);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-faint);
+    }
+    .modal-title {
+      margin: 0; font-family: var(--font-display);
+      font-size: 18px; font-weight: 700; color: #fff;
+    }
+    .modal-close {
+      width: 36px; height: 36px;
+      min-height: 36px;
+      padding: 0; border-radius: 10px;
+      background: #0a0a0a;
+      border: 1px solid var(--border-faint);
+      color: var(--muted);
+    }
+    .modal-close:hover { background: #140808; border-color: rgba(255,92,92,.4); color: #ffb5b5; }
+
+    .chart-container {
+      position: relative;
+      height: 360px;
+      margin-top: 8px;
+      padding: 16px;
+      background: #040404;
+      border: 1px solid var(--border-faint);
+      border-radius: 14px;
+    }
+
     #toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
+      position: fixed; bottom: 24px; left: 50%;
       transform: translateX(-50%) translateY(12px);
       background: #0a0a0a;
       border: 1px solid var(--border-strong);
       color: var(--text);
       padding: 12px 18px;
       border-radius: 999px;
-      font-size: 13.5px;
-      font-weight: 600;
+      font-size: 13.5px; font-weight: 600;
       box-shadow: var(--shadow), var(--glow-sm);
       opacity: 0;
       transition: opacity .25s ease, transform .25s ease;
-      pointer-events: none;
-      z-index: 100;
-      max-width: 90vw;
+      pointer-events: none; z-index: 1000; max-width: 90vw;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     #toast.error { border-color: rgba(255,92,92,.5); color: #ffb5b5; }
@@ -563,26 +681,25 @@
       .topbar { align-items: stretch; }
       .actions { width: 100%; }
       .actions button, .actions .btn { flex: 1 1 calc(50% - 5px); }
-      .tabs { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; border-radius: 14px; }
-      .tab { border-radius: 10px; padding: 12px 10px; font-size: 13px; }
+      .tab { padding: 10px 14px; font-size: 13px; }
       .form-grid { grid-template-columns: 1fr; }
-      .list-box, .form-card, .table-card { padding: 16px; }
+      .input-group-2 { grid-template-columns: 1fr; }
+      .list-box, .form-card, .table-card, .card { padding: 16px; }
       table { min-width: 980px; }
       th, td { padding: 12px 10px; font-size: 13px; }
       .table-actions button { flex: 1 1 calc(50% - 3px); }
+      .radio-group { grid-template-columns: 1fr; }
+      .chart-container { height: 320px; padding: 10px; }
     }
 
-    /* MOBILE: converte tabelas em cards empilhados (sem scroll horizontal) */
     @media (max-width: 640px) {
       .title h1 { font-size: 24px; }
       .title p { font-size: 12.5px; }
       .actions button, .actions .btn { flex: 1 1 100%; font-size: 13px; }
-      .tabs { grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; }
-      .tab { padding: 10px 6px; font-size: 12.5px; min-height: 40px; }
+      .tab { padding: 10px 12px; font-size: 12.5px; min-height: 40px; }
 
       .form-actions button { flex: 1 1 100%; }
 
-      /* remove moldura fixa da tabela e deixa o tbody virar lista de cards */
       .table-wrap { overflow-x: visible; border: none; background: transparent; }
       table, thead, tbody, tr, td { display: block; width: 100%; }
       table { min-width: 0; }
@@ -597,41 +714,28 @@
         box-shadow: var(--shadow-sm);
       }
       tbody tr:hover { background: #0a0a0a; }
-      tbody tr:last-child td { border-bottom: 1px dashed rgba(255,255,255,.06); }
 
       tbody td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 8px 0;
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 12px; padding: 8px 0;
         border: none;
         border-bottom: 1px dashed rgba(255,255,255,.06);
-        font-size: 13.5px;
-        text-align: right;
-        word-break: break-word;
+        font-size: 13.5px; text-align: right; word-break: break-word;
       }
       tbody td::before {
         content: attr(data-label);
         flex: 0 0 42%;
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .08em;
-        text-align: left;
+        color: var(--muted); font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .08em; text-align: left;
       }
       tbody td:last-child {
-        border-bottom: none;
-        padding-top: 10px;
-        flex-direction: column;
-        align-items: stretch;
+        border-bottom: none; padding-top: 10px;
+        flex-direction: column; align-items: stretch;
       }
       tbody td:last-child::before { display: none; }
       tbody td .table-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
       tbody td .table-actions button { flex: none; width: 100%; }
 
-      /* empty state volta a ocupar espaço no card */
       tr.empty-row { background: transparent; border: 1px dashed var(--border-faint); }
       tr.empty-row td { display: block; text-align: center; padding: 24px 10px; }
       tr.empty-row td::before { display: none; }
@@ -639,7 +743,10 @@
       .toolbar-left { gap: 8px; }
       .search { max-width: 100%; }
       .pagination-bar .page-info { order: -1; width: 100%; text-align: center; }
-      .card-title h2 { font-size: 17px; }
+      .card-title, .card-title h2 { font-size: 17px; }
+
+      .list-item { flex-wrap: wrap; }
+      .cost-item, .assinatura-item { grid-template-columns: 1fr; text-align: left; }
     }
   </style>
 </head>
@@ -650,7 +757,7 @@
         <div class="brand-mark"><div class="brand-dot"></div></div>
         <div class="title">
           <h1>Painel <span>IPTV</span></h1>
-          <p>Gestão de renovações com cálculo automático e mensagem pronta para WhatsApp.</p>
+          <p>Gestão de clientes, renovações, créditos e lucros em um só lugar.</p>
         </div>
       </div>
       <div class="actions">
@@ -664,32 +771,43 @@
       <button class="tab active" data-tab="cadastros" data-testid="tab-cadastros">Cadastros</button>
       <button class="tab" data-tab="dashboard" data-testid="tab-dashboard">Vencimento</button>
       <button class="tab" data-tab="clientes" data-testid="tab-clientes">Clientes</button>
+      <button class="tab" data-tab="calculadora" data-testid="tab-calculadora">Calculadora</button>
+      <button class="tab" data-tab="gestao" data-testid="tab-gestao">Gestão</button>
+      <button class="tab" data-tab="config" data-testid="tab-config">Configuração</button>
     </nav>
 
-    <!-- VENCIMENTO (antigo PAINEL) -->
+    <!-- VENCIMENTO -->
     <section id="dashboard" class="panel">
       <div class="table-card" style="margin-bottom:18px;">
         <div class="card-header">
-          <div class="card-title">
-            <h2>Vencendo hoje</h2>
-            <span class="tag">D-Day</span>
-          </div>
+          <div class="card-title"><h2>Vencidos (não renovaram)</h2><span class="tag">Atrasados</span></div>
+          <span class="count-badge danger" id="countExpired" data-testid="count-expired">0</span>
+        </div>
+        <p class="card-hint">Clientes com vencimento no passado. Ficam contabilizados no gráfico como "Não Renovaram" até que você clique em Renovar. Até 20 por página.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Nome</th><th>Telefone</th><th>Usuário</th><th>Plano</th>
+              <th>Valor</th><th>Vencimento</th><th>Ações</th>
+            </tr></thead>
+            <tbody id="listExpiredTable" data-testid="list-expired-table"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar" id="paginationExpired"></div>
+      </div>
+
+      <div class="table-card" style="margin-bottom:18px;">
+        <div class="card-header">
+          <div class="card-title"><h2>Vencendo hoje</h2><span class="tag">D-Day</span></div>
           <span class="count-badge danger" id="countToday" data-testid="count-today">0</span>
         </div>
         <p class="card-hint">Clientes cujo plano vence hoje. Até 20 por página.</p>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th>Usuário</th>
-                <th>Plano</th>
-                <th>Valor</th>
-                <th>Renovação</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Nome</th><th>Telefone</th><th>Usuário</th><th>Plano</th>
+              <th>Valor</th><th>Renovação</th><th>Ações</th>
+            </tr></thead>
             <tbody id="listTodayTable" data-testid="list-today-table"></tbody>
           </table>
         </div>
@@ -698,26 +816,16 @@
 
       <div class="table-card" style="margin-bottom:18px;">
         <div class="card-header">
-          <div class="card-title">
-            <h2>Vence amanhã</h2>
-            <span class="tag">D-1</span>
-          </div>
+          <div class="card-title"><h2>Vence amanhã</h2><span class="tag">D-1</span></div>
           <span class="count-badge warning" id="countTomorrow" data-testid="count-tomorrow">0</span>
         </div>
         <p class="card-hint">Previsão para o próximo dia. Até 20 por página.</p>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th>Usuário</th>
-                <th>Plano</th>
-                <th>Valor</th>
-                <th>Renovação</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Nome</th><th>Telefone</th><th>Usuário</th><th>Plano</th>
+              <th>Valor</th><th>Renovação</th><th>Ações</th>
+            </tr></thead>
             <tbody id="listTomorrowTable" data-testid="list-tomorrow-table"></tbody>
           </table>
         </div>
@@ -726,26 +834,16 @@
 
       <div class="table-card">
         <div class="card-header">
-          <div class="card-title">
-            <h2>Vence em até 7 dias</h2>
-            <span class="tag">D-7</span>
-          </div>
+          <div class="card-title"><h2>Vence em até 7 dias</h2><span class="tag">D-7</span></div>
           <span class="count-badge" id="countWeek" data-testid="count-week">0</span>
         </div>
         <p class="card-hint">Clientes com vencimento nos próximos 2 a 7 dias. Até 20 por página.</p>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th>Usuário</th>
-                <th>Plano</th>
-                <th>Valor</th>
-                <th>Renovação</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Nome</th><th>Telefone</th><th>Usuário</th><th>Plano</th>
+              <th>Valor</th><th>Renovação</th><th>Ações</th>
+            </tr></thead>
             <tbody id="listWeekTable" data-testid="list-week-table"></tbody>
           </table>
         </div>
@@ -753,69 +851,39 @@
       </div>
     </section>
 
-    <!-- CADASTROS -->
+    <!-- CADASTROS (TESTE IPTV) -->
     <section id="cadastros" class="panel active">
       <div class="form-card">
         <div class="card-header">
-          <div class="card-title">
-            <h2 id="formTitle">Cadastrar cliente</h2>
-            <span class="tag">Formulário</span>
-          </div>
+          <div class="card-title"><h2 id="formTitle">Cadastrar Teste IPTV</h2><span class="tag">Formulário</span></div>
         </div>
         <form id="clientForm" autocomplete="off">
           <input type="hidden" id="clientId" />
           <div class="form-grid">
-            <div class="field">
-              <label for="nome">Nome</label>
-              <input id="nome" required data-testid="input-nome" />
-            </div>
-            <div class="field">
-              <label for="telefone">Telefone</label>
-              <input id="telefone" placeholder="Ex.: 41999998888" data-testid="input-telefone" />
-            </div>
-            <div class="field">
-              <label for="aplicativo">Aplicativo</label>
-              <input id="aplicativo" placeholder="Ex.: XCIPTV" data-testid="input-aplicativo" />
-            </div>
-            <div class="field">
-              <label for="usuario">Usuário</label>
-              <input id="usuario" required data-testid="input-usuario" />
-            </div>
-            <div class="field">
-              <label for="senha">Senha</label>
-              <input id="senha" required data-testid="input-senha" />
-            </div>
-            <div class="field">
-              <label for="plano">Plano</label>
-              <input id="plano" placeholder="Ex.: Mensal" data-testid="input-plano" />
-            </div>
-            <div class="field">
-              <label for="valor">Valor</label>
-              <input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" />
-            </div>
-            <div class="field">
-              <label for="dataPagamento">Data do pagamento</label>
-              <input id="dataPagamento" type="date" data-testid="input-data-pagamento" />
-            </div>
-            <div class="field">
-              <label for="dataRenovacao">Próxima renovação</label>
-              <input id="dataRenovacao" type="date" data-testid="input-data-renovacao" />
-            </div>
-            <div class="field" style="grid-column: span 2;">
-              <label for="linkRenovacao">Link de renovação</label>
-              <input id="linkRenovacao" placeholder="https://..." data-testid="input-link-renovacao" />
-            </div>
-            <div class="field">
-              <label for="observacoes">Observações</label>
-              <input id="observacoes" placeholder="Opcional" data-testid="input-observacoes" />
-            </div>
+            <div class="field"><label for="nome">Nome</label><input id="nome" required data-testid="input-nome" /></div>
+            <div class="field"><label for="telefone">Telefone</label><input id="telefone" placeholder="Ex.: 41999998888" data-testid="input-telefone" /></div>
+            <div class="field"><label for="aplicativo">Aplicativo</label><input id="aplicativo" placeholder="Ex.: XCIPTV" data-testid="input-aplicativo" /></div>
+            <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
+            <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
+            <div class="field"><label for="plano">Plano</label><input id="plano" placeholder="Ex.: Mensal" data-testid="input-plano" /></div>
+            <div class="field"><label for="valor">Valor</label><input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" /></div>
+            <div class="field" style="grid-column: span 2;"><label for="linkRenovacao">Link de ativação / renovação</label><input id="linkRenovacao" placeholder="https://..." data-testid="input-link-renovacao" /></div>
+            <div class="field"><label for="observacoes">Observações</label><input id="observacoes" placeholder="Opcional" data-testid="input-observacoes" /></div>
           </div>
-
           <div class="form-actions">
-            <button type="submit" class="btn-primary" data-testid="save-client-btn">Salvar cliente</button>
+            <button type="submit" class="btn-primary" data-testid="save-client-btn">Salvar teste</button>
             <button type="button" class="btn-secondary" id="clearFormBtn" data-testid="clear-form-btn">Limpar formulário</button>
           </div>
         </form>
+      </div>
+
+      <div class="table-card" style="margin-top:18px;">
+        <div class="card-header">
+          <div class="card-title"><h2>Testes em andamento</h2><span class="tag">Aguardando ativação</span></div>
+          <span class="count-badge" id="countTestes" data-testid="count-testes">0</span>
+        </div>
+        <p class="card-hint">Clientes que fizeram o teste mas ainda não ativaram a assinatura.</p>
+        <div id="listaTestes" data-testid="lista-testes"></div>
       </div>
     </section>
 
@@ -831,41 +899,226 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th>App</th>
-                <th>Usuário</th>
-                <th>Plano</th>
-                <th>Valor</th>
-                <th>Pagamento</th>
-                <th>Renovação</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Nome</th><th>Telefone</th><th>App</th><th>Usuário</th>
+              <th>Plano</th><th>Valor</th><th>Pagamento</th><th>Renovação</th>
+              <th>Status</th><th>Ações</th>
+            </tr></thead>
             <tbody id="clientesList" data-testid="clientes-list"></tbody>
           </table>
         </div>
         <div class="pagination-bar" id="paginationClientes"></div>
       </div>
     </section>
+
+    <!-- CALCULADORA -->
+    <section id="calculadora" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-calculator"></i><h2>Calculadora de Lucros</h2></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-box"></i> Pacote de Créditos</label>
+          <select id="pacoteSelecionado" class="form-select">
+            <option value="">Selecione um pacote</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-users"></i> Assinaturas</label>
+          <div id="listaAssinaturas"></div>
+          <div class="input-group-2" style="margin-top: 12px;">
+            <input type="number" id="qtdAssinatura" class="form-input" placeholder="Quantidade">
+            <input type="number" id="valorAssinatura" class="form-input" placeholder="Valor (R$)" step="0.01">
+            <button class="btn-secondary" onclick="adicionarAssinatura()"><i class="fas fa-plus"></i> Adicionar</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-wallet"></i> Custos Operacionais</label>
+          <div id="listaCustos"></div>
+          <div class="input-group-2" style="margin-top: 12px;">
+            <input type="number" id="valorCusto" class="form-input" placeholder="Valor (R$)" step="0.01">
+            <input type="text" id="descricaoCusto" class="form-input" placeholder="Informações do custo">
+            <button class="btn-secondary" onclick="adicionarCusto()"><i class="fas fa-plus"></i> Adicionar</button>
+          </div>
+        </div>
+
+        <button class="btn-success btn-block" onclick="calcular()">
+          <i class="fas fa-calculator"></i> Calcular Resultados
+        </button>
+
+        <div id="resultado"></div>
+      </div>
+    </section>
+
+    <!-- GESTÃO -->
+    <section id="gestao" class="panel">
+      <div class="credit-stats" style="margin-bottom: 18px;">
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="totalLucro" style="color: var(--primary);" data-testid="total-lucro">R$ 0,00</div>
+          <div class="credit-stat-label">Lucro Total</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="totalCusto" style="color: #ff9b9b;" data-testid="total-custo">R$ 0,00</div>
+          <div class="credit-stat-label">Custo Total</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="totalLiquido" style="color: var(--info);" data-testid="total-liquido">R$ 0,00</div>
+          <div class="credit-stat-label">Lucro Líquido</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-users"></i><h2>Movimentação de Clientes</h2></div>
+        </div>
+        <div class="chart-container"><canvas id="graficoClientes"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fab fa-whatsapp"></i><h2>Resumo Completo — WhatsApp</h2></div>
+        </div>
+        <div class="form-group">
+          <textarea id="textoWhatsAppGestao" class="form-textarea" rows="16" readonly></textarea>
+        </div>
+        <button class="btn-success btn-block" onclick="copiarTextoGestao()">
+          <i class="fas fa-copy"></i> Copiar Resumo Completo
+        </button>
+      </div>
+    </section>
+
+    <!-- CONFIGURAÇÃO -->
+    <section id="config" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-coins"></i><h2>Gestão de Créditos</h2></div>
+        </div>
+
+        <div class="credit-stats">
+          <div class="credit-stat-card">
+            <div class="credit-stat-value" id="creditosAtuais" data-testid="creditos-atuais">0</div>
+            <div class="credit-stat-label">Créditos Disponíveis</div>
+          </div>
+          <div class="credit-stat-card">
+            <div class="credit-stat-value" id="creditosUsados" data-testid="creditos-usados">0</div>
+            <div class="credit-stat-label">Créditos Usados</div>
+          </div>
+          <div class="credit-stat-card">
+            <div class="credit-stat-value" id="custoTotalCreditos" style="color: #ff9b9b;" data-testid="custo-total-creditos">R$ 0</div>
+            <div class="credit-stat-label">Custo Total Créditos</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-box"></i> Adicionar Crédito pelo Pacote</label>
+          <div class="input-group-2" style="grid-template-columns: 1fr auto;">
+            <select id="pacoteAddCredito" class="form-select" data-testid="pacote-add-credito">
+              <option value="">Selecione um pacote cadastrado</option>
+            </select>
+            <button class="btn-primary" onclick="adicionarCreditoPacote()" data-testid="btn-adicionar-credito-pacote"><i class="fas fa-plus"></i> Adicionar</button>
+          </div>
+          <p class="card-hint" style="margin: 8px 0 0;">Os créditos e o custo são calculados automaticamente a partir do pacote selecionado.</p>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-faint);">
+          <label class="form-label" style="display:flex; margin-bottom:10px;">
+            <i class="fas fa-user-times"></i> Não Renovaram neste mês
+            <span class="tag" style="margin-left:8px; font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 6px; background:#050505; border:1px solid var(--border-faint); color: var(--muted); letter-spacing:.08em;">não desconta crédito</span>
+          </label>
+          <div class="input-group-2" style="grid-template-columns: 1fr auto;">
+            <input type="number" id="qtdNaoRenovou" class="form-input" placeholder="Quantidade de clientes que não renovaram" min="1">
+            <button class="btn-secondary" onclick="registrarNaoRenovou()"><i class="fas fa-plus"></i> Registrar</button>
+          </div>
+        </div>
+
+        <div style="margin-top: 28px; padding-top: 24px; border-top: 1px dashed var(--border-faint);">
+          <h3 style="margin: 0 0 14px; font-family: var(--font-display); font-size: 18px; color: #fff;">
+            <i class="fas fa-chart-pie" style="color: var(--primary); margin-right:8px;"></i>
+            Lucros e Custos Personalizados
+          </h3>
+          <div id="listaLucrosCustos"></div>
+          <div class="input-group-2" style="margin-top: 12px;">
+            <input type="number" id="valorLucroCusto" class="form-input" placeholder="Valor (R$) — use negativo p/ custo" step="0.01">
+            <input type="text" id="infoLucroCusto" class="form-input" placeholder="Informação (ex: Venda equipamento)">
+            <button class="btn-secondary" onclick="adicionarLucroCusto()"><i class="fas fa-plus"></i> Adicionar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-history"></i><h2>Histórico de Movimentações</h2></div>
+        </div>
+        <div id="historicoRecargas"></div>
+        <div id="btnVerMais" style="text-align:center; margin-top:12px; display:none;">
+          <button class="btn-secondary" onclick="toggleVerMais()">
+            <i class="fas fa-angle-down"></i>
+            <span id="textoVerMais">Ver Mais</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-box"></i><h2>Pacotes de Créditos</h2></div>
+          <button class="btn-primary" onclick="abrirModalPacote()"><i class="fas fa-plus"></i> Novo Pacote</button>
+        </div>
+        <div id="listaPacotes"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL PACOTE -->
+  <div id="modalPacote" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Adicionar Pacote</h3>
+        <button class="modal-close" onclick="fecharModalPacote()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-hashtag"></i> Quantidade de Créditos</label>
+        <input type="number" id="qtdCreditos" class="form-input" placeholder="Ex: 50">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-money-bill-wave"></i> Preço por Crédito (R$)</label>
+        <input type="number" id="precoCredito" class="form-input" placeholder="Ex: 8.00" step="0.01">
+      </div>
+      <button class="btn-primary btn-block" onclick="salvarPacote()">
+        <i class="fas fa-check"></i> Salvar Pacote
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR MOVIMENTAÇÃO -->
+  <div id="modalEditarMov" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Editar Movimentação</h3>
+        <button class="modal-close" onclick="fecharModalEditarMov()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="formEditarMov"></div>
+      <button class="btn-primary btn-block" onclick="salvarEdicaoMov()">
+        <i class="fas fa-check"></i> Salvar Alterações
+      </button>
+    </div>
   </div>
 
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script>
+    /* =========================================================
+       PARTE 1 — GESTÃO DE CLIENTES (Cadastros / Vencimento / Clientes)
+       ========================================================= */
     const STORAGE_KEY = 'iptv_clientes_v1';
+    const STORAGE_KEY_TESTES = 'iptv_testes_v1';
     const INIT_FLAG_KEY = 'iptv_clientes_v1_initialized';
     let clients = [];
+    let testes = [];
     const ITEMS_PER_PAGE = 20;
-    const state = {
-      todayPage: 1,
-      tomorrowPage: 1,
-      weekPage: 1,
-      clientesPage: 1
-    };
+    const state = { todayPage: 1, tomorrowPage: 1, weekPage: 1, expiredPage: 1, clientesPage: 1 };
 
     const els = {
       tabs: document.querySelectorAll('.tab'),
@@ -873,13 +1126,16 @@
       countToday: document.getElementById('countToday'),
       countTomorrow: document.getElementById('countTomorrow'),
       countWeek: document.getElementById('countWeek'),
+      countExpired: document.getElementById('countExpired'),
       countClientes: document.getElementById('countClientes'),
       listTodayTable: document.getElementById('listTodayTable'),
       listTomorrowTable: document.getElementById('listTomorrowTable'),
       listWeekTable: document.getElementById('listWeekTable'),
+      listExpiredTable: document.getElementById('listExpiredTable'),
       paginationToday: document.getElementById('paginationToday'),
       paginationTomorrow: document.getElementById('paginationTomorrow'),
       paginationWeek: document.getElementById('paginationWeek'),
+      paginationExpired: document.getElementById('paginationExpired'),
       clientForm: document.getElementById('clientForm'),
       clientId: document.getElementById('clientId'),
       nome: document.getElementById('nome'),
@@ -889,8 +1145,6 @@
       senha: document.getElementById('senha'),
       plano: document.getElementById('plano'),
       valor: document.getElementById('valor'),
-      dataPagamento: document.getElementById('dataPagamento'),
-      dataRenovacao: document.getElementById('dataRenovacao'),
       linkRenovacao: document.getElementById('linkRenovacao'),
       observacoes: document.getElementById('observacoes'),
       clientesList: document.getElementById('clientesList'),
@@ -903,7 +1157,6 @@
       toast: document.getElementById('toast')
     };
 
-    // ------- TOAST -------
     let toastTimer = null;
     function showToast(message, isError = false) {
       if (!els.toast) return;
@@ -914,34 +1167,32 @@
       toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2400);
     }
 
-    // ------- STORAGE -------
     function saveClients() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
-      } catch (e) {
-        showToast('Falha ao salvar localmente.', true);
-      }
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); }
+      catch (e) { showToast('Falha ao salvar localmente.', true); }
     }
-
     function loadClients() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) { clients = []; return; }
-      try {
-        const parsed = JSON.parse(raw);
-        clients = Array.isArray(parsed) ? parsed : [];
-      } catch (e) {
-        clients = [];
-      }
+      try { const p = JSON.parse(raw); clients = Array.isArray(p) ? p : []; }
+      catch (e) { clients = []; }
+    }
+    function salvarTestes() {
+      try { localStorage.setItem(STORAGE_KEY_TESTES, JSON.stringify(testes)); }
+      catch (e) {}
+    }
+    function carregarTestes() {
+      const raw = localStorage.getItem(STORAGE_KEY_TESTES);
+      if (!raw) { testes = []; return; }
+      try { const p = JSON.parse(raw); testes = Array.isArray(p) ? p : []; }
+      catch (e) { testes = []; }
     }
 
-    // ------- DATES -------
     function pad(n) { return String(n).padStart(2, '0'); }
-
     function todayLocalDate() {
       const now = new Date();
       return new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
-
     function parseDate(value) {
       if (!value) return null;
       const parts = String(value).split('-').map(Number);
@@ -949,44 +1200,29 @@
       const [y, m, d] = parts;
       return new Date(y, m - 1, d);
     }
-
     function toInputDate(date) {
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
     }
-
     function formatDate(value) {
       if (!value) return '—';
-      const date = parseDate(value);
-      if (!date || isNaN(date.getTime())) return '—';
-      return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+      const d = parseDate(value);
+      if (!d || isNaN(d.getTime())) return '—';
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
     }
-
     function addDays(date, days) {
-      const d = new Date(date);
-      d.setDate(d.getDate() + days);
-      return d;
+      const d = new Date(date); d.setDate(d.getDate() + days); return d;
     }
-
-    function diffInDays(dateA, dateB) {
-      const ms = 24 * 60 * 60 * 1000;
-      const a = new Date(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
-      const b = new Date(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
-      return Math.round((a - b) / ms);
+    function diffInDays(a, b) {
+      const ms = 86400000;
+      const x = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+      const y = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+      return Math.round((x - y) / ms);
     }
-
-    function calcRenewalFromPayment(paymentDateStr) {
-      const paymentDate = parseDate(paymentDateStr);
-      if (!paymentDate) return '';
-      return toInputDate(addDays(paymentDate, 30));
-    }
-
-    // Dias restantes até o vencimento (positivo = ainda vai vencer, 0 = hoje, negativo = vencido)
     function getDaysUntil(client) {
       const due = parseDate(client.dataRenovacao);
       if (!due) return null;
       return diffInDays(due, todayLocalDate());
     }
-
     function getStatus(client) {
       const diff = getDaysUntil(client);
       if (diff === null) return { label: 'Sem data', cls: 'pill-week' };
@@ -996,46 +1232,30 @@
       if (diff <= 7) return { label: `Vence em ${diff}d`, cls: 'pill-week' };
       return { label: `${diff}d restantes`, cls: 'pill-ok' };
     }
-
-    // ------- UTILS -------
     function escapeHtml(text) {
       return String(text ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
-
     function generateId() {
       if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
       return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
     }
 
-    // ------- MESSAGE BUILDER (WhatsApp) -------
-    // Mensagem padronizada, com cálculo dinâmico de dias até o vencimento
     function buildMessage(client) {
       const diff = getDaysUntil(client);
-
       let statusTag;
-      if (diff === null) {
-        statusTag = `Próximo do vencimento`;
-      } else if (diff > 1) {
-        statusTag = `Vence em ${diff} dias`;
-      } else if (diff === 1) {
-        statusTag = `Vence em 1 dia`;
-      } else if (diff === 0) {
-        statusTag = `Vence hoje`;
-      } else if (diff === -1) {
-        statusTag = `Venceu há 1 dia`;
-      } else {
-        statusTag = `Venceu há ${Math.abs(diff)} dias`;
-      }
+      if (diff === null) statusTag = `Próximo do vencimento`;
+      else if (diff > 1) statusTag = `Vence em ${diff} dias`;
+      else if (diff === 1) statusTag = `Vence em 1 dia`;
+      else if (diff === 0) statusTag = `Vence hoje`;
+      else if (diff === -1) statusTag = `Venceu há 1 dia`;
+      else statusTag = `Venceu há ${Math.abs(diff)} dias`;
 
       const valor = (client.valor || '').toString().trim();
       const valorLinha = valor ? `R$ ${valor}` : '';
 
-      const lines = [
+      return [
         `👋 Olá *${client.nome || ''}* Seu plano *${statusTag}*`,
         ``,
         `Para evitar cortes, acesse o link abaixo e realize o pagamento e fique sem preocupações!`,
@@ -1048,39 +1268,29 @@
         `🔗 *Link de renovação*: ${client.linkRenovacao || ''}`,
         ``,
         `🙏 Obrigado pela preferência!`
-      ];
-      return lines.join('\n');
+      ].join('\n');
     }
 
     function copyMessage(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
-      const message = buildMessage(client);
+      const msg = buildMessage(client);
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(message)
-          .then(() => showToast(`Mensagem copiada para ${client.nome}`))
-          .catch(() => fallbackCopy(message, client.nome));
+        navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${client.nome}`))
+          .catch(() => fallbackCopy(msg, client.nome));
       } else {
-        fallbackCopy(message, client.nome);
+        fallbackCopy(msg, client.nome);
       }
     }
-
     function fallbackCopy(text, name) {
       try {
         const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
         showToast(`Mensagem copiada para ${name}`);
-      } catch (e) {
-        showToast('Não foi possível copiar.', true);
-      }
+      } catch (e) { showToast('Não foi possível copiar.', true); }
     }
-
     function openWhatsApp(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
@@ -1090,47 +1300,63 @@
         ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}`
         : `https://api.whatsapp.com/send?text=${text}`;
       const a = document.createElement('a');
-      a.href = url;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+    function parseValor(v) {
+      if (!v) return 0;
+      const s = String(v).replace(/[^\d.,-]/g, '').replace(',', '.');
+      const n = parseFloat(s);
+      return isNaN(n) ? 0 : n;
     }
 
-    // Renovar cliente — adiciona +30 dias à data de renovação atual (ou hoje, se não existir)
     function renewClient(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
       const base = parseDate(client.dataRenovacao) || todayLocalDate();
-      const newRenewal = addDays(base, 30);
-      client.dataPagamento = toInputDate(todayLocalDate());
-      client.dataRenovacao = toInputDate(newRenewal);
+      const today = todayLocalDate();
+      const ref = base < today ? today : base;
+      const nd = addDays(ref, 30);
+      client.dataPagamento = toInputDate(today);
+      client.dataRenovacao = toInputDate(nd);
       client.updatedAt = new Date().toISOString();
+      movimentacoes.push({
+        data: new Date().toISOString(),
+        tipo: 'use',
+        tipoCliente: 'renovacao',
+        valor: parseValor(client.valor),
+        quantidade: 1,
+        clientId: client.id,
+        clientNome: client.nome
+      });
+      salvarMovimentacoes();
       renderAll();
-      showToast(`Renovado • Novo vencimento: ${formatDate(client.dataRenovacao)}`);
+      atualizarCreditos(); atualizarHistorico();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      showToast(`Renovado • Novo vencimento: ${formatDate(client.dataRenovacao)} • -1 crédito`);
     }
-
-    // Expose globals for inline handlers
     window.openWhatsApp = openWhatsApp;
     window.copyMessage = copyMessage;
     window.renewClient = renewClient;
 
-    // ------- TABS -------
     function switchTab(tabName) {
       els.tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
       els.panels.forEach(panel => panel.classList.toggle('active', panel.id === tabName));
+      if (tabName === 'gestao') {
+        setTimeout(() => {
+          atualizarGraficoClientes();
+          atualizarStatsFinanceiras();
+          gerarTextoWhatsAppGestao();
+        }, 80);
+      }
     }
 
-    // ------- PAGINATION -------
     function paginate(list, page) {
       const totalPages = Math.max(1, Math.ceil(list.length / ITEMS_PER_PAGE));
       const safePage = Math.min(Math.max(1, page), totalPages);
       const start = (safePage - 1) * ITEMS_PER_PAGE;
-      const items = list.slice(start, start + ITEMS_PER_PAGE);
-      return { items, totalPages, safePage };
+      return { items: list.slice(start, start + ITEMS_PER_PAGE), totalPages, safePage };
     }
-
     function renderPagination(targetEl, currentPage, totalPages, onChangeName) {
       if (!targetEl) return;
       if (totalPages <= 1) { targetEl.innerHTML = ''; return; }
@@ -1141,32 +1367,24 @@
       `;
     }
 
-    // ------- VENCIMENTO TABLES -------
-    // Linha da aba Vencimento: WhatsApp + Copiar + Renovar
-    function renderVencimentoTable(targetEl, list) {
+    function renderVencimentoTable(targetEl, list, isExpired = false) {
       if (!list.length) {
-        targetEl.innerHTML = `
-          <tr class="empty-row">
-            <td colspan="7">
-              <span class="empty-icon">• • •</span>
-              Nenhum cliente nesta faixa.
-            </td>
-          </tr>`;
+        targetEl.innerHTML = `<tr class="empty-row"><td colspan="7"><span class="empty-icon">• • •</span>Nenhum cliente nesta faixa.</td></tr>`;
         return;
       }
-      targetEl.innerHTML = list.map(client => `
+      targetEl.innerHTML = list.map(c => `
         <tr>
-          <td data-label="Nome">${escapeHtml(client.nome || '—')}</td>
-          <td class="mono" data-label="Telefone">${escapeHtml(client.telefone || '—')}</td>
-          <td class="mono" data-label="Usuário">${escapeHtml(client.usuario || '—')}</td>
-          <td data-label="Plano">${escapeHtml(client.plano || '—')}</td>
-          <td class="mono" data-label="Valor">${escapeHtml(client.valor || '—')}</td>
-          <td class="mono" data-label="Renovação">${escapeHtml(formatDate(client.dataRenovacao))}</td>
+          <td data-label="Nome">${escapeHtml(c.nome || '—')}</td>
+          <td class="mono" data-label="Telefone">${escapeHtml(c.telefone || '—')}</td>
+          <td class="mono" data-label="Usuário">${escapeHtml(c.usuario || '—')}</td>
+          <td data-label="Plano">${escapeHtml(c.plano || '—')}</td>
+          <td class="mono" data-label="Valor">${escapeHtml(c.valor || '—')}</td>
+          <td class="mono" data-label="${isExpired ? 'Vencimento' : 'Renovação'}">${escapeHtml(formatDate(c.dataRenovacao))}</td>
           <td data-label="Ações">
             <div class="table-actions">
-              <button class="btn-whatsapp" onclick="openWhatsApp('${client.id}')" data-testid="wa-btn-${client.id}">WhatsApp</button>
-              <button class="btn-secondary" onclick="copyMessage('${client.id}')" data-testid="copy-btn-${client.id}">Copiar</button>
-              <button class="btn-primary" onclick="renewClient('${client.id}')" data-testid="renew-btn-${client.id}">Renovar</button>
+              <button class="btn-whatsapp" onclick="openWhatsApp('${c.id}')">WhatsApp</button>
+              <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
+              <button class="btn-primary" onclick="renewClient('${c.id}')">Renovar</button>
             </div>
           </td>
         </tr>
@@ -1175,118 +1393,229 @@
 
     function renderDashboard() {
       const today = todayLocalDate();
-      const dueToday = [], dueTomorrow = [], dueWeek = [];
-
-      clients.forEach(client => {
-        const due = parseDate(client.dataRenovacao);
+      const dueToday = [], dueTomorrow = [], dueWeek = [], expired = [];
+      clients.forEach(c => {
+        const due = parseDate(c.dataRenovacao);
         if (!due) return;
-        const diff = diffInDays(due, today);
-        if (diff === 0) dueToday.push(client);
-        else if (diff === 1) dueTomorrow.push(client);
-        else if (diff >= 2 && diff <= 7) dueWeek.push(client);
+        const d = diffInDays(due, today);
+        if (d < 0) expired.push(c);
+        else if (d === 0) dueToday.push(c);
+        else if (d === 1) dueTomorrow.push(c);
+        else if (d >= 2 && d <= 7) dueWeek.push(c);
       });
-
       const sortByRenewal = (a, b) => {
         const da = parseDate(a.dataRenovacao);
         const db = parseDate(b.dataRenovacao);
         if (da && db && da - db !== 0) return da - db;
         return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
       };
-      dueToday.sort(sortByRenewal);
-      dueTomorrow.sort(sortByRenewal);
-      dueWeek.sort(sortByRenewal);
+      dueToday.sort(sortByRenewal); dueTomorrow.sort(sortByRenewal); dueWeek.sort(sortByRenewal);
+      expired.sort(sortByRenewal);
 
-      if (els.countToday) els.countToday.textContent = dueToday.length;
-      if (els.countTomorrow) els.countTomorrow.textContent = dueTomorrow.length;
-      if (els.countWeek) els.countWeek.textContent = dueWeek.length;
+      els.countToday.textContent = dueToday.length;
+      els.countTomorrow.textContent = dueTomorrow.length;
+      els.countWeek.textContent = dueWeek.length;
+      if (els.countExpired) els.countExpired.textContent = expired.length;
 
-      const pagToday = paginate(dueToday, state.todayPage);
-      state.todayPage = pagToday.safePage;
-      renderVencimentoTable(els.listTodayTable, pagToday.items);
-      renderPagination(els.paginationToday, pagToday.safePage, pagToday.totalPages, 'changeTodayPage');
+      const pE = paginate(expired, state.expiredPage); state.expiredPage = pE.safePage;
+      renderVencimentoTable(els.listExpiredTable, pE.items, true);
+      renderPagination(els.paginationExpired, pE.safePage, pE.totalPages, 'changeExpiredPage');
 
-      const pagTomorrow = paginate(dueTomorrow, state.tomorrowPage);
-      state.tomorrowPage = pagTomorrow.safePage;
-      renderVencimentoTable(els.listTomorrowTable, pagTomorrow.items);
-      renderPagination(els.paginationTomorrow, pagTomorrow.safePage, pagTomorrow.totalPages, 'changeTomorrowPage');
+      const pT = paginate(dueToday, state.todayPage); state.todayPage = pT.safePage;
+      renderVencimentoTable(els.listTodayTable, pT.items);
+      renderPagination(els.paginationToday, pT.safePage, pT.totalPages, 'changeTodayPage');
 
-      const pagWeek = paginate(dueWeek, state.weekPage);
-      state.weekPage = pagWeek.safePage;
-      renderVencimentoTable(els.listWeekTable, pagWeek.items);
-      renderPagination(els.paginationWeek, pagWeek.safePage, pagWeek.totalPages, 'changeWeekPage');
+      const pTm = paginate(dueTomorrow, state.tomorrowPage); state.tomorrowPage = pTm.safePage;
+      renderVencimentoTable(els.listTomorrowTable, pTm.items);
+      renderPagination(els.paginationTomorrow, pTm.safePage, pTm.totalPages, 'changeTomorrowPage');
+
+      const pW = paginate(dueWeek, state.weekPage); state.weekPage = pW.safePage;
+      renderVencimentoTable(els.listWeekTable, pW.items);
+      renderPagination(els.paginationWeek, pW.safePage, pW.totalPages, 'changeWeekPage');
     }
 
-    // ------- CLIENTES TABLE -------
     function filterClients() {
       const term = (els.searchClientesInput.value || '').trim().toLowerCase();
       if (!term) return [...clients];
-      return clients.filter(c => {
-        const haystack = [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano]
-          .map(v => String(v || '').toLowerCase())
-          .join(' | ');
-        return haystack.includes(term);
-      });
+      return clients.filter(c => [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano]
+        .map(v => String(v || '').toLowerCase()).join(' | ').includes(term));
     }
 
     function renderClientes() {
       const filtered = filterClients();
       filtered.sort((a, b) => {
-        const da = parseDate(a.dataRenovacao);
-        const db = parseDate(b.dataRenovacao);
+        const da = parseDate(a.dataRenovacao), db = parseDate(b.dataRenovacao);
         if (da && db) return da - db;
         if (da && !db) return -1;
         if (!da && db) return 1;
         return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
       });
-
-      if (els.countClientes) els.countClientes.textContent = filtered.length;
-
+      els.countClientes.textContent = filtered.length;
       const pag = paginate(filtered, state.clientesPage);
       state.clientesPage = pag.safePage;
 
       if (!pag.items.length) {
-        els.clientesList.innerHTML = `
-          <tr class="empty-row">
-            <td colspan="10">
-              <span class="empty-icon">• • •</span>
-              ${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Comece pela aba Cadastros.' : 'Nenhum resultado para a busca.'}
-            </td>
-          </tr>`;
+        els.clientesList.innerHTML = `<tr class="empty-row"><td colspan="10"><span class="empty-icon">• • •</span>${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Comece pela aba Cadastros.' : 'Nenhum resultado para a busca.'}</td></tr>`;
       } else {
-        els.clientesList.innerHTML = pag.items.map(client => {
-          const status = getStatus(client);
+        els.clientesList.innerHTML = pag.items.map(c => {
+          const st = getStatus(c);
           return `
             <tr>
-              <td data-label="Nome">${escapeHtml(client.nome || '—')}</td>
-              <td class="mono" data-label="Telefone">${escapeHtml(client.telefone || '—')}</td>
-              <td data-label="App">${escapeHtml(client.aplicativo || '—')}</td>
-              <td class="mono" data-label="Usuário">${escapeHtml(client.usuario || '—')}</td>
-              <td data-label="Plano">${escapeHtml(client.plano || '—')}</td>
-              <td class="mono" data-label="Valor">${escapeHtml(client.valor || '—')}</td>
-              <td class="mono" data-label="Pagamento">${escapeHtml(formatDate(client.dataPagamento))}</td>
-              <td class="mono" data-label="Renovação">${escapeHtml(formatDate(client.dataRenovacao))}</td>
-              <td data-label="Status"><span class="pill ${status.cls}">${escapeHtml(status.label)}</span></td>
+              <td data-label="Nome">${escapeHtml(c.nome || '—')}</td>
+              <td class="mono" data-label="Telefone">${escapeHtml(c.telefone || '—')}</td>
+              <td data-label="App">${escapeHtml(c.aplicativo || '—')}</td>
+              <td class="mono" data-label="Usuário">${escapeHtml(c.usuario || '—')}</td>
+              <td data-label="Plano">${escapeHtml(c.plano || '—')}</td>
+              <td class="mono" data-label="Valor">${escapeHtml(c.valor || '—')}</td>
+              <td class="mono" data-label="Pagamento">${escapeHtml(formatDate(c.dataPagamento))}</td>
+              <td class="mono" data-label="Renovação">${escapeHtml(formatDate(c.dataRenovacao))}</td>
+              <td data-label="Status"><span class="pill ${st.cls}">${escapeHtml(st.label)}</span></td>
               <td data-label="Ações">
                 <div class="table-actions">
-                  <button class="btn-info" onclick="editClient('${client.id}')" data-testid="edit-btn-${client.id}">Editar</button>
-                  <button class="btn-danger" onclick="deleteClient('${client.id}')" data-testid="delete-btn-${client.id}">Apagar</button>
-                  <button class="btn-secondary" onclick="copyMessage('${client.id}')" data-testid="copy-btn-c-${client.id}">Copiar</button>
-                  <button class="btn-whatsapp" onclick="openWhatsApp('${client.id}')" data-testid="wa-btn-c-${client.id}">WhatsApp</button>
+                  <button class="btn-info" onclick="editClient('${c.id}')">Editar</button>
+                  <button class="btn-danger" onclick="deleteClient('${c.id}')">Apagar</button>
+                  <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
+                  <button class="btn-whatsapp" onclick="openWhatsApp('${c.id}')">WhatsApp</button>
                 </div>
               </td>
-            </tr>
-          `;
+            </tr>`;
         }).join('');
       }
-
       renderPagination(els.paginationClientes, pag.safePage, pag.totalPages, 'changeClientesPage');
     }
 
-    // ------- WINDOW HANDLERS -------
-    window.changeTodayPage = function(page) { state.todayPage = page; renderDashboard(); };
-    window.changeTomorrowPage = function(page) { state.tomorrowPage = page; renderDashboard(); };
-    window.changeWeekPage = function(page) { state.weekPage = page; renderDashboard(); };
-    window.changeClientesPage = function(page) { state.clientesPage = page; renderClientes(); };
+    window.changeTodayPage = p => { state.todayPage = p; renderDashboard(); };
+    window.changeTomorrowPage = p => { state.tomorrowPage = p; renderDashboard(); };
+    window.changeWeekPage = p => { state.weekPage = p; renderDashboard(); };
+    window.changeExpiredPage = p => { state.expiredPage = p; renderDashboard(); };
+    window.changeClientesPage = p => { state.clientesPage = p; renderClientes(); };
+
+    /* ---------- TESTES IPTV ---------- */
+    function buildTesteMessage(t) {
+      const link = (t.linkRenovacao || '').trim();
+      return [
+        `Olá! 😊`,
+        `Vimos que você realizou o teste, mas ainda não ativou sua assinatura.`,
+        `Para continuar aproveitando tudo, basta acessar o link abaixo e concluir a ativação 👇`,
+        ``,
+        link || '[informe o link de ativação no cadastro]'
+      ].join('\n');
+    }
+
+    function renderTestes() {
+      const cont = document.getElementById('listaTestes');
+      const cnt = document.getElementById('countTestes');
+      if (cnt) cnt.textContent = testes.length;
+      if (!cont) return;
+      if (testes.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><i class="fas fa-flask"></i><p>Nenhum teste cadastrado ainda.</p></div>`;
+        return;
+      }
+      const ordenados = testes.slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      cont.innerHTML = ordenados.map(t => {
+        const data = t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : '—';
+        const linhaInfo = [
+          t.plano ? `📦 ${escapeHtml(t.plano)}` : '',
+          t.valor ? `💰 R$ ${escapeHtml(t.valor)}` : '',
+          t.aplicativo ? `📱 ${escapeHtml(t.aplicativo)}` : ''
+        ].filter(Boolean).join(' • ');
+        return `
+          <div class="list-item" style="flex-wrap:wrap; gap:10px;" data-testid="teste-item-${t.id}">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-flask"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="list-item-text">${escapeHtml(t.nome || '—')} ${t.telefone ? `• <span style="font-family:var(--font-mono); color:var(--muted); font-size:12.5px;">${escapeHtml(t.telefone)}</span>` : ''}</div>
+                <div class="list-item-sub">${linhaInfo || '—'}</div>
+                <div class="list-item-sub" style="opacity:.7;">Cadastrado em ${data}</div>
+              </div>
+            </div>
+            <div class="table-actions">
+              <button class="btn-whatsapp" onclick="whatsAppTeste('${t.id}')" data-testid="btn-whatsapp-teste-${t.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+              <button class="btn-primary" onclick="ativarTeste('${t.id}')" data-testid="btn-ativar-teste-${t.id}"><i class="fas fa-bolt"></i> Ativar</button>
+              <button class="btn-danger" onclick="excluirTeste('${t.id}')" data-testid="btn-excluir-teste-${t.id}"><i class="fas fa-trash"></i> Excluir</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function whatsAppTeste(id) {
+      const t = testes.find(x => x.id === id);
+      if (!t) return;
+      const phone = String(t.telefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(buildTesteMessage(t));
+      const url = phone
+        ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}`
+        : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    function ativarTeste(id) {
+      const idx = testes.findIndex(x => x.id === id);
+      if (idx < 0) return;
+      const t = testes[idx];
+      const hoje = todayLocalDate();
+      const novoCliente = {
+        id: generateId(),
+        nome: t.nome,
+        telefone: t.telefone,
+        aplicativo: t.aplicativo,
+        usuario: t.usuario,
+        senha: t.senha,
+        plano: t.plano,
+        valor: t.valor,
+        dataPagamento: toInputDate(hoje),
+        dataRenovacao: toInputDate(addDays(hoje, 30)),
+        linkRenovacao: t.linkRenovacao,
+        observacoes: t.observacoes,
+        updatedAt: new Date().toISOString()
+      };
+      clients.push(novoCliente);
+      movimentacoes.push({
+        data: new Date().toISOString(),
+        tipo: 'use',
+        tipoCliente: 'novo',
+        valor: parseValor(t.valor),
+        quantidade: 1,
+        clientId: novoCliente.id,
+        clientNome: novoCliente.nome
+      });
+      testes.splice(idx, 1);
+      salvarTestes();
+      salvarMovimentacoes();
+      renderAll();
+      renderTestes();
+      atualizarCreditos(); atualizarHistorico();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      switchTab('clientes');
+      showToast(`${novoCliente.nome} ativado • -1 crédito • Vence em ${formatDate(novoCliente.dataRenovacao)}`);
+    }
+
+    function excluirTeste(id) {
+      const idx = testes.findIndex(x => x.id === id);
+      if (idx < 0) return;
+      const t = testes[idx];
+      if (!confirm(`Excluir teste de ${t.nome}?`)) return;
+      testes.splice(idx, 1);
+      salvarTestes();
+      movimentacoes.push({
+        data: new Date().toISOString(),
+        tipo: 'teste_excluido',
+        tipoCliente: 'teste_excluido',
+        quantidade: 1,
+        nome: t.nome
+      });
+      salvarMovimentacoes();
+      renderTestes();
+      atualizarHistorico();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      showToast('Teste excluído.');
+    }
+
+    window.whatsAppTeste = whatsAppTeste;
+    window.ativarTeste = ativarTeste;
+    window.excluirTeste = excluirTeste;
 
     function renderAll() {
       saveClients();
@@ -1294,19 +1623,12 @@
       renderClientes();
     }
 
-    // ------- FORM -------
     function resetForm() {
       els.clientForm.reset();
       els.clientId.value = '';
-      els.formTitle.textContent = 'Cadastrar cliente';
+      els.formTitle.textContent = 'Cadastrar Teste IPTV';
     }
-
     function getFormData() {
-      let dataPagamento = els.dataPagamento.value;
-      let dataRenovacao = els.dataRenovacao.value;
-      if (dataPagamento && !dataRenovacao) {
-        dataRenovacao = calcRenewalFromPayment(dataPagamento);
-      }
       return {
         id: els.clientId.value || generateId(),
         nome: els.nome.value.trim(),
@@ -1316,142 +1638,784 @@
         senha: els.senha.value.trim(),
         plano: els.plano.value.trim(),
         valor: els.valor.value.trim(),
-        dataPagamento,
-        dataRenovacao,
         linkRenovacao: els.linkRenovacao.value.trim(),
         observacoes: els.observacoes.value.trim(),
-        updatedAt: new Date().toISOString()
+        createdAt: new Date().toISOString()
       };
     }
-
-    function fillForm(client) {
-      els.clientId.value = client.id || '';
-      els.nome.value = client.nome || '';
-      els.telefone.value = client.telefone || '';
-      els.aplicativo.value = client.aplicativo || '';
-      els.usuario.value = client.usuario || '';
-      els.senha.value = client.senha || '';
-      els.plano.value = client.plano || '';
-      els.valor.value = client.valor || '';
-      els.dataPagamento.value = client.dataPagamento || '';
-      els.dataRenovacao.value = client.dataRenovacao || '';
-      els.linkRenovacao.value = client.linkRenovacao || '';
-      els.observacoes.value = client.observacoes || '';
-      els.formTitle.textContent = `Editando: ${client.nome || 'cliente'}`;
+    function fillForm(c) {
+      els.clientId.value = c.id || '';
+      els.nome.value = c.nome || '';
+      els.telefone.value = c.telefone || '';
+      els.aplicativo.value = c.aplicativo || '';
+      els.usuario.value = c.usuario || '';
+      els.senha.value = c.senha || '';
+      els.plano.value = c.plano || '';
+      els.valor.value = c.valor || '';
+      els.linkRenovacao.value = c.linkRenovacao || '';
+      els.observacoes.value = c.observacoes || '';
+      els.formTitle.textContent = `Editando cliente: ${c.nome || ''}`;
       switchTab('cadastros');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    window.editClient = function(id) {
-      const client = clients.find(c => c.id === id);
-      if (!client) return;
-      fillForm(client);
-    };
-
-    window.deleteClient = function(id) {
-      const client = clients.find(c => c.id === id);
-      if (!client) return;
-      if (!confirm(`Excluir ${client.nome}?`)) return;
-      clients = clients.filter(c => c.id !== id);
+    window.editClient = id => { const c = clients.find(x => x.id === id); if (c) fillForm(c); };
+    window.deleteClient = id => {
+      const c = clients.find(x => x.id === id); if (!c) return;
+      if (!confirm(`Excluir ${c.nome}?`)) return;
+      clients = clients.filter(x => x.id !== id);
       renderAll();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       showToast('Cliente excluído.');
     };
 
     els.clientForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const formData = getFormData();
-      const index = clients.findIndex(c => c.id === formData.id);
-      if (index >= 0) clients[index] = formData;
-      else clients.push(formData);
-      renderAll();
-      resetForm();
-      showToast('Cliente salvo com sucesso.');
-    });
-
-    els.clearFormBtn.addEventListener('click', resetForm);
-
-    els.dataPagamento.addEventListener('change', () => {
-      if (els.dataPagamento.value) {
-        els.dataRenovacao.value = calcRenewalFromPayment(els.dataPagamento.value);
+      const d = getFormData();
+      const idxClient = clients.findIndex(c => c.id === d.id);
+      if (idxClient >= 0) {
+        d.dataPagamento = clients[idxClient].dataPagamento;
+        d.dataRenovacao = clients[idxClient].dataRenovacao;
+        d.updatedAt = new Date().toISOString();
+        clients[idxClient] = d;
+        renderAll(); resetForm();
+        showToast('Cliente atualizado.');
+        return;
       }
+      const idxTeste = testes.findIndex(t => t.id === d.id);
+      if (idxTeste >= 0) {
+        testes[idxTeste] = d;
+        salvarTestes();
+        renderTestes();
+        resetForm();
+        showToast('Teste atualizado.');
+        return;
+      }
+      testes.push(d);
+      salvarTestes();
+      movimentacoes.push({
+        data: new Date().toISOString(),
+        tipo: 'teste',
+        tipoCliente: 'teste',
+        quantidade: 1,
+        nome: d.nome
+      });
+      salvarMovimentacoes();
+      renderTestes();
+      atualizarHistorico();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      resetForm();
+      showToast('Teste cadastrado com sucesso.');
     });
-
-    els.searchClientesInput.addEventListener('input', () => {
-      state.clientesPage = 1;
-      renderClientes();
-    });
-
+    els.clearFormBtn.addEventListener('click', resetForm);
+    els.searchClientesInput.addEventListener('input', () => { state.clientesPage = 1; renderClientes(); });
     els.tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
 
     els.exportBtn.addEventListener('click', () => {
-      const data = JSON.stringify(clients, null, 2);
+      const payload = { clients, testes, pacotes, movimentacoes, lucrosCustos };
+      const data = JSON.stringify(payload, null, 2);
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `backup_clientes_iptv_${toInputDate(todayLocalDate())}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      a.download = `backup_iptv_${toInputDate(todayLocalDate())}.json`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showToast('Backup exportado.');
     });
-
-    els.importFile.addEventListener('change', async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
+    els.importFile.addEventListener('change', async (e) => {
+      const file = e.target.files[0]; if (!file) return;
       try {
         const text = await file.text();
-        const imported = JSON.parse(text);
-        if (!Array.isArray(imported)) throw new Error('Formato inválido');
-        clients = imported;
+        const data = JSON.parse(text);
+        if (Array.isArray(data)) {
+          clients = data;
+        } else if (data && typeof data === 'object') {
+          if (Array.isArray(data.clients)) clients = data.clients;
+          if (Array.isArray(data.testes)) { testes = data.testes; salvarTestes(); }
+          if (Array.isArray(data.pacotes)) { pacotes = data.pacotes; salvarPacotes(); }
+          if (Array.isArray(data.movimentacoes)) { movimentacoes = data.movimentacoes; salvarMovimentacoes(); }
+          if (Array.isArray(data.lucrosCustos)) { lucrosCustos = data.lucrosCustos; salvarLucrosCustos(); }
+        } else {
+          throw new Error('Formato inválido');
+        }
         renderAll();
+        renderTestes();
+        atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
+        atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
+        atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
         showToast('Backup importado com sucesso.');
       } catch (err) {
         showToast('Arquivo inválido.', true);
-      } finally {
-        event.target.value = '';
-      }
+      } finally { e.target.value = ''; }
     });
 
-    // ------- INIT -------
-    loadClients();
+    /* =========================================================
+       PARTE 2 — CALCULADORA / CRÉDITO / GESTÃO / CONFIGURAÇÃO
+       ========================================================= */
+    let pacotes = [];
+    let assinaturas = [];
+    let custos = [];
+    let movimentacoes = [];
+    let lucrosCustos = [];
+    let graficoClientes = null;
+    let movimentacaoEditando = null;
+    let mostrarTodosHistorico = false;
 
-    // Só semeia os exemplos na PRIMEIRA vez que o app roda.
-    // Depois disso, mesmo que o usuário apague todos os clientes, a lista
-    // vazia é respeitada e persistida.
+    function salvarPacotes() { localStorage.setItem('iptv_pacotes', JSON.stringify(pacotes)); }
+    function salvarMovimentacoes() { localStorage.setItem('iptv_movimentacoes', JSON.stringify(movimentacoes)); }
+    function salvarLucrosCustos() { localStorage.setItem('iptv_lucros_custos', JSON.stringify(lucrosCustos)); }
+
+    function carregarDadosCalc() {
+      const p = localStorage.getItem('iptv_pacotes');
+      if (p) pacotes = JSON.parse(p);
+      else {
+        pacotes = [
+          { id: 1, quantidade: 10, preco: 11 },
+          { id: 2, quantidade: 30, preco: 10 },
+          { id: 3, quantidade: 50, preco: 8 },
+          { id: 4, quantidade: 100, preco: 7 },
+          { id: 5, quantidade: 500, preco: 6.5 },
+          { id: 6, quantidade: 1000, preco: 6 }
+        ];
+        salvarPacotes();
+      }
+      const m = localStorage.getItem('iptv_movimentacoes');
+      if (m) movimentacoes = JSON.parse(m);
+      const lc = localStorage.getItem('iptv_lucros_custos');
+      if (lc) lucrosCustos = JSON.parse(lc);
+    }
+
+    /* ---------- Adicionar crédito pelo pacote selecionado ---------- */
+    function adicionarCreditoPacote() {
+      const sel = document.getElementById('pacoteAddCredito');
+      const id = parseInt(sel.value);
+      if (!id) { showToast('Selecione um pacote cadastrado.', true); return; }
+      const pacote = pacotes.find(p => p.id === id);
+      if (!pacote) { showToast('Pacote não encontrado.', true); return; }
+      const custoTotal = pacote.quantidade * pacote.preco;
+      movimentacoes.push({
+        data: new Date().toISOString(),
+        tipo: 'add',
+        quantidade: pacote.quantidade,
+        custo: custoTotal,
+        pacoteId: pacote.id
+      });
+      salvarMovimentacoes();
+      atualizarCreditos(); atualizarHistorico();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      sel.value = '';
+      showToast(`+${pacote.quantidade} créditos • Custo R$ ${custoTotal.toFixed(2)}`);
+    }
+    window.adicionarCreditoPacote = adicionarCreditoPacote;
+
+    function atualizarSelectPacotesAddCredito() {
+      const sel = document.getElementById('pacoteAddCredito');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Selecione um pacote cadastrado</option>' +
+        pacotes.map(p => `<option value="${p.id}">${p.quantidade} créditos • R$ ${p.preco.toFixed(2)}/un • Total R$ ${(p.quantidade * p.preco).toFixed(2)}</option>`).join('');
+    }
+
+    function atualizarCreditos() {
+      let disponiveis = 0, usados = 0, custoTotal = 0;
+      movimentacoes.forEach(m => {
+        if (m.tipo === 'add') { disponiveis += m.quantidade; custoTotal += m.custo; }
+        else if (m.tipo === 'use') { usados += m.quantidade; disponiveis -= m.quantidade; }
+      });
+      const a = document.getElementById('creditosAtuais');
+      const u = document.getElementById('creditosUsados');
+      const c = document.getElementById('custoTotalCreditos');
+      if (a) a.textContent = disponiveis;
+      if (u) u.textContent = usados;
+      if (c) c.textContent = `R$ ${custoTotal.toFixed(2)}`;
+    }
+
+    function registrarNaoRenovou() {
+      const qtd = parseInt(document.getElementById('qtdNaoRenovou').value);
+      if (!qtd || qtd < 1) { showToast('Informe uma quantidade válida.', true); return; }
+      movimentacoes.push({
+        data: new Date().toISOString(),
+        tipo: 'churn',
+        tipoCliente: 'nao_renovou',
+        quantidade: qtd
+      });
+      salvarMovimentacoes();
+      atualizarHistorico();
+      atualizarGraficoClientes();
+      atualizarStatsFinanceiras();
+      gerarTextoWhatsAppGestao();
+      document.getElementById('qtdNaoRenovou').value = '';
+      showToast(`${qtd} não renovação(ões) registrada(s).`);
+    }
+    window.registrarNaoRenovou = registrarNaoRenovou;
+
+    function atualizarHistorico() {
+      const container = document.getElementById('historicoRecargas');
+      if (movimentacoes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';
+        document.getElementById('btnVerMais').style.display = 'none';
+        return;
+      }
+      const limite = mostrarTodosHistorico ? movimentacoes.length : 6;
+      const lista = movimentacoes.slice().reverse().slice(0, limite);
+      const tipos = { novo: 'Cliente Novo', renovacao: 'Renovação', nao_renovou: 'Não Renovou' };
+
+      container.innerHTML = lista.map((m, idx) => {
+        const realIdx = movimentacoes.length - 1 - idx;
+        const data = new Date(m.data).toLocaleString('pt-BR');
+        if (m.tipo === 'add') {
+          return `
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-icon" style="color: var(--primary);"><i class="fas fa-plus-circle"></i></div>
+                <div style="flex:1; min-width:0;">
+                  <div class="list-item-text">Adicionado: ${m.quantidade} créditos</div>
+                  <div class="list-item-sub">${data} • Custo: R$ ${m.custo.toFixed(2)}</div>
+                </div>
+              </div>
+              <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
+              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+            </div>`;
+        } else if (m.tipo === 'churn') {
+          return `
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-user-times"></i></div>
+                <div style="flex:1; min-width:0;">
+                  <div class="list-item-text">Não Renovaram: ${m.quantidade} cliente(s)</div>
+                  <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
+                </div>
+              </div>
+              <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
+              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+            </div>`;
+        } else if (m.tipo === 'teste') {
+          return `
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-icon" style="color: var(--info);"><i class="fas fa-flask"></i></div>
+                <div style="flex:1; min-width:0;">
+                  <div class="list-item-text">Teste criado${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
+                  <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
+                </div>
+              </div>
+              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+            </div>`;
+        } else if (m.tipo === 'teste_excluido') {
+          return `
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-vial-circle-check"></i></div>
+                <div style="flex:1; min-width:0;">
+                  <div class="list-item-text">Teste excluído${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
+                  <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
+                </div>
+              </div>
+              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+            </div>`;
+        } else {
+          return `
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-minus-circle"></i></div>
+                <div style="flex:1; min-width:0;">
+                  <div class="list-item-text">${tipos[m.tipoCliente] || m.tipoCliente} • R$ ${(m.valor || 0).toFixed(2)}</div>
+                  <div class="list-item-sub">${data}</div>
+                </div>
+              </div>
+              <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
+              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+            </div>`;
+        }
+      }).join('');
+
+      if (movimentacoes.length > 6) {
+        document.getElementById('btnVerMais').style.display = 'block';
+        document.getElementById('textoVerMais').textContent = mostrarTodosHistorico ? 'Ver Menos' : 'Ver Mais';
+      } else {
+        document.getElementById('btnVerMais').style.display = 'none';
+      }
+    }
+
+    function toggleVerMais() {
+      mostrarTodosHistorico = !mostrarTodosHistorico;
+      atualizarHistorico();
+    }
+
+    function editarMovimentacao(idx) {
+      movimentacaoEditando = idx;
+      const m = movimentacoes[idx];
+      let html = '';
+      if (m.tipo === 'add') {
+        html = `
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-hashtag"></i> Quantidade de Créditos</label>
+            <input type="number" id="editQtd" class="form-input" value="${m.quantidade}">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-money-bill-wave"></i> Valor Total (R$)</label>
+            <input type="number" id="editValor" class="form-input" value="${m.custo}" step="0.01">
+          </div>`;
+      } else if (m.tipo === 'churn') {
+        html = `
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-user-times"></i> Qtd. Clientes que Não Renovaram</label>
+            <input type="number" id="editQtd" class="form-input" value="${m.quantidade}" min="1">
+          </div>`;
+      } else {
+        html = `
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-user-tag"></i> Tipo de Cliente</label>
+            <select id="editTipo" class="form-select">
+              <option value="novo" ${m.tipoCliente === 'novo' ? 'selected' : ''}>Cliente Novo</option>
+              <option value="renovacao" ${m.tipoCliente === 'renovacao' ? 'selected' : ''}>Renovação</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-dollar-sign"></i> Valor da Assinatura (R$)</label>
+            <input type="number" id="editValor" class="form-input" value="${m.valor || 0}" step="0.01">
+          </div>`;
+      }
+      document.getElementById('formEditarMov').innerHTML = html;
+      document.getElementById('modalEditarMov').classList.add('active');
+    }
+    function fecharModalEditarMov() {
+      document.getElementById('modalEditarMov').classList.remove('active');
+      movimentacaoEditando = null;
+    }
+    function salvarEdicaoMov() {
+      if (movimentacaoEditando === null) return;
+      const m = movimentacoes[movimentacaoEditando];
+      if (m.tipo === 'add') {
+        const qtd = parseInt(document.getElementById('editQtd').value);
+        const valor = parseFloat(document.getElementById('editValor').value);
+        if (!qtd || !valor) { showToast('Preencha todos os campos.', true); return; }
+        m.quantidade = qtd; m.custo = valor;
+      } else if (m.tipo === 'churn') {
+        const qtd = parseInt(document.getElementById('editQtd').value);
+        if (!qtd || qtd < 1) { showToast('Informe uma quantidade válida.', true); return; }
+        m.quantidade = qtd;
+      } else {
+        const tipo = document.getElementById('editTipo').value;
+        const valor = parseFloat(document.getElementById('editValor').value);
+        if (!tipo || isNaN(valor)) { showToast('Preencha todos os campos.', true); return; }
+        m.tipoCliente = tipo; m.valor = valor;
+      }
+      salvarMovimentacoes();
+      atualizarCreditos(); atualizarHistorico();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      fecharModalEditarMov();
+      showToast('Movimentação atualizada.');
+    }
+    function removerMovimentacao(idx) {
+      if (!confirm('Remover esta movimentação?')) return;
+      movimentacoes.splice(idx, 1);
+      salvarMovimentacoes();
+      atualizarCreditos(); atualizarHistorico();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+    }
+    window.editarMovimentacao = editarMovimentacao;
+    window.removerMovimentacao = removerMovimentacao;
+    window.fecharModalEditarMov = fecharModalEditarMov;
+    window.salvarEdicaoMov = salvarEdicaoMov;
+    window.toggleVerMais = toggleVerMais;
+
+    function adicionarLucroCusto() {
+      const valor = parseFloat(document.getElementById('valorLucroCusto').value);
+      const info = document.getElementById('infoLucroCusto').value;
+      if (isNaN(valor) || !info) { showToast('Preencha valor e informação.', true); return; }
+      lucrosCustos.push({ data: new Date().toISOString(), valor, info });
+      salvarLucrosCustos();
+      atualizarListaLucrosCustos();
+      atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      document.getElementById('valorLucroCusto').value = '';
+      document.getElementById('infoLucroCusto').value = '';
+      showToast('Lucro/Custo adicionado.');
+    }
+    function atualizarListaLucrosCustos() {
+      const lista = document.getElementById('listaLucrosCustos');
+      if (lucrosCustos.length === 0) {
+        lista.innerHTML = '<div class="empty-state" style="padding:24px;"><i class="fas fa-chart-pie"></i><p>Nenhum lucro ou custo personalizado</p></div>';
+        return;
+      }
+      lista.innerHTML = lucrosCustos.map((lc, idx) => {
+        const cor = lc.valor >= 0 ? 'var(--primary)' : '#ff9b9b';
+        const tipo = lc.valor >= 0 ? 'Lucro' : 'Custo';
+        return `
+          <div class="cost-item">
+            <span class="cost-value" style="color:${cor};">R$ ${Math.abs(lc.valor).toFixed(2)}</span>
+            <span class="cost-name"><i class="fas fa-tag"></i>${escapeHtml(lc.info)} (${tipo})</span>
+            <button class="btn-danger" onclick="removerLucroCusto(${idx})"><i class="fas fa-trash"></i></button>
+          </div>`;
+      }).join('');
+    }
+    function removerLucroCusto(idx) {
+      if (!confirm('Remover?')) return;
+      lucrosCustos.splice(idx, 1);
+      salvarLucrosCustos();
+      atualizarListaLucrosCustos(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+    }
+    window.adicionarLucroCusto = adicionarLucroCusto;
+    window.removerLucroCusto = removerLucroCusto;
+
+    function atualizarListaPacotes() {
+      const lista = document.getElementById('listaPacotes');
+      if (pacotes.length === 0) {
+        lista.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>Nenhum pacote cadastrado</p></div>';
+        return;
+      }
+      lista.innerHTML = pacotes.map(p => `
+        <div class="list-item">
+          <div class="list-item-content">
+            <div class="list-item-icon"><i class="fas fa-box"></i></div>
+            <div class="list-item-text">${p.quantidade} créditos</div>
+          </div>
+          <div class="list-item-badge">R$ ${p.preco.toFixed(2)}</div>
+          <button class="btn-danger" onclick="removerPacote(${p.id})"><i class="fas fa-trash"></i></button>
+        </div>`).join('');
+    }
+    function atualizarSelectPacotes() {
+      const select = document.getElementById('pacoteSelecionado');
+      select.innerHTML = '<option value="">Selecione um pacote</option>' +
+        pacotes.map(p => `<option value="${p.id}">${p.quantidade} créditos - R$ ${p.preco.toFixed(2)} cada</option>`).join('');
+    }
+    function abrirModalPacote() {
+      document.getElementById('modalPacote').classList.add('active');
+      document.getElementById('qtdCreditos').value = '';
+      document.getElementById('precoCredito').value = '';
+    }
+    function fecharModalPacote() {
+      document.getElementById('modalPacote').classList.remove('active');
+    }
+    function salvarPacote() {
+      const quantidade = parseInt(document.getElementById('qtdCreditos').value);
+      const preco = parseFloat(document.getElementById('precoCredito').value);
+      if (!quantidade || !preco) { showToast('Preencha todos os campos.', true); return; }
+      const novoId = pacotes.length > 0 ? Math.max(...pacotes.map(p => p.id)) + 1 : 1;
+      pacotes.push({ id: novoId, quantidade, preco });
+      salvarPacotes();
+      atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
+      fecharModalPacote();
+      showToast('Pacote adicionado.');
+    }
+    function removerPacote(id) {
+      if (!confirm('Remover este pacote?')) return;
+      pacotes = pacotes.filter(p => p.id !== id);
+      salvarPacotes();
+      atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
+    }
+    window.abrirModalPacote = abrirModalPacote;
+    window.fecharModalPacote = fecharModalPacote;
+    window.salvarPacote = salvarPacote;
+    window.removerPacote = removerPacote;
+
+    function adicionarAssinatura() {
+      const quantidade = parseInt(document.getElementById('qtdAssinatura').value);
+      const valor = parseFloat(document.getElementById('valorAssinatura').value);
+      if (!quantidade || !valor) { showToast('Preencha quantidade e valor.', true); return; }
+      assinaturas.push({ quantidade, valor });
+      atualizarListaAssinaturas();
+      document.getElementById('qtdAssinatura').value = '';
+      document.getElementById('valorAssinatura').value = '';
+    }
+    function atualizarListaAssinaturas() {
+      const lista = document.getElementById('listaAssinaturas');
+      if (assinaturas.length === 0) {
+        lista.innerHTML = '<div class="empty-state" style="padding:24px;"><i class="fas fa-users"></i><p>Nenhuma assinatura adicionada</p></div>';
+        return;
+      }
+      lista.innerHTML = assinaturas.map((a, idx) => `
+        <div class="assinatura-item">
+          <span class="cost-name"><i class="fas fa-users"></i>${a.quantidade} clientes</span>
+          <span class="cost-value">R$ ${a.valor.toFixed(2)} cada</span>
+          <button class="btn-danger" onclick="removerAssinatura(${idx})"><i class="fas fa-trash"></i></button>
+        </div>`).join('');
+    }
+    function removerAssinatura(i) { assinaturas.splice(i, 1); atualizarListaAssinaturas(); }
+    window.adicionarAssinatura = adicionarAssinatura;
+    window.removerAssinatura = removerAssinatura;
+
+    function adicionarCusto() {
+      const valor = parseFloat(document.getElementById('valorCusto').value);
+      const descricao = document.getElementById('descricaoCusto').value;
+      if (!valor || !descricao) { showToast('Preencha valor e descrição.', true); return; }
+      custos.push({ valor, descricao });
+      atualizarListaCustos();
+      document.getElementById('valorCusto').value = '';
+      document.getElementById('descricaoCusto').value = '';
+    }
+    function atualizarListaCustos() {
+      const lista = document.getElementById('listaCustos');
+      if (custos.length === 0) {
+        lista.innerHTML = '<div class="empty-state" style="padding:24px;"><i class="fas fa-wallet"></i><p>Nenhum custo adicionado</p></div>';
+        return;
+      }
+      lista.innerHTML = custos.map((c, idx) => `
+        <div class="cost-item">
+          <span class="cost-value">R$ ${c.valor.toFixed(2)}</span>
+          <span class="cost-name"><i class="fas fa-tag"></i>${escapeHtml(c.descricao)}</span>
+          <button class="btn-danger" onclick="removerCusto(${idx})"><i class="fas fa-trash"></i></button>
+        </div>`).join('');
+    }
+    function removerCusto(i) { custos.splice(i, 1); atualizarListaCustos(); }
+    window.adicionarCusto = adicionarCusto;
+    window.removerCusto = removerCusto;
+
+    function calcular() {
+      const pacoteId = parseInt(document.getElementById('pacoteSelecionado').value);
+      if (!pacoteId || assinaturas.length === 0) {
+        showToast('Selecione um pacote e adicione assinaturas.', true); return;
+      }
+      const pacote = pacotes.find(p => p.id === pacoteId);
+      const totalClientes = assinaturas.reduce((t, a) => t + a.quantidade, 0);
+      const faturamento = assinaturas.reduce((t, a) => t + (a.quantidade * a.valor), 0);
+      const custoCredito = pacote.preco * totalClientes;
+      const custoExtra = custos.reduce((t, c) => t + c.valor, 0);
+      const custoTotal = custoCredito + custoExtra;
+      const lucro = faturamento - custoTotal;
+
+      document.getElementById('resultado').innerHTML = `
+        <div class="result-box">
+          <div class="result-section">
+            <h3><i class="fas fa-box"></i> Pacote</h3>
+            <div class="result-row">
+              <div class="result-label">Pacote selecionado</div>
+              <div class="result-value">${pacote.quantidade} créditos • R$ ${pacote.preco.toFixed(2)} cada</div>
+            </div>
+          </div>
+          <div class="result-section">
+            <h3><i class="fas fa-users"></i> Assinaturas</h3>
+            ${assinaturas.map(a => `
+              <div class="result-row">
+                <div class="result-label">${a.quantidade} × R$ ${a.valor.toFixed(2)}</div>
+                <div class="result-value">R$ ${(a.quantidade * a.valor).toFixed(2)}</div>
+              </div>`).join('')}
+            <div class="result-row large">
+              <div class="result-label">Total faturamento</div>
+              <div class="result-value">R$ ${faturamento.toFixed(2)}</div>
+            </div>
+          </div>
+          <div class="result-section">
+            <h3><i class="fas fa-file-invoice-dollar"></i> Custos</h3>
+            <div class="result-row">
+              <div class="result-label">Custo créditos (${totalClientes} clientes)</div>
+              <div class="result-value">R$ ${custoCredito.toFixed(2)}</div>
+            </div>
+            ${custos.map(c => `
+              <div class="result-row">
+                <div class="result-label">${escapeHtml(c.descricao)}</div>
+                <div class="result-value">R$ ${c.valor.toFixed(2)}</div>
+              </div>`).join('')}
+            <div class="result-row large">
+              <div class="result-label">Custo total</div>
+              <div class="result-value" style="color:#ff9b9b;">R$ ${custoTotal.toFixed(2)}</div>
+            </div>
+          </div>
+          <div class="result-section">
+            <h3><i class="fas fa-trophy"></i> Resultado</h3>
+            <div class="result-row large" style="font-size:20px;">
+              <div class="result-label">Lucro total</div>
+              <div class="result-value">R$ ${lucro.toFixed(2)}</div>
+            </div>
+            <div class="result-row">
+              <div class="result-label">Lucro por cliente</div>
+              <div class="result-value">R$ ${(lucro / totalClientes).toFixed(2)}</div>
+            </div>
+          </div>
+        </div>`;
+    }
+    window.calcular = calcular;
+
+    /* ---------- STATS FINANCEIRAS (Gestão Top 3 Boxes) ---------- */
+    function computeTotaisFinanceiros() {
+      let custo = 0, lucro = 0;
+      movimentacoes.forEach(m => {
+        if (m.tipo === 'add') custo += (m.custo || 0);
+        else if (m.tipo === 'use') lucro += (m.valor || 0);
+      });
+      lucrosCustos.forEach(lc => {
+        if (lc.valor >= 0) lucro += lc.valor;
+        else custo += Math.abs(lc.valor);
+      });
+      return { custo, lucro, liquido: lucro - custo };
+    }
+
+    function atualizarStatsFinanceiras() {
+      const { custo, lucro, liquido } = computeTotaisFinanceiros();
+      const fmt = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
+      const elL = document.getElementById('totalLucro');
+      const elC = document.getElementById('totalCusto');
+      const elN = document.getElementById('totalLiquido');
+      if (elL) elL.textContent = fmt(lucro);
+      if (elC) elC.textContent = fmt(custo);
+      if (elN) {
+        elN.textContent = fmt(liquido);
+        elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b';
+      }
+    }
+    window.atualizarStatsFinanceiras = atualizarStatsFinanceiras;
+
+    /* ---------- GRÁFICO DE MOVIMENTAÇÃO DE CLIENTES (LINHAS) ---------- */
+    function atualizarGraficoClientes() {
+      const ctx = document.getElementById('graficoClientes');
+      if (!ctx) return;
+      const porMes = {};
+      const getKey = (dateStr) => {
+        const d = new Date(dateStr);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      };
+      const ensure = k => { if (!porMes[k]) porMes[k] = { novos: 0, renovacoes: 0, naoRenovou: 0, vencidos: 0, testes: 0 }; };
+
+      movimentacoes.forEach(m => {
+        const k = getKey(m.data);
+        ensure(k);
+        if (m.tipo === 'use' && m.tipoCliente === 'novo') porMes[k].novos += (m.quantidade || 1);
+        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') porMes[k].renovacoes += (m.quantidade || 1);
+        else if (m.tipo === 'churn') porMes[k].naoRenovou += (m.quantidade || 1);
+        else if (m.tipo === 'teste') porMes[k].testes += (m.quantidade || 1);
+      });
+
+      // Auto-conta clientes atualmente vencidos (dataRenovacao < hoje) no mês do vencimento
+      const today = todayLocalDate();
+      clients.forEach(c => {
+        const due = parseDate(c.dataRenovacao);
+        if (!due) return;
+        if (due < today) {
+          const k = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`;
+          ensure(k);
+          porMes[k].vencidos += 1;
+        }
+      });
+
+      const parent = ctx.parentElement;
+      if (Object.keys(porMes).length === 0) {
+        parent.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>Nenhum dado de cliente</p></div>';
+        return;
+      }
+      if (!document.getElementById('graficoClientes')) {
+        parent.innerHTML = '<canvas id="graficoClientes"></canvas>';
+      }
+      const canvas = document.getElementById('graficoClientes');
+
+      const meses = Object.keys(porMes).sort();
+      const labels = meses.map(m => {
+        const [y, mo] = m.split('-');
+        return new Date(y, mo - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+      });
+
+      if (graficoClientes) graficoClientes.destroy();
+      graficoClientes = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Testes', data: meses.map(m => porMes[m].testes),
+              borderColor: '#ffe45c', backgroundColor: 'rgba(255,228,92,.15)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Novos Clientes', data: meses.map(m => porMes[m].novos),
+              borderColor: '#39ff14', backgroundColor: 'rgba(57,255,20,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Renovações', data: meses.map(m => porMes[m].renovacoes),
+              borderColor: '#5cf0ff', backgroundColor: 'rgba(92,240,255,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Não Renovaram (manual)', data: meses.map(m => porMes[m].naoRenovou),
+              borderColor: '#ff9b5c', backgroundColor: 'rgba(255,155,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6, borderDash: [6,4] },
+            { label: 'Vencidos (atual)', data: meses.map(m => porMes[m].vencidos),
+              borderColor: '#ff5c5c', backgroundColor: 'rgba(255,92,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { color: '#f5f5f5', font: { size: 12, weight: '600' }, padding: 12, usePointStyle: true } },
+            title: { display: true, text: 'Movimentação mensal de clientes', color: '#f5f5f5', font: { size: 14, weight: '700' }, padding: 12 },
+            tooltip: { backgroundColor: '#0a0a0a', titleColor: '#fff', bodyColor: '#f5f5f5', borderColor: 'rgba(57,255,20,.3)', borderWidth: 1 }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.08)' }, ticks: { color: '#a1a1aa', precision: 0 } },
+            x: { grid: { color: 'rgba(255,255,255,.08)' }, ticks: { color: '#a1a1aa' } }
+          }
+        }
+      });
+    }
+
+    function gerarTextoWhatsAppGestao() {
+      let novos = 0, renov = 0, nren = 0, testes_criados = 0;
+      movimentacoes.forEach(m => {
+        if (m.tipo === 'use' && m.tipoCliente === 'novo') novos += (m.quantidade || 1);
+        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') renov += (m.quantidade || 1);
+        else if (m.tipo === 'churn') nren += (m.quantidade || 1);
+        else if (m.tipo === 'teste') testes_criados += (m.quantidade || 1);
+      });
+
+      // Vencidos atuais (dataRenovacao < hoje)
+      const today = todayLocalDate();
+      let vencidosAtuais = 0;
+      clients.forEach(c => {
+        const due = parseDate(c.dataRenovacao);
+        if (due && due < today) vencidosAtuais += 1;
+      });
+
+      const { custo, lucro, liquido } = computeTotaisFinanceiros();
+
+      let t = `📊 *RESUMO COMPLETO - GESTÃO IPTV*\n\n`;
+      t += `👥 *CLIENTES*\n`;
+      t += `• Novos: ${novos}\n• Renovações: ${renov}\n• Não Renovaram (manual): ${nren}\n• Vencidos agora: ${vencidosAtuais}\n• Testes criados: ${testes_criados}\n• Total Ativos: ${clients.length}\n\n`;
+      t += `💰 *FINANCEIRO*\n`;
+      t += `• Custo Total: R$ ${custo.toFixed(2)}\n• Lucro Total: R$ ${lucro.toFixed(2)}\n• Lucro Líquido: R$ ${liquido.toFixed(2)}\n\n`;
+      if (lucrosCustos.length > 0) {
+        t += `📝 *LUCROS/CUSTOS PERSONALIZADOS*\n`;
+        lucrosCustos.forEach(lc => {
+          const sig = lc.valor >= 0 ? '➕' : '➖';
+          t += `${sig} ${lc.info}: R$ ${Math.abs(lc.valor).toFixed(2)}\n`;
+        });
+        t += '\n';
+      }
+      t += `📈 *RESUMO*\n`;
+      const base = renov + nren + vencidosAtuais;
+      t += `• Taxa Renovação: ${base > 0 ? ((renov / base) * 100).toFixed(1) : 0}%\n`;
+      t += `• Margem Lucro: ${lucro > 0 ? ((liquido / lucro) * 100).toFixed(1) : 0}%`;
+
+      const ta = document.getElementById('textoWhatsAppGestao');
+      if (ta) ta.value = t;
+    }
+    function copiarTextoGestao() {
+      const ta = document.getElementById('textoWhatsAppGestao');
+      ta.select();
+      try { document.execCommand('copy'); showToast('Resumo copiado.'); }
+      catch (e) { showToast('Não foi possível copiar.', true); }
+    }
+    window.copiarTextoGestao = copiarTextoGestao;
+
+    /* =========================================================
+       INIT
+       ========================================================= */
+    loadClients();
+    carregarTestes();
     const alreadyInitialized = localStorage.getItem(INIT_FLAG_KEY) === '1';
     if (!alreadyInitialized && clients.length === 0) {
-      const demoToday = toInputDate(todayLocalDate());
-      const demoTomorrow = toInputDate(addDays(todayLocalDate(), 1));
-      const demoWeek = toInputDate(addDays(todayLocalDate(), 7));
+      const d0 = toInputDate(todayLocalDate());
+      const d1 = toInputDate(addDays(todayLocalDate(), 1));
+      const d7 = toInputDate(addDays(todayLocalDate(), 7));
       clients = [
-        {
-          id: generateId(), nome: 'Cliente Exemplo Hoje', telefone: '5541999999999',
-          aplicativo: 'XCIPTV', usuario: 'clientehoje', senha: '123456',
-          plano: 'Mensal', valor: '30,00', dataPagamento: '', dataRenovacao: demoToday,
-          linkRenovacao: 'https://seulink.com/renovar/hoje', observacoes: ''
-        },
-        {
-          id: generateId(), nome: 'Cliente Exemplo Amanhã', telefone: '5541988888888',
-          aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321',
-          plano: 'Mensal', valor: '35,00', dataPagamento: '', dataRenovacao: demoTomorrow,
-          linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: ''
-        },
-        {
-          id: generateId(), nome: 'Cliente Exemplo 7 Dias', telefone: '5541977777777',
-          aplicativo: 'Bob Player', usuario: 'cliente7dias', senha: '789456',
-          plano: 'Mensal', valor: '25,00', dataPagamento: '', dataRenovacao: demoWeek,
-          linkRenovacao: 'https://seulink.com/renovar/7dias', observacoes: ''
-        }
+        { id: generateId(), nome: 'Cliente Exemplo Hoje', telefone: '5541999999999', aplicativo: 'XCIPTV', usuario: 'clientehoje', senha: '123456', plano: 'Mensal', valor: '30,00', dataPagamento: '', dataRenovacao: d0, linkRenovacao: 'https://seulink.com/renovar/hoje', observacoes: '' },
+        { id: generateId(), nome: 'Cliente Exemplo Amanhã', telefone: '5541988888888', aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321', plano: 'Mensal', valor: '35,00', dataPagamento: '', dataRenovacao: d1, linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: '' },
+        { id: generateId(), nome: 'Cliente Exemplo 7 Dias', telefone: '5541977777777', aplicativo: 'Bob Player', usuario: 'cliente7dias', senha: '789456', plano: 'Mensal', valor: '25,00', dataPagamento: '', dataRenovacao: d7, linkRenovacao: 'https://seulink.com/renovar/7dias', observacoes: '' }
       ];
       saveClients();
     }
-    // Marca inicialização concluída — próximas aberturas respeitam qualquer
-    // estado do usuário (inclusive lista vazia).
     localStorage.setItem(INIT_FLAG_KEY, '1');
 
+    carregarDadosCalc();
+
     renderAll();
+    renderTestes();
+    atualizarListaPacotes();
+    atualizarSelectPacotes();
+    atualizarSelectPacotesAddCredito();
+    atualizarCreditos();
+    atualizarHistorico();
+    atualizarListaLucrosCustos();
+    atualizarListaAssinaturas();
+    atualizarListaCustos();
+    atualizarStatsFinanceiras();
   </script>
 </body>
 </html>
