@@ -221,6 +221,29 @@
       box-shadow: var(--glow-sm);
     }
 
+    /* WhatsApp button variants (sent / not sent) */
+    .btn-whatsapp-sent {
+      background: linear-gradient(180deg, #0d1d08, #060e04);
+      color: var(--primary);
+      border: 1px solid rgba(57,255,20,.55);
+      box-shadow: var(--glow-sm);
+    }
+    .btn-whatsapp-sent:hover {
+      background: linear-gradient(180deg, #143410, #0a1808);
+      border-color: rgba(57,255,20,.8);
+      box-shadow: var(--glow-md);
+    }
+    .btn-whatsapp-unsent {
+      background: #1a0707;
+      color: #ffb5b5;
+      border: 1px solid rgba(255,92,92,.45);
+    }
+    .btn-whatsapp-unsent:hover {
+      background: #240a0a;
+      border-color: rgba(255,92,92,.7);
+      box-shadow: 0 0 14px rgba(255,92,92,.2);
+    }
+
     .btn-block { width: 100%; }
 
     .tabs {
@@ -414,38 +437,44 @@
     }
     .search::placeholder { color: #5a5a5a; }
 
-    .table-wrap {
-      overflow-x: auto;
-      border-radius: 14px;
+    /* LIST ROW (cliente/vencimento em formato lista) */
+    .client-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 16px;
+      background: #0a0a0a;
       border: 1px solid var(--border-faint);
-      background: #030303;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
     }
-    table { width: 100%; border-collapse: collapse; min-width: 1150px; }
-    th, td {
-      padding: 14px 12px;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,.05);
-      vertical-align: middle;
-      font-size: 13.5px;
-      color: var(--text);
+    .client-row:hover { background: #0f0f0f; border-color: rgba(57,255,20,.18); }
+    .client-row-main { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .client-row-name {
+      font-weight: 700; font-size: 15px; color: #fff;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     }
-    tbody tr { transition: background-color .15s ease; }
-    tbody tr:hover { background: rgba(57,255,20,.025); }
-    tbody tr:last-child td { border-bottom: none; }
-    th {
-      color: var(--muted); font-size: 11px; text-transform: uppercase;
-      letter-spacing: .09em; font-weight: 700;
-      position: sticky; top: 0;
-      background: #060606; backdrop-filter: blur(6px);
+    .client-row-meta {
+      color: var(--muted); font-size: 12.5px;
+      display: flex; flex-wrap: wrap; gap: 8px 14px; font-family: var(--font-mono);
     }
-    td.mono { font-family: var(--font-mono); font-size: 13px; }
+    .client-row-meta b { color: var(--text-dim); font-weight: 600; }
+    .client-row-actions {
+      display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end;
+    }
+    .client-row-actions button { padding: 8px 12px; font-size: 12.5px; min-height: 36px; }
 
-    .table-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-    .table-actions button { padding: 8px 12px; font-size: 12.5px; min-height: 36px; }
+    @media (max-width: 760px) {
+      .client-row { grid-template-columns: 1fr; }
+      .client-row-actions { justify-content: stretch; }
+      .client-row-actions button { flex: 1 1 calc(50% - 3px); }
+    }
 
     .pill {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 10px; border-radius: 999px; font-size: 11.5px;
+      padding: 4px 9px; border-radius: 999px; font-size: 11.5px;
       font-weight: 600; border: 1px solid transparent;
       letter-spacing: .02em; white-space: nowrap;
     }
@@ -459,15 +488,14 @@
     .pill-ok       { background: rgba(57,255,20,.07); color: var(--primary-soft); border-color: rgba(57,255,20,.25); }
     .pill-expired  { background: rgba(255,92,92,.12); color: #ff8787; border-color: rgba(255,92,92,.4); }
 
-    .empty-row td, .empty-state {
+    .empty-state {
       text-align: center;
       color: var(--muted);
       padding: 38px 20px;
       font-size: 14px;
-    }
-    .empty-row .empty-icon {
-      font-family: var(--font-mono); font-size: 11px; color: var(--muted);
-      letter-spacing: .15em; display: block; margin-bottom: 6px; opacity: .6;
+      background: #080808;
+      border: 1px dashed var(--border-faint);
+      border-radius: 12px;
     }
     .empty-state i { font-size: 40px; opacity: .4; margin-bottom: 10px; display: block; }
     .empty-state p { margin: 0; font-weight: 500; }
@@ -475,12 +503,13 @@
     .hidden { display: none !important; }
 
     .pagination-bar {
-      display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center;
+      display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center; justify-content: center;
     }
     .pagination-bar .page-info {
       align-self: center; color: var(--muted); padding: 8px 6px;
       font-family: var(--font-mono); font-size: 12.5px;
     }
+    .pagination-bar button { padding: 8px 14px; min-height: 36px; font-size: 12.5px; }
 
     .list-item {
       display: flex; align-items: center; gap: 14px;
@@ -551,6 +580,42 @@
       text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
     }
 
+    /* Month filter in Gestão */
+    .month-filter-bar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      border: 1px solid var(--border-faint);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    .month-filter-bar label {
+      font-size: 12px; font-weight: 700; color: var(--text-dim);
+      letter-spacing: .04em; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .month-filter-bar label i { color: var(--primary); }
+    .month-filter-bar select { min-height: 42px; max-width: 260px; flex: 1 1 220px; }
+    .month-filter-bar .month-filter-hint {
+      color: var(--muted); font-size: 12px; font-family: var(--font-mono);
+    }
+
+    /* Collapsible card (Pacotes) */
+    .card-header.collapsible { cursor: pointer; user-select: none; }
+    .card-header .chev {
+      margin-left: auto;
+      width: 34px; height: 34px;
+      display: grid; place-items: center;
+      border-radius: 10px;
+      background: #050505;
+      border: 1px solid var(--border-faint);
+      color: var(--muted);
+      transition: transform .25s ease, color .2s ease, border-color .2s ease;
+    }
+    .card.collapsed .card-header .chev { transform: rotate(-90deg); color: var(--primary); border-color: var(--border-strong); }
+    .card.collapsed .card-body { display: none; }
+
     .radio-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -620,12 +685,13 @@
       border: 1px solid var(--border-strong);
       border-radius: var(--radius);
       padding: 24px;
-      max-width: 500px;
+      max-width: 720px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
       box-shadow: var(--shadow-xl), var(--glow-sm);
     }
+    .modal-content.sm { max-width: 500px; }
     .modal-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 20px; padding-bottom: 14px;
@@ -685,9 +751,6 @@
       .form-grid { grid-template-columns: 1fr; }
       .input-group-2 { grid-template-columns: 1fr; }
       .list-box, .form-card, .table-card, .card { padding: 16px; }
-      table { min-width: 980px; }
-      th, td { padding: 12px 10px; font-size: 13px; }
-      .table-actions button { flex: 1 1 calc(50% - 3px); }
       .radio-group { grid-template-columns: 1fr; }
       .chart-container { height: 320px; padding: 10px; }
     }
@@ -699,46 +762,6 @@
       .tab { padding: 10px 12px; font-size: 12.5px; min-height: 40px; }
 
       .form-actions button { flex: 1 1 100%; }
-
-      .table-wrap { overflow-x: visible; border: none; background: transparent; }
-      table, thead, tbody, tr, td { display: block; width: 100%; }
-      table { min-width: 0; }
-      thead { display: none; }
-
-      tbody tr {
-        background: #0a0a0a;
-        border: 1px solid var(--border-faint);
-        border-radius: 14px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-        box-shadow: var(--shadow-sm);
-      }
-      tbody tr:hover { background: #0a0a0a; }
-
-      tbody td {
-        display: flex; justify-content: space-between; align-items: center;
-        gap: 12px; padding: 8px 0;
-        border: none;
-        border-bottom: 1px dashed rgba(255,255,255,.06);
-        font-size: 13.5px; text-align: right; word-break: break-word;
-      }
-      tbody td::before {
-        content: attr(data-label);
-        flex: 0 0 42%;
-        color: var(--muted); font-size: 11px; font-weight: 700;
-        text-transform: uppercase; letter-spacing: .08em; text-align: left;
-      }
-      tbody td:last-child {
-        border-bottom: none; padding-top: 10px;
-        flex-direction: column; align-items: stretch;
-      }
-      tbody td:last-child::before { display: none; }
-      tbody td .table-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-      tbody td .table-actions button { flex: none; width: 100%; }
-
-      tr.empty-row { background: transparent; border: 1px dashed var(--border-faint); }
-      tr.empty-row td { display: block; text-align: center; padding: 24px 10px; }
-      tr.empty-row td::before { display: none; }
 
       .toolbar-left { gap: 8px; }
       .search { max-width: 100%; }
@@ -783,16 +806,8 @@
           <div class="card-title"><h2>Vencidos (não renovaram)</h2><span class="tag">Atrasados</span></div>
           <span class="count-badge danger" id="countExpired" data-testid="count-expired">0</span>
         </div>
-        <p class="card-hint">Clientes com vencimento no passado. Ficam contabilizados no gráfico como "Não Renovaram" até que você clique em Renovar. Até 20 por página.</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Nome</th><th>Telefone</th><th>Usuário</th><th>Plano</th>
-              <th>Valor</th><th>Vencimento</th><th>Ações</th>
-            </tr></thead>
-            <tbody id="listExpiredTable" data-testid="list-expired-table"></tbody>
-          </table>
-        </div>
+        <p class="card-hint">Clientes com vencimento no passado. WhatsApp vermelho = mensagem ainda não enviada neste ciclo. Verde = já enviada. 10 por página.</p>
+        <div id="listExpired" data-testid="list-expired"></div>
         <div class="pagination-bar" id="paginationExpired"></div>
       </div>
 
@@ -801,16 +816,8 @@
           <div class="card-title"><h2>Vencendo hoje</h2><span class="tag">D-Day</span></div>
           <span class="count-badge danger" id="countToday" data-testid="count-today">0</span>
         </div>
-        <p class="card-hint">Clientes cujo plano vence hoje. Até 20 por página.</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Nome</th><th>Telefone</th><th>Usuário</th><th>Plano</th>
-              <th>Valor</th><th>Renovação</th><th>Ações</th>
-            </tr></thead>
-            <tbody id="listTodayTable" data-testid="list-today-table"></tbody>
-          </table>
-        </div>
+        <p class="card-hint">Clientes cujo plano vence hoje. 10 por página.</p>
+        <div id="listToday" data-testid="list-today"></div>
         <div class="pagination-bar" id="paginationToday"></div>
       </div>
 
@@ -819,16 +826,8 @@
           <div class="card-title"><h2>Vence amanhã</h2><span class="tag">D-1</span></div>
           <span class="count-badge warning" id="countTomorrow" data-testid="count-tomorrow">0</span>
         </div>
-        <p class="card-hint">Previsão para o próximo dia. Até 20 por página.</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Nome</th><th>Telefone</th><th>Usuário</th><th>Plano</th>
-              <th>Valor</th><th>Renovação</th><th>Ações</th>
-            </tr></thead>
-            <tbody id="listTomorrowTable" data-testid="list-tomorrow-table"></tbody>
-          </table>
-        </div>
+        <p class="card-hint">Previsão para o próximo dia. 10 por página.</p>
+        <div id="listTomorrow" data-testid="list-tomorrow"></div>
         <div class="pagination-bar" id="paginationTomorrow"></div>
       </div>
 
@@ -837,16 +836,8 @@
           <div class="card-title"><h2>Vence em até 7 dias</h2><span class="tag">D-7</span></div>
           <span class="count-badge" id="countWeek" data-testid="count-week">0</span>
         </div>
-        <p class="card-hint">Clientes com vencimento nos próximos 2 a 7 dias. Até 20 por página.</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Nome</th><th>Telefone</th><th>Usuário</th><th>Plano</th>
-              <th>Valor</th><th>Renovação</th><th>Ações</th>
-            </tr></thead>
-            <tbody id="listWeekTable" data-testid="list-week-table"></tbody>
-          </table>
-        </div>
+        <p class="card-hint">Clientes com vencimento nos próximos 2 a 7 dias. 10 por página.</p>
+        <div id="listWeek" data-testid="list-week"></div>
         <div class="pagination-bar" id="paginationWeek"></div>
       </div>
     </section>
@@ -882,8 +873,9 @@
           <div class="card-title"><h2>Testes em andamento</h2><span class="tag">Aguardando ativação</span></div>
           <span class="count-badge" id="countTestes" data-testid="count-testes">0</span>
         </div>
-        <p class="card-hint">Clientes que fizeram o teste mas ainda não ativaram a assinatura.</p>
+        <p class="card-hint">Clientes que fizeram o teste mas ainda não ativaram a assinatura. 10 por página.</p>
         <div id="listaTestes" data-testid="lista-testes"></div>
+        <div class="pagination-bar" id="paginationTestes"></div>
       </div>
     </section>
 
@@ -897,16 +889,7 @@
             <input id="searchClientesInput" class="search" placeholder="Buscar por nome, telefone, usuário, app ou plano" data-testid="search-clientes-input" />
           </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Nome</th><th>Telefone</th><th>App</th><th>Usuário</th>
-              <th>Plano</th><th>Valor</th><th>Pagamento</th><th>Renovação</th>
-              <th>Status</th><th>Ações</th>
-            </tr></thead>
-            <tbody id="clientesList" data-testid="clientes-list"></tbody>
-          </table>
-        </div>
+        <div id="clientesList" data-testid="clientes-list"></div>
         <div class="pagination-bar" id="paginationClientes"></div>
       </div>
     </section>
@@ -955,6 +938,15 @@
 
     <!-- GESTÃO -->
     <section id="gestao" class="panel">
+      <!-- Month filter bar -->
+      <div class="month-filter-bar" data-testid="month-filter-bar">
+        <label><i class="fas fa-filter"></i> Filtrar por mês</label>
+        <select id="filtroMesGestao" class="form-select" data-testid="filtro-mes-gestao">
+          <option value="all">Todos os meses</option>
+        </select>
+        <span class="month-filter-hint" id="filtroMesHint">Aplicado aos cards, gráfico e resumo.</span>
+      </div>
+
       <div class="credit-stats" style="margin-bottom: 18px;">
         <div class="credit-stat-card">
           <div class="credit-stat-value" id="totalLucro" style="color: var(--primary);" data-testid="total-lucro">R$ 0,00</div>
@@ -1048,32 +1040,36 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-history"></i><h2>Histórico de Movimentações</h2></div>
+      <!-- PACOTES (colapsável) — ACIMA do histórico agora -->
+      <div class="card collapsed" id="cardPacotes">
+        <div class="card-header collapsible" id="headerPacotes" data-testid="header-pacotes">
+          <div class="card-title"><i class="fas fa-box"></i><h2>Pacotes de Créditos</h2></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count-badge" id="countPacotes" data-testid="count-pacotes">0</span>
+            <span class="chev"><i class="fas fa-chevron-down"></i></span>
+          </div>
         </div>
-        <div id="historicoRecargas"></div>
-        <div id="btnVerMais" style="text-align:center; margin-top:12px; display:none;">
-          <button class="btn-secondary" onclick="toggleVerMais()">
-            <i class="fas fa-angle-down"></i>
-            <span id="textoVerMais">Ver Mais</span>
-          </button>
+        <div class="card-body" id="bodyPacotes">
+          <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+            <button class="btn-primary" onclick="abrirModalPacote()" data-testid="btn-novo-pacote"><i class="fas fa-plus"></i> Novo Pacote</button>
+          </div>
+          <div id="listaPacotes"></div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title"><i class="fas fa-box"></i><h2>Pacotes de Créditos</h2></div>
-          <button class="btn-primary" onclick="abrirModalPacote()"><i class="fas fa-plus"></i> Novo Pacote</button>
+          <div class="card-title"><i class="fas fa-history"></i><h2>Histórico de Movimentações</h2></div>
         </div>
-        <div id="listaPacotes"></div>
+        <div id="historicoRecargas"></div>
+        <div class="pagination-bar" id="paginationHistorico"></div>
       </div>
     </section>
   </div>
 
   <!-- MODAL PACOTE -->
   <div id="modalPacote" class="modal">
-    <div class="modal-content">
+    <div class="modal-content sm">
       <div class="modal-header">
         <h3 class="modal-title">Adicionar Pacote</h3>
         <button class="modal-close" onclick="fecharModalPacote()"><i class="fas fa-times"></i></button>
@@ -1094,7 +1090,7 @@
 
   <!-- MODAL EDITAR MOVIMENTAÇÃO -->
   <div id="modalEditarMov" class="modal">
-    <div class="modal-content">
+    <div class="modal-content sm">
       <div class="modal-header">
         <h3 class="modal-title">Editar Movimentação</h3>
         <button class="modal-close" onclick="fecharModalEditarMov()"><i class="fas fa-times"></i></button>
@@ -1103,6 +1099,39 @@
       <button class="btn-primary btn-block" onclick="salvarEdicaoMov()">
         <i class="fas fa-check"></i> Salvar Alterações
       </button>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR CLIENTE (permanece na mesma aba) -->
+  <div id="modalEditarCliente" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalEditarClienteTitle">Editar Cliente</h3>
+        <button class="modal-close" onclick="fecharModalEditarCliente()" data-testid="close-editar-cliente"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="formEditarCliente" autocomplete="off">
+        <input type="hidden" id="ec_id" />
+        <input type="hidden" id="ec_kind" />
+        <div class="form-grid">
+          <div class="field"><label for="ec_nome">Nome</label><input id="ec_nome" required data-testid="ec-nome" /></div>
+          <div class="field"><label for="ec_telefone">Telefone</label><input id="ec_telefone" placeholder="Ex.: 41999998888" data-testid="ec-telefone" /></div>
+          <div class="field"><label for="ec_aplicativo">Aplicativo</label><input id="ec_aplicativo" data-testid="ec-aplicativo" /></div>
+          <div class="field"><label for="ec_usuario">Usuário</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
+          <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
+          <div class="field"><label for="ec_plano">Plano</label><input id="ec_plano" data-testid="ec-plano" /></div>
+          <div class="field"><label for="ec_valor">Valor</label><input id="ec_valor" placeholder="Ex.: 30,00" data-testid="ec-valor" /></div>
+          <div class="field" id="ec_inicio_wrap"><label for="ec_dataInicio">Data de início</label><input type="date" id="ec_dataInicio" data-testid="ec-data-inicio" /></div>
+          <div class="field" id="ec_renovacao_wrap"><label for="ec_dataRenovacao">Data de renovação</label><input type="date" id="ec_dataRenovacao" data-testid="ec-data-renovacao" /></div>
+          <div class="field" style="grid-column: span 2;"><label for="ec_linkRenovacao">Link de ativação / renovação</label><input id="ec_linkRenovacao" placeholder="https://..." data-testid="ec-link" /></div>
+          <div class="field" style="grid-column: span 3;"><label for="ec_observacoes">Observações</label><input id="ec_observacoes" data-testid="ec-observacoes" /></div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" data-testid="save-editar-cliente">
+            <i class="fas fa-check"></i> Salvar alterações
+          </button>
+          <button type="button" class="btn-secondary" onclick="fecharModalEditarCliente()">Cancelar</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1117,8 +1146,12 @@
     const INIT_FLAG_KEY = 'iptv_clientes_v1_initialized';
     let clients = [];
     let testes = [];
-    const ITEMS_PER_PAGE = 20;
-    const state = { todayPage: 1, tomorrowPage: 1, weekPage: 1, expiredPage: 1, clientesPage: 1 };
+    const ITEMS_PER_PAGE = 10;
+    const state = {
+      todayPage: 1, tomorrowPage: 1, weekPage: 1, expiredPage: 1,
+      clientesPage: 1, testesPage: 1, historicoPage: 1,
+      filtroMes: 'all'
+    };
 
     const els = {
       tabs: document.querySelectorAll('.tab'),
@@ -1128,10 +1161,10 @@
       countWeek: document.getElementById('countWeek'),
       countExpired: document.getElementById('countExpired'),
       countClientes: document.getElementById('countClientes'),
-      listTodayTable: document.getElementById('listTodayTable'),
-      listTomorrowTable: document.getElementById('listTomorrowTable'),
-      listWeekTable: document.getElementById('listWeekTable'),
-      listExpiredTable: document.getElementById('listExpiredTable'),
+      listToday: document.getElementById('listToday'),
+      listTomorrow: document.getElementById('listTomorrow'),
+      listWeek: document.getElementById('listWeek'),
+      listExpired: document.getElementById('listExpired'),
       paginationToday: document.getElementById('paginationToday'),
       paginationTomorrow: document.getElementById('paginationTomorrow'),
       paginationWeek: document.getElementById('paginationWeek'),
@@ -1294,6 +1327,9 @@
     function openWhatsApp(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
+      // Marca como "mensagem enviada neste ciclo" — intercalação vermelho/verde
+      client.msgSentAt = new Date().toISOString();
+      saveClients();
       const phone = String(client.telefone || '').replace(/\D/g, '');
       const text = encodeURIComponent(buildMessage(client));
       const url = phone
@@ -1302,6 +1338,8 @@
       const a = document.createElement('a');
       a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      renderDashboard();
+      renderClientes();
     }
     function parseValor(v) {
       if (!v) return 0;
@@ -1317,8 +1355,10 @@
       const today = todayLocalDate();
       const ref = base < today ? today : base;
       const nd = addDays(ref, 30);
+      client.dataInicio = toInputDate(today);
       client.dataPagamento = toInputDate(today);
       client.dataRenovacao = toInputDate(nd);
+      client.msgSentAt = null; // reset do indicador WhatsApp no novo ciclo
       client.updatedAt = new Date().toISOString();
       movimentacoes.push({
         data: new Date().toISOString(),
@@ -1333,6 +1373,7 @@
       renderAll();
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      atualizarSelectMesGestao();
       showToast(`Renovado • Novo vencimento: ${formatDate(client.dataRenovacao)} • -1 crédito`);
     }
     window.openWhatsApp = openWhatsApp;
@@ -1344,6 +1385,7 @@
       els.panels.forEach(panel => panel.classList.toggle('active', panel.id === tabName));
       if (tabName === 'gestao') {
         setTimeout(() => {
+          atualizarSelectMesGestao();
           atualizarGraficoClientes();
           atualizarStatsFinanceiras();
           gerarTextoWhatsAppGestao();
@@ -1351,11 +1393,11 @@
       }
     }
 
-    function paginate(list, page) {
-      const totalPages = Math.max(1, Math.ceil(list.length / ITEMS_PER_PAGE));
+    function paginate(list, page, perPage = ITEMS_PER_PAGE) {
+      const totalPages = Math.max(1, Math.ceil(list.length / perPage));
       const safePage = Math.min(Math.max(1, page), totalPages);
-      const start = (safePage - 1) * ITEMS_PER_PAGE;
-      return { items: list.slice(start, start + ITEMS_PER_PAGE), totalPages, safePage };
+      const start = (safePage - 1) * perPage;
+      return { items: list.slice(start, start + perPage), totalPages, safePage };
     }
     function renderPagination(targetEl, currentPage, totalPages, onChangeName) {
       if (!targetEl) return;
@@ -1367,28 +1409,46 @@
       `;
     }
 
-    function renderVencimentoTable(targetEl, list, isExpired = false) {
+    /* ----- WhatsApp button (red/green) ----- */
+    function whatsBtnHtml(client) {
+      const sent = !!client.msgSentAt;
+      const cls = sent ? 'btn-whatsapp-sent' : 'btn-whatsapp-unsent';
+      const icon = sent ? 'fa-check' : 'fa-paper-plane';
+      const label = sent ? 'WhatsApp enviado' : 'WhatsApp';
+      return `<button class="${cls}" onclick="openWhatsApp('${client.id}')" data-testid="whats-${sent ? 'sent' : 'unsent'}-${client.id}"><i class="fab fa-whatsapp"></i> ${label} <i class="fas ${icon}" style="font-size:11px; margin-left:2px;"></i></button>`;
+    }
+
+    function renderVencimentoList(targetEl, list, isExpired = false) {
       if (!list.length) {
-        targetEl.innerHTML = `<tr class="empty-row"><td colspan="7"><span class="empty-icon">• • •</span>Nenhum cliente nesta faixa.</td></tr>`;
+        targetEl.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Nenhum cliente nesta faixa.</p></div>`;
         return;
       }
-      targetEl.innerHTML = list.map(c => `
-        <tr>
-          <td data-label="Nome">${escapeHtml(c.nome || '—')}</td>
-          <td class="mono" data-label="Telefone">${escapeHtml(c.telefone || '—')}</td>
-          <td class="mono" data-label="Usuário">${escapeHtml(c.usuario || '—')}</td>
-          <td data-label="Plano">${escapeHtml(c.plano || '—')}</td>
-          <td class="mono" data-label="Valor">${escapeHtml(c.valor || '—')}</td>
-          <td class="mono" data-label="${isExpired ? 'Vencimento' : 'Renovação'}">${escapeHtml(formatDate(c.dataRenovacao))}</td>
-          <td data-label="Ações">
-            <div class="table-actions">
-              <button class="btn-whatsapp" onclick="openWhatsApp('${c.id}')">WhatsApp</button>
+      targetEl.innerHTML = list.map(c => {
+        const st = getStatus(c);
+        const metaLabel = isExpired ? 'Vencimento' : 'Renovação';
+        return `
+          <div class="client-row" data-testid="venc-row-${c.id}">
+            <div class="client-row-main">
+              <div class="client-row-name">
+                ${escapeHtml(c.nome || '—')}
+                <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
+              </div>
+              <div class="client-row-meta">
+                <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
+                <span><b>User:</b> ${escapeHtml(c.usuario || '—')}</span>
+                <span><b>Plano:</b> ${escapeHtml(c.plano || '—')}</span>
+                <span><b>Valor:</b> ${escapeHtml(c.valor || '—')}</span>
+                <span><b>${metaLabel}:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
+              </div>
+            </div>
+            <div class="client-row-actions">
+              ${whatsBtnHtml(c)}
               <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
               <button class="btn-primary" onclick="renewClient('${c.id}')">Renovar</button>
+              <button class="btn-info" onclick="editClient('${c.id}')">Editar</button>
             </div>
-          </td>
-        </tr>
-      `).join('');
+          </div>`;
+      }).join('');
     }
 
     function renderDashboard() {
@@ -1418,19 +1478,19 @@
       if (els.countExpired) els.countExpired.textContent = expired.length;
 
       const pE = paginate(expired, state.expiredPage); state.expiredPage = pE.safePage;
-      renderVencimentoTable(els.listExpiredTable, pE.items, true);
+      renderVencimentoList(els.listExpired, pE.items, true);
       renderPagination(els.paginationExpired, pE.safePage, pE.totalPages, 'changeExpiredPage');
 
       const pT = paginate(dueToday, state.todayPage); state.todayPage = pT.safePage;
-      renderVencimentoTable(els.listTodayTable, pT.items);
+      renderVencimentoList(els.listToday, pT.items);
       renderPagination(els.paginationToday, pT.safePage, pT.totalPages, 'changeTodayPage');
 
       const pTm = paginate(dueTomorrow, state.tomorrowPage); state.tomorrowPage = pTm.safePage;
-      renderVencimentoTable(els.listTomorrowTable, pTm.items);
+      renderVencimentoList(els.listTomorrow, pTm.items);
       renderPagination(els.paginationTomorrow, pTm.safePage, pTm.totalPages, 'changeTomorrowPage');
 
       const pW = paginate(dueWeek, state.weekPage); state.weekPage = pW.safePage;
-      renderVencimentoTable(els.listWeekTable, pW.items);
+      renderVencimentoList(els.listWeek, pW.items);
       renderPagination(els.paginationWeek, pW.safePage, pW.totalPages, 'changeWeekPage');
     }
 
@@ -1455,30 +1515,34 @@
       state.clientesPage = pag.safePage;
 
       if (!pag.items.length) {
-        els.clientesList.innerHTML = `<tr class="empty-row"><td colspan="10"><span class="empty-icon">• • •</span>${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Comece pela aba Cadastros.' : 'Nenhum resultado para a busca.'}</td></tr>`;
+        els.clientesList.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Comece pela aba Cadastros.' : 'Nenhum resultado para a busca.'}</p></div>`;
       } else {
         els.clientesList.innerHTML = pag.items.map(c => {
           const st = getStatus(c);
           return `
-            <tr>
-              <td data-label="Nome">${escapeHtml(c.nome || '—')}</td>
-              <td class="mono" data-label="Telefone">${escapeHtml(c.telefone || '—')}</td>
-              <td data-label="App">${escapeHtml(c.aplicativo || '—')}</td>
-              <td class="mono" data-label="Usuário">${escapeHtml(c.usuario || '—')}</td>
-              <td data-label="Plano">${escapeHtml(c.plano || '—')}</td>
-              <td class="mono" data-label="Valor">${escapeHtml(c.valor || '—')}</td>
-              <td class="mono" data-label="Pagamento">${escapeHtml(formatDate(c.dataPagamento))}</td>
-              <td class="mono" data-label="Renovação">${escapeHtml(formatDate(c.dataRenovacao))}</td>
-              <td data-label="Status"><span class="pill ${st.cls}">${escapeHtml(st.label)}</span></td>
-              <td data-label="Ações">
-                <div class="table-actions">
-                  <button class="btn-info" onclick="editClient('${c.id}')">Editar</button>
-                  <button class="btn-danger" onclick="deleteClient('${c.id}')">Apagar</button>
-                  <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
-                  <button class="btn-whatsapp" onclick="openWhatsApp('${c.id}')">WhatsApp</button>
+            <div class="client-row" data-testid="cliente-row-${c.id}">
+              <div class="client-row-main">
+                <div class="client-row-name">
+                  ${escapeHtml(c.nome || '—')}
+                  <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
                 </div>
-              </td>
-            </tr>`;
+                <div class="client-row-meta">
+                  <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
+                  <span><b>App:</b> ${escapeHtml(c.aplicativo || '—')}</span>
+                  <span><b>User:</b> ${escapeHtml(c.usuario || '—')}</span>
+                  <span><b>Plano:</b> ${escapeHtml(c.plano || '—')}</span>
+                  <span><b>Valor:</b> ${escapeHtml(c.valor || '—')}</span>
+                  <span><b>Início:</b> ${escapeHtml(formatDate(c.dataInicio || c.dataPagamento))}</span>
+                  <span><b>Renovação:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
+                </div>
+              </div>
+              <div class="client-row-actions">
+                <button class="btn-info" onclick="editClient('${c.id}')" data-testid="edit-cliente-${c.id}">Editar</button>
+                <button class="btn-danger" onclick="deleteClient('${c.id}')">Apagar</button>
+                <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
+                ${whatsBtnHtml(c)}
+              </div>
+            </div>`;
         }).join('');
       }
       renderPagination(els.paginationClientes, pag.safePage, pag.totalPages, 'changeClientesPage');
@@ -1489,6 +1553,8 @@
     window.changeWeekPage = p => { state.weekPage = p; renderDashboard(); };
     window.changeExpiredPage = p => { state.expiredPage = p; renderDashboard(); };
     window.changeClientesPage = p => { state.clientesPage = p; renderClientes(); };
+    window.changeTestesPage = p => { state.testesPage = p; renderTestes(); };
+    window.changeHistoricoPage = p => { state.historicoPage = p; atualizarHistorico(); };
 
     /* ---------- TESTES IPTV ---------- */
     function buildTesteMessage(t) {
@@ -1505,14 +1571,19 @@
     function renderTestes() {
       const cont = document.getElementById('listaTestes');
       const cnt = document.getElementById('countTestes');
+      const pagEl = document.getElementById('paginationTestes');
       if (cnt) cnt.textContent = testes.length;
       if (!cont) return;
       if (testes.length === 0) {
         cont.innerHTML = `<div class="empty-state"><i class="fas fa-flask"></i><p>Nenhum teste cadastrado ainda.</p></div>`;
+        if (pagEl) pagEl.innerHTML = '';
         return;
       }
       const ordenados = testes.slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-      cont.innerHTML = ordenados.map(t => {
+      const pag = paginate(ordenados, state.testesPage);
+      state.testesPage = pag.safePage;
+
+      cont.innerHTML = pag.items.map(t => {
         const data = t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : '—';
         const linhaInfo = [
           t.plano ? `📦 ${escapeHtml(t.plano)}` : '',
@@ -1529,13 +1600,15 @@
                 <div class="list-item-sub" style="opacity:.7;">Cadastrado em ${data}</div>
               </div>
             </div>
-            <div class="table-actions">
+            <div class="client-row-actions" style="width:auto;">
               <button class="btn-whatsapp" onclick="whatsAppTeste('${t.id}')" data-testid="btn-whatsapp-teste-${t.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+              <button class="btn-info" onclick="editClient('${t.id}')" data-testid="btn-editar-teste-${t.id}"><i class="fas fa-pen"></i> Editar</button>
               <button class="btn-primary" onclick="ativarTeste('${t.id}')" data-testid="btn-ativar-teste-${t.id}"><i class="fas fa-bolt"></i> Ativar</button>
               <button class="btn-danger" onclick="excluirTeste('${t.id}')" data-testid="btn-excluir-teste-${t.id}"><i class="fas fa-trash"></i> Excluir</button>
             </div>
           </div>`;
       }).join('');
+      renderPagination(pagEl, pag.safePage, pag.totalPages, 'changeTestesPage');
     }
 
     function whatsAppTeste(id) {
@@ -1565,10 +1638,12 @@
         senha: t.senha,
         plano: t.plano,
         valor: t.valor,
+        dataInicio: toInputDate(hoje),
         dataPagamento: toInputDate(hoje),
         dataRenovacao: toInputDate(addDays(hoje, 30)),
         linkRenovacao: t.linkRenovacao,
         observacoes: t.observacoes,
+        msgSentAt: null,
         updatedAt: new Date().toISOString()
       };
       clients.push(novoCliente);
@@ -1588,6 +1663,7 @@
       renderTestes();
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      atualizarSelectMesGestao();
       switchTab('clientes');
       showToast(`${novoCliente.nome} ativado • -1 crédito • Vence em ${formatDate(novoCliente.dataRenovacao)}`);
     }
@@ -1610,6 +1686,7 @@
       renderTestes();
       atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      atualizarSelectMesGestao();
       showToast('Teste excluído.');
     }
 
@@ -1643,53 +1720,109 @@
         createdAt: new Date().toISOString()
       };
     }
-    function fillForm(c) {
-      els.clientId.value = c.id || '';
-      els.nome.value = c.nome || '';
-      els.telefone.value = c.telefone || '';
-      els.aplicativo.value = c.aplicativo || '';
-      els.usuario.value = c.usuario || '';
-      els.senha.value = c.senha || '';
-      els.plano.value = c.plano || '';
-      els.valor.value = c.valor || '';
-      els.linkRenovacao.value = c.linkRenovacao || '';
-      els.observacoes.value = c.observacoes || '';
-      els.formTitle.textContent = `Editando cliente: ${c.nome || ''}`;
-      switchTab('cadastros');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    /* ---------- EDIT CLIENT (modal na mesma aba) ---------- */
+    let editKind = null; // 'client' | 'teste'
+    function abrirModalEditarCliente() {
+      document.getElementById('modalEditarCliente').classList.add('active');
     }
-    window.editClient = id => { const c = clients.find(x => x.id === id); if (c) fillForm(c); };
+    function fecharModalEditarCliente() {
+      document.getElementById('modalEditarCliente').classList.remove('active');
+      editKind = null;
+    }
+    window.fecharModalEditarCliente = fecharModalEditarCliente;
+
+    function editClient(id) {
+      const c = clients.find(x => x.id === id);
+      const t = testes.find(x => x.id === id);
+      const target = c || t;
+      if (!target) return;
+      editKind = c ? 'client' : 'teste';
+      document.getElementById('ec_kind').value = editKind;
+      document.getElementById('ec_id').value = target.id;
+      document.getElementById('ec_nome').value = target.nome || '';
+      document.getElementById('ec_telefone').value = target.telefone || '';
+      document.getElementById('ec_aplicativo').value = target.aplicativo || '';
+      document.getElementById('ec_usuario').value = target.usuario || '';
+      document.getElementById('ec_senha').value = target.senha || '';
+      document.getElementById('ec_plano').value = target.plano || '';
+      document.getElementById('ec_valor').value = target.valor || '';
+      document.getElementById('ec_linkRenovacao').value = target.linkRenovacao || '';
+      document.getElementById('ec_observacoes').value = target.observacoes || '';
+
+      const inicioWrap = document.getElementById('ec_inicio_wrap');
+      const renovWrap = document.getElementById('ec_renovacao_wrap');
+      if (editKind === 'client') {
+        inicioWrap.style.display = '';
+        renovWrap.style.display = '';
+        document.getElementById('ec_dataInicio').value = target.dataInicio || target.dataPagamento || '';
+        document.getElementById('ec_dataRenovacao').value = target.dataRenovacao || '';
+        document.getElementById('modalEditarClienteTitle').textContent = `Editar Cliente • ${target.nome || ''}`;
+      } else {
+        inicioWrap.style.display = 'none';
+        renovWrap.style.display = 'none';
+        document.getElementById('ec_dataInicio').value = '';
+        document.getElementById('ec_dataRenovacao').value = '';
+        document.getElementById('modalEditarClienteTitle').textContent = `Editar Teste • ${target.nome || ''}`;
+      }
+      abrirModalEditarCliente();
+    }
+    window.editClient = editClient;
+
+    document.getElementById('formEditarCliente').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('ec_id').value;
+      const kind = document.getElementById('ec_kind').value;
+      const base = {
+        nome: document.getElementById('ec_nome').value.trim(),
+        telefone: document.getElementById('ec_telefone').value.trim(),
+        aplicativo: document.getElementById('ec_aplicativo').value.trim(),
+        usuario: document.getElementById('ec_usuario').value.trim(),
+        senha: document.getElementById('ec_senha').value.trim(),
+        plano: document.getElementById('ec_plano').value.trim(),
+        valor: document.getElementById('ec_valor').value.trim(),
+        linkRenovacao: document.getElementById('ec_linkRenovacao').value.trim(),
+        observacoes: document.getElementById('ec_observacoes').value.trim()
+      };
+      if (kind === 'client') {
+        const idx = clients.findIndex(x => x.id === id);
+        if (idx < 0) { showToast('Cliente não encontrado.', true); return; }
+        const prev = clients[idx];
+        const dataInicio = document.getElementById('ec_dataInicio').value || prev.dataInicio || prev.dataPagamento || '';
+        const dataRenovacao = document.getElementById('ec_dataRenovacao').value || prev.dataRenovacao || '';
+        clients[idx] = {
+          ...prev, ...base,
+          dataInicio,
+          dataPagamento: dataInicio || prev.dataPagamento || '',
+          dataRenovacao,
+          updatedAt: new Date().toISOString()
+        };
+        renderAll();
+      } else {
+        const idx = testes.findIndex(x => x.id === id);
+        if (idx < 0) { showToast('Teste não encontrado.', true); return; }
+        testes[idx] = { ...testes[idx], ...base, updatedAt: new Date().toISOString() };
+        salvarTestes();
+        renderTestes();
+      }
+      fecharModalEditarCliente();
+      showToast('Alterações salvas.');
+    });
+
     window.deleteClient = id => {
       const c = clients.find(x => x.id === id); if (!c) return;
       if (!confirm(`Excluir ${c.nome}?`)) return;
       clients = clients.filter(x => x.id !== id);
       renderAll();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      atualizarSelectMesGestao();
       showToast('Cliente excluído.');
     };
 
     els.clientForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const d = getFormData();
-      const idxClient = clients.findIndex(c => c.id === d.id);
-      if (idxClient >= 0) {
-        d.dataPagamento = clients[idxClient].dataPagamento;
-        d.dataRenovacao = clients[idxClient].dataRenovacao;
-        d.updatedAt = new Date().toISOString();
-        clients[idxClient] = d;
-        renderAll(); resetForm();
-        showToast('Cliente atualizado.');
-        return;
-      }
-      const idxTeste = testes.findIndex(t => t.id === d.id);
-      if (idxTeste >= 0) {
-        testes[idxTeste] = d;
-        salvarTestes();
-        renderTestes();
-        resetForm();
-        showToast('Teste atualizado.');
-        return;
-      }
+      // cadastro de teste novo (não edita cliente aqui; edição abre modal)
       testes.push(d);
       salvarTestes();
       movimentacoes.push({
@@ -1700,9 +1833,11 @@
         nome: d.nome
       });
       salvarMovimentacoes();
+      state.testesPage = 1;
       renderTestes();
       atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      atualizarSelectMesGestao();
       resetForm();
       showToast('Teste cadastrado com sucesso.');
     });
@@ -1742,6 +1877,7 @@
         renderTestes();
         atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
         atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
+        atualizarSelectMesGestao();
         atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
         showToast('Backup importado com sucesso.');
       } catch (err) {
@@ -1759,7 +1895,6 @@
     let lucrosCustos = [];
     let graficoClientes = null;
     let movimentacaoEditando = null;
-    let mostrarTodosHistorico = false;
 
     function salvarPacotes() { localStorage.setItem('iptv_pacotes', JSON.stringify(pacotes)); }
     function salvarMovimentacoes() { localStorage.setItem('iptv_movimentacoes', JSON.stringify(movimentacoes)); }
@@ -1802,6 +1937,7 @@
       });
       salvarMovimentacoes();
       atualizarCreditos(); atualizarHistorico();
+      atualizarSelectMesGestao();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       sel.value = '';
       showToast(`+${pacote.quantidade} créditos • Custo R$ ${custoTotal.toFixed(2)}`);
@@ -1840,6 +1976,7 @@
       });
       salvarMovimentacoes();
       atualizarHistorico();
+      atualizarSelectMesGestao();
       atualizarGraficoClientes();
       atualizarStatsFinanceiras();
       gerarTextoWhatsAppGestao();
@@ -1848,97 +1985,95 @@
     }
     window.registrarNaoRenovou = registrarNaoRenovou;
 
-    function atualizarHistorico() {
-      const container = document.getElementById('historicoRecargas');
-      if (movimentacoes.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';
-        document.getElementById('btnVerMais').style.display = 'none';
-        return;
-      }
-      const limite = mostrarTodosHistorico ? movimentacoes.length : 6;
-      const lista = movimentacoes.slice().reverse().slice(0, limite);
+    /* ---------- Histórico com paginação ---------- */
+    function renderMovimentacaoHtml(m, realIdx) {
+      const data = new Date(m.data).toLocaleString('pt-BR');
       const tipos = { novo: 'Cliente Novo', renovacao: 'Renovação', nao_renovou: 'Não Renovou' };
-
-      container.innerHTML = lista.map((m, idx) => {
-        const realIdx = movimentacoes.length - 1 - idx;
-        const data = new Date(m.data).toLocaleString('pt-BR');
-        if (m.tipo === 'add') {
-          return `
-            <div class="list-item">
-              <div class="list-item-content">
-                <div class="list-item-icon" style="color: var(--primary);"><i class="fas fa-plus-circle"></i></div>
-                <div style="flex:1; min-width:0;">
-                  <div class="list-item-text">Adicionado: ${m.quantidade} créditos</div>
-                  <div class="list-item-sub">${data} • Custo: R$ ${m.custo.toFixed(2)}</div>
-                </div>
+      if (m.tipo === 'add') {
+        return `
+          <div class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="color: var(--primary);"><i class="fas fa-plus-circle"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="list-item-text">Adicionado: ${m.quantidade} créditos</div>
+                <div class="list-item-sub">${data} • Custo: R$ ${m.custo.toFixed(2)}</div>
               </div>
-              <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
-              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
-            </div>`;
-        } else if (m.tipo === 'churn') {
-          return `
-            <div class="list-item">
-              <div class="list-item-content">
-                <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-user-times"></i></div>
-                <div style="flex:1; min-width:0;">
-                  <div class="list-item-text">Não Renovaram: ${m.quantidade} cliente(s)</div>
-                  <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
-                </div>
+            </div>
+            <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
+            <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+          </div>`;
+      } else if (m.tipo === 'churn') {
+        return `
+          <div class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-user-times"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="list-item-text">Não Renovaram: ${m.quantidade} cliente(s)</div>
+                <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
               </div>
-              <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
-              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
-            </div>`;
-        } else if (m.tipo === 'teste') {
-          return `
-            <div class="list-item">
-              <div class="list-item-content">
-                <div class="list-item-icon" style="color: var(--info);"><i class="fas fa-flask"></i></div>
-                <div style="flex:1; min-width:0;">
-                  <div class="list-item-text">Teste criado${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
-                  <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
-                </div>
+            </div>
+            <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
+            <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+          </div>`;
+      } else if (m.tipo === 'teste') {
+        return `
+          <div class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="color: var(--info);"><i class="fas fa-flask"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="list-item-text">Teste criado${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
+                <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
               </div>
-              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
-            </div>`;
-        } else if (m.tipo === 'teste_excluido') {
-          return `
-            <div class="list-item">
-              <div class="list-item-content">
-                <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-vial-circle-check"></i></div>
-                <div style="flex:1; min-width:0;">
-                  <div class="list-item-text">Teste excluído${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
-                  <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
-                </div>
+            </div>
+            <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+          </div>`;
+      } else if (m.tipo === 'teste_excluido') {
+        return `
+          <div class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-vial-circle-check"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="list-item-text">Teste excluído${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
+                <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
               </div>
-              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
-            </div>`;
-        } else {
-          return `
-            <div class="list-item">
-              <div class="list-item-content">
-                <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-minus-circle"></i></div>
-                <div style="flex:1; min-width:0;">
-                  <div class="list-item-text">${tipos[m.tipoCliente] || m.tipoCliente} • R$ ${(m.valor || 0).toFixed(2)}</div>
-                  <div class="list-item-sub">${data}</div>
-                </div>
-              </div>
-              <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
-              <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
-            </div>`;
-        }
-      }).join('');
-
-      if (movimentacoes.length > 6) {
-        document.getElementById('btnVerMais').style.display = 'block';
-        document.getElementById('textoVerMais').textContent = mostrarTodosHistorico ? 'Ver Menos' : 'Ver Mais';
+            </div>
+            <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+          </div>`;
       } else {
-        document.getElementById('btnVerMais').style.display = 'none';
+        return `
+          <div class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-minus-circle"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="list-item-text">${tipos[m.tipoCliente] || m.tipoCliente} • R$ ${(m.valor || 0).toFixed(2)}</div>
+                <div class="list-item-sub">${data}</div>
+              </div>
+            </div>
+            <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
+            <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+          </div>`;
       }
     }
 
-    function toggleVerMais() {
-      mostrarTodosHistorico = !mostrarTodosHistorico;
-      atualizarHistorico();
+    function atualizarHistorico() {
+      const container = document.getElementById('historicoRecargas');
+      const pagEl = document.getElementById('paginationHistorico');
+      if (!container) return;
+      if (movimentacoes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';
+        if (pagEl) pagEl.innerHTML = '';
+        return;
+      }
+      // Lista reversa (mais recentes primeiro) com índices reais
+      const listaComIdx = movimentacoes
+        .map((m, i) => ({ m, i }))
+        .sort((a, b) => (new Date(b.m.data)) - (new Date(a.m.data)));
+
+      const pag = paginate(listaComIdx, state.historicoPage);
+      state.historicoPage = pag.safePage;
+
+      container.innerHTML = pag.items.map(({ m, i }) => renderMovimentacaoHtml(m, i)).join('');
+      renderPagination(pagEl, pag.safePage, pag.totalPages, 'changeHistoricoPage');
     }
 
     function editarMovimentacao(idx) {
@@ -2011,13 +2146,13 @@
       movimentacoes.splice(idx, 1);
       salvarMovimentacoes();
       atualizarCreditos(); atualizarHistorico();
+      atualizarSelectMesGestao();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
     }
     window.editarMovimentacao = editarMovimentacao;
     window.removerMovimentacao = removerMovimentacao;
     window.fecharModalEditarMov = fecharModalEditarMov;
     window.salvarEdicaoMov = salvarEdicaoMov;
-    window.toggleVerMais = toggleVerMais;
 
     function adicionarLucroCusto() {
       const valor = parseFloat(document.getElementById('valorLucroCusto').value);
@@ -2026,6 +2161,7 @@
       lucrosCustos.push({ data: new Date().toISOString(), valor, info });
       salvarLucrosCustos();
       atualizarListaLucrosCustos();
+      atualizarSelectMesGestao();
       atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       document.getElementById('valorLucroCusto').value = '';
       document.getElementById('infoLucroCusto').value = '';
@@ -2053,23 +2189,30 @@
       lucrosCustos.splice(idx, 1);
       salvarLucrosCustos();
       atualizarListaLucrosCustos(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      atualizarSelectMesGestao();
     }
     window.adicionarLucroCusto = adicionarLucroCusto;
     window.removerLucroCusto = removerLucroCusto;
 
     function atualizarListaPacotes() {
       const lista = document.getElementById('listaPacotes');
+      const cnt = document.getElementById('countPacotes');
+      if (cnt) cnt.textContent = pacotes.length;
       if (pacotes.length === 0) {
         lista.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>Nenhum pacote cadastrado</p></div>';
         return;
       }
       lista.innerHTML = pacotes.map(p => `
-        <div class="list-item">
+        <div class="list-item" data-testid="pacote-item-${p.id}">
           <div class="list-item-content">
             <div class="list-item-icon"><i class="fas fa-box"></i></div>
-            <div class="list-item-text">${p.quantidade} créditos</div>
+            <div>
+              <div class="list-item-text">${p.quantidade} créditos</div>
+              <div class="list-item-sub">Total: R$ ${(p.quantidade * p.preco).toFixed(2)}</div>
+            </div>
           </div>
-          <div class="list-item-badge">R$ ${p.preco.toFixed(2)}</div>
+          <div class="list-item-badge">R$ ${p.preco.toFixed(2)} /un</div>
+          <button class="btn-info" onclick="editarPacote(${p.id})" data-testid="btn-editar-pacote-${p.id}"><i class="fas fa-edit"></i></button>
           <button class="btn-danger" onclick="removerPacote(${p.id})"><i class="fas fa-trash"></i></button>
         </div>`).join('');
     }
@@ -2078,24 +2221,42 @@
       select.innerHTML = '<option value="">Selecione um pacote</option>' +
         pacotes.map(p => `<option value="${p.id}">${p.quantidade} créditos - R$ ${p.preco.toFixed(2)} cada</option>`).join('');
     }
+    let pacoteEditandoId = null;
     function abrirModalPacote() {
+      pacoteEditandoId = null;
+      document.querySelector('#modalPacote .modal-title').textContent = 'Adicionar Pacote';
       document.getElementById('modalPacote').classList.add('active');
       document.getElementById('qtdCreditos').value = '';
       document.getElementById('precoCredito').value = '';
     }
+    function editarPacote(id) {
+      const p = pacotes.find(x => x.id === id);
+      if (!p) return;
+      pacoteEditandoId = id;
+      document.querySelector('#modalPacote .modal-title').textContent = 'Editar Pacote';
+      document.getElementById('qtdCreditos').value = p.quantidade;
+      document.getElementById('precoCredito').value = p.preco;
+      document.getElementById('modalPacote').classList.add('active');
+    }
     function fecharModalPacote() {
       document.getElementById('modalPacote').classList.remove('active');
+      pacoteEditandoId = null;
     }
     function salvarPacote() {
       const quantidade = parseInt(document.getElementById('qtdCreditos').value);
       const preco = parseFloat(document.getElementById('precoCredito').value);
       if (!quantidade || !preco) { showToast('Preencha todos os campos.', true); return; }
-      const novoId = pacotes.length > 0 ? Math.max(...pacotes.map(p => p.id)) + 1 : 1;
-      pacotes.push({ id: novoId, quantidade, preco });
+      if (pacoteEditandoId) {
+        const idx = pacotes.findIndex(p => p.id === pacoteEditandoId);
+        if (idx >= 0) { pacotes[idx] = { id: pacoteEditandoId, quantidade, preco }; }
+      } else {
+        const novoId = pacotes.length > 0 ? Math.max(...pacotes.map(p => p.id)) + 1 : 1;
+        pacotes.push({ id: novoId, quantidade, preco });
+      }
       salvarPacotes();
       atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
       fecharModalPacote();
-      showToast('Pacote adicionado.');
+      showToast(pacoteEditandoId ? 'Pacote atualizado.' : 'Pacote adicionado.');
     }
     function removerPacote(id) {
       if (!confirm('Remover este pacote?')) return;
@@ -2107,6 +2268,12 @@
     window.fecharModalPacote = fecharModalPacote;
     window.salvarPacote = salvarPacote;
     window.removerPacote = removerPacote;
+    window.editarPacote = editarPacote;
+
+    // Toggle card pacotes collapse
+    document.getElementById('headerPacotes').addEventListener('click', () => {
+      document.getElementById('cardPacotes').classList.toggle('collapsed');
+    });
 
     function adicionarAssinatura() {
       const quantidade = parseInt(document.getElementById('qtdAssinatura').value);
@@ -2225,14 +2392,63 @@
     }
     window.calcular = calcular;
 
-    /* ---------- STATS FINANCEIRAS (Gestão Top 3 Boxes) ---------- */
+    /* ---------- GESTÃO: filtro por mês ---------- */
+    function monthKey(dateLike) {
+      const d = new Date(dateLike);
+      if (isNaN(d.getTime())) return null;
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+    function monthLabel(k) {
+      const [y, mo] = k.split('-');
+      return new Date(Number(y), Number(mo) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    }
+    function coletarMesesDisponiveis() {
+      const set = new Set();
+      movimentacoes.forEach(m => { const k = monthKey(m.data); if (k) set.add(k); });
+      lucrosCustos.forEach(lc => { const k = monthKey(lc.data); if (k) set.add(k); });
+      clients.forEach(c => {
+        const due = parseDate(c.dataRenovacao);
+        if (due) set.add(`${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`);
+      });
+      // sempre incluir o mês atual para filtro disponível
+      const now = new Date();
+      set.add(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+      return Array.from(set).sort((a, b) => b.localeCompare(a));
+    }
+    function atualizarSelectMesGestao() {
+      const sel = document.getElementById('filtroMesGestao');
+      if (!sel) return;
+      const meses = coletarMesesDisponiveis();
+      const prev = state.filtroMes;
+      sel.innerHTML = '<option value="all">Todos os meses</option>' +
+        meses.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join('');
+      if (prev && (prev === 'all' || meses.includes(prev))) sel.value = prev;
+      else { sel.value = 'all'; state.filtroMes = 'all'; }
+    }
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.id === 'filtroMesGestao') {
+        state.filtroMes = e.target.value;
+        atualizarGraficoClientes();
+        atualizarStatsFinanceiras();
+        gerarTextoWhatsAppGestao();
+      }
+    });
+
+    function passaFiltroMes(dateLike) {
+      if (state.filtroMes === 'all') return true;
+      return monthKey(dateLike) === state.filtroMes;
+    }
+
+    /* ---------- STATS FINANCEIRAS (com filtro mês) ---------- */
     function computeTotaisFinanceiros() {
       let custo = 0, lucro = 0;
       movimentacoes.forEach(m => {
+        if (!passaFiltroMes(m.data)) return;
         if (m.tipo === 'add') custo += (m.custo || 0);
         else if (m.tipo === 'use') lucro += (m.valor || 0);
       });
       lucrosCustos.forEach(lc => {
+        if (!passaFiltroMes(lc.data)) return;
         if (lc.valor >= 0) lucro += lc.valor;
         else custo += Math.abs(lc.valor);
       });
@@ -2254,19 +2470,16 @@
     }
     window.atualizarStatsFinanceiras = atualizarStatsFinanceiras;
 
-    /* ---------- GRÁFICO DE MOVIMENTAÇÃO DE CLIENTES (LINHAS) ---------- */
+    /* ---------- GRÁFICO DE MOVIMENTAÇÃO DE CLIENTES ---------- */
     function atualizarGraficoClientes() {
-      const ctx = document.getElementById('graficoClientes');
-      if (!ctx) return;
+      const parent = document.querySelector('#gestao .chart-container');
+      if (!parent) return;
       const porMes = {};
-      const getKey = (dateStr) => {
-        const d = new Date(dateStr);
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      };
       const ensure = k => { if (!porMes[k]) porMes[k] = { novos: 0, renovacoes: 0, naoRenovou: 0, vencidos: 0, testes: 0 }; };
 
       movimentacoes.forEach(m => {
-        const k = getKey(m.data);
+        if (!passaFiltroMes(m.data)) return;
+        const k = monthKey(m.data); if (!k) return;
         ensure(k);
         if (m.tipo === 'use' && m.tipoCliente === 'novo') porMes[k].novos += (m.quantidade || 1);
         else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') porMes[k].renovacoes += (m.quantidade || 1);
@@ -2274,21 +2487,20 @@
         else if (m.tipo === 'teste') porMes[k].testes += (m.quantidade || 1);
       });
 
-      // Auto-conta clientes atualmente vencidos (dataRenovacao < hoje) no mês do vencimento
       const today = todayLocalDate();
       clients.forEach(c => {
         const due = parseDate(c.dataRenovacao);
         if (!due) return;
         if (due < today) {
           const k = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`;
+          if (state.filtroMes !== 'all' && k !== state.filtroMes) return;
           ensure(k);
           porMes[k].vencidos += 1;
         }
       });
 
-      const parent = ctx.parentElement;
       if (Object.keys(porMes).length === 0) {
-        parent.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>Nenhum dado de cliente</p></div>';
+        parent.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>Sem dados para o filtro selecionado</p></div>';
         return;
       }
       if (!document.getElementById('graficoClientes')) {
@@ -2325,7 +2537,7 @@
           interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { position: 'top', labels: { color: '#f5f5f5', font: { size: 12, weight: '600' }, padding: 12, usePointStyle: true } },
-            title: { display: true, text: 'Movimentação mensal de clientes', color: '#f5f5f5', font: { size: 14, weight: '700' }, padding: 12 },
+            title: { display: true, text: state.filtroMes === 'all' ? 'Movimentação mensal de clientes' : `Movimentação em ${monthLabel(state.filtroMes)}`, color: '#f5f5f5', font: { size: 14, weight: '700' }, padding: 12 },
             tooltip: { backgroundColor: '#0a0a0a', titleColor: '#fff', bodyColor: '#f5f5f5', borderColor: 'rgba(57,255,20,.3)', borderWidth: 1 }
           },
           scales: {
@@ -2339,30 +2551,38 @@
     function gerarTextoWhatsAppGestao() {
       let novos = 0, renov = 0, nren = 0, testes_criados = 0;
       movimentacoes.forEach(m => {
+        if (!passaFiltroMes(m.data)) return;
         if (m.tipo === 'use' && m.tipoCliente === 'novo') novos += (m.quantidade || 1);
         else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') renov += (m.quantidade || 1);
         else if (m.tipo === 'churn') nren += (m.quantidade || 1);
         else if (m.tipo === 'teste') testes_criados += (m.quantidade || 1);
       });
 
-      // Vencidos atuais (dataRenovacao < hoje)
       const today = todayLocalDate();
       let vencidosAtuais = 0;
       clients.forEach(c => {
         const due = parseDate(c.dataRenovacao);
-        if (due && due < today) vencidosAtuais += 1;
+        if (!due || due >= today) return;
+        if (state.filtroMes !== 'all') {
+          const k = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`;
+          if (k !== state.filtroMes) return;
+        }
+        vencidosAtuais += 1;
       });
 
       const { custo, lucro, liquido } = computeTotaisFinanceiros();
+      const rotuloMes = state.filtroMes === 'all' ? 'GERAL' : monthLabel(state.filtroMes).toUpperCase();
 
-      let t = `📊 *RESUMO COMPLETO - GESTÃO IPTV*\n\n`;
+      let t = `📊 *RESUMO COMPLETO - GESTÃO IPTV (${rotuloMes})*\n\n`;
       t += `👥 *CLIENTES*\n`;
       t += `• Novos: ${novos}\n• Renovações: ${renov}\n• Não Renovaram (manual): ${nren}\n• Vencidos agora: ${vencidosAtuais}\n• Testes criados: ${testes_criados}\n• Total Ativos: ${clients.length}\n\n`;
       t += `💰 *FINANCEIRO*\n`;
       t += `• Custo Total: R$ ${custo.toFixed(2)}\n• Lucro Total: R$ ${lucro.toFixed(2)}\n• Lucro Líquido: R$ ${liquido.toFixed(2)}\n\n`;
-      if (lucrosCustos.length > 0) {
+
+      const lcFiltrados = lucrosCustos.filter(lc => passaFiltroMes(lc.data));
+      if (lcFiltrados.length > 0) {
         t += `📝 *LUCROS/CUSTOS PERSONALIZADOS*\n`;
-        lucrosCustos.forEach(lc => {
+        lcFiltrados.forEach(lc => {
           const sig = lc.valor >= 0 ? '➕' : '➖';
           t += `${sig} ${lc.info}: R$ ${Math.abs(lc.valor).toFixed(2)}\n`;
         });
@@ -2395,9 +2615,9 @@
       const d1 = toInputDate(addDays(todayLocalDate(), 1));
       const d7 = toInputDate(addDays(todayLocalDate(), 7));
       clients = [
-        { id: generateId(), nome: 'Cliente Exemplo Hoje', telefone: '5541999999999', aplicativo: 'XCIPTV', usuario: 'clientehoje', senha: '123456', plano: 'Mensal', valor: '30,00', dataPagamento: '', dataRenovacao: d0, linkRenovacao: 'https://seulink.com/renovar/hoje', observacoes: '' },
-        { id: generateId(), nome: 'Cliente Exemplo Amanhã', telefone: '5541988888888', aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321', plano: 'Mensal', valor: '35,00', dataPagamento: '', dataRenovacao: d1, linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: '' },
-        { id: generateId(), nome: 'Cliente Exemplo 7 Dias', telefone: '5541977777777', aplicativo: 'Bob Player', usuario: 'cliente7dias', senha: '789456', plano: 'Mensal', valor: '25,00', dataPagamento: '', dataRenovacao: d7, linkRenovacao: 'https://seulink.com/renovar/7dias', observacoes: '' }
+        { id: generateId(), nome: 'Cliente Exemplo Hoje', telefone: '5541999999999', aplicativo: 'XCIPTV', usuario: 'clientehoje', senha: '123456', plano: 'Mensal', valor: '30,00', dataInicio: toInputDate(addDays(todayLocalDate(), -30)), dataPagamento: toInputDate(addDays(todayLocalDate(), -30)), dataRenovacao: d0, linkRenovacao: 'https://seulink.com/renovar/hoje', observacoes: '', msgSentAt: null },
+        { id: generateId(), nome: 'Cliente Exemplo Amanhã', telefone: '5541988888888', aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321', plano: 'Mensal', valor: '35,00', dataInicio: toInputDate(addDays(todayLocalDate(), -29)), dataPagamento: toInputDate(addDays(todayLocalDate(), -29)), dataRenovacao: d1, linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: '', msgSentAt: null },
+        { id: generateId(), nome: 'Cliente Exemplo 7 Dias', telefone: '5541977777777', aplicativo: 'Bob Player', usuario: 'cliente7dias', senha: '789456', plano: 'Mensal', valor: '25,00', dataInicio: toInputDate(addDays(todayLocalDate(), -23)), dataPagamento: toInputDate(addDays(todayLocalDate(), -23)), dataRenovacao: d7, linkRenovacao: 'https://seulink.com/renovar/7dias', observacoes: '', msgSentAt: null }
       ];
       saveClients();
     }
@@ -2415,6 +2635,7 @@
     atualizarListaLucrosCustos();
     atualizarListaAssinaturas();
     atualizarListaCustos();
+    atualizarSelectMesGestao();
     atualizarStatsFinanceiras();
   </script>
 </body>
