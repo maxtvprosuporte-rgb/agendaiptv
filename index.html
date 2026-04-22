@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel IPTV â€¢ GestÃ£o + Calculadora</title>
+  <title>Painel IPTV • Gestão + Calculadora</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -221,7 +221,7 @@
       box-shadow: var(--glow-sm);
     }
 
-    /* WhatsApp button variants (sent / not sent) â€” usado SOMENTE para vencimento hoje */
+    /* WhatsApp button variants (sent / not sent) — usado SOMENTE para vencimento hoje */
     .btn-whatsapp-sent {
       background: linear-gradient(180deg, #0d1d08, #060e04);
       color: var(--primary);
@@ -580,7 +580,7 @@
       text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
     }
 
-    /* Month filter in GestÃ£o */
+    /* Month filter in Gestão */
     .month-filter-bar {
       display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
       background: linear-gradient(180deg, var(--card), var(--card-2));
@@ -808,18 +808,18 @@
       <button class="tab" data-tab="dashboard" data-testid="tab-dashboard">Vencimento</button>
       <button class="tab" data-tab="clientes" data-testid="tab-clientes">Clientes</button>
       <button class="tab" data-tab="calculadora" data-testid="tab-calculadora">Calculadora</button>
-      <button class="tab" data-tab="gestao" data-testid="tab-gestao">GestÃ£o</button>
-      <button class="tab" data-tab="config" data-testid="tab-config">ConfiguraÃ§Ã£o</button>
+      <button class="tab" data-tab="gestao" data-testid="tab-gestao">Gestão</button>
+      <button class="tab" data-tab="config" data-testid="tab-config">Configuração</button>
     </nav>
 
     <!-- VENCIMENTO -->
     <section id="dashboard" class="panel">
       <div class="table-card" style="margin-bottom:18px;">
         <div class="card-header">
-          <div class="card-title"><h2>Vencidos (nÃ£o renovaram)</h2><span class="tag">Atrasados</span></div>
+          <div class="card-title"><h2>Vencidos (não renovaram)</h2><span class="tag">Atrasados</span></div>
           <span class="count-badge danger" id="countExpired" data-testid="count-expired">0</span>
         </div>
-        <p class="card-hint">Clientes com vencimento no passado. 10 por pÃ¡gina.</p>
+        <p class="card-hint">Clientes com vencimento no passado. 10 por página.</p>
         <div id="listExpired" data-testid="list-expired"></div>
         <div class="pagination-bar" id="paginationExpired"></div>
       </div>
@@ -829,27 +829,27 @@
           <div class="card-title"><h2>Vencendo hoje</h2><span class="tag">D-Day</span></div>
           <span class="count-badge danger" id="countToday" data-testid="count-today">0</span>
         </div>
-        <p class="card-hint">Clientes cujo plano vence hoje. WhatsApp vermelho = mensagem ainda nÃ£o enviada neste ciclo. Verde = jÃ¡ enviada. 10 por pÃ¡gina.</p>
+        <p class="card-hint">Clientes cujo plano vence hoje. WhatsApp vermelho = mensagem ainda não enviada neste ciclo. Verde = já enviada. 10 por página.</p>
         <div id="listToday" data-testid="list-today"></div>
         <div class="pagination-bar" id="paginationToday"></div>
       </div>
 
       <div class="table-card" style="margin-bottom:18px;">
         <div class="card-header">
-          <div class="card-title"><h2>Vence amanha</h2><span class="tag">D-1</span></div>
+          <div class="card-title"><h2>Vence amanhã</h2><span class="tag">D-1</span></div>
           <span class="count-badge warning" id="countTomorrow" data-testid="count-tomorrow">0</span>
         </div>
-        <p class="card-hint">Previsão para o próximo dia</p>
+        <p class="card-hint">Previsão para o próximo dia. 10 por página.</p>
         <div id="listTomorrow" data-testid="list-tomorrow"></div>
         <div class="pagination-bar" id="paginationTomorrow"></div>
       </div>
 
       <div class="table-card">
         <div class="card-header">
-          <div class="card-title"><h2>Vence em atÃ© 7 dias</h2><span class="tag">D-7</span></div>
+          <div class="card-title"><h2>Vence em até 7 dias</h2><span class="tag">D-7</span></div>
           <span class="count-badge" id="countWeek" data-testid="count-week">0</span>
         </div>
-        <p class="card-hint">Clientes com vencimento nos próximos 2 a 7 dias.</p>
+        <p class="card-hint">Clientes com vencimento nos próximos 2 a 7 dias. 10 por página.</p>
         <div id="listWeek" data-testid="list-week"></div>
         <div class="pagination-bar" id="paginationWeek"></div>
       </div>
@@ -859,7 +859,7 @@
     <section id="cadastros" class="panel active">
       <div class="form-card">
         <div class="card-header">
-          <div class="card-title"><h2 id="formTitle">Cadastrar Teste IPTV</h2><span class="tag">Formulario</span></div>
+          <div class="card-title"><h2 id="formTitle">Cadastrar Teste IPTV</h2><span class="tag">Formulário</span></div>
         </div>
         <form id="clientForm" autocomplete="off">
           <input type="hidden" id="clientId" />
@@ -867,26 +867,26 @@
             <div class="field"><label for="nome">Nome</label><input id="nome" required data-testid="input-nome" /></div>
             <div class="field"><label for="telefone">Telefone</label><input id="telefone" placeholder="Ex.: 41999998888" data-testid="input-telefone" /></div>
             <div class="field"><label for="aplicativo">Aplicativo</label><input id="aplicativo" placeholder="Ex.: XCIPTV" data-testid="input-aplicativo" /></div>
-            <div class="field"><label for="usuario">Usuario</label><input id="usuario" required data-testid="input-usuario" /></div>
+            <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
             <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
             <div class="field"><label for="plano">Plano</label><input id="plano" placeholder="Ex.: Mensal" data-testid="input-plano" /></div>
             <div class="field"><label for="valor">Valor</label><input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" /></div>
-            <div class="field" style="grid-column: span 2;"><label for="linkRenovacao">Link de ativaÃ§Ã£o / renovaÃ§Ã£o</label><input id="linkRenovacao" placeholder="https://..." data-testid="input-link-renovacao" /></div>
+            <div class="field" style="grid-column: span 2;"><label for="linkRenovacao">Link de ativação / renovação</label><input id="linkRenovacao" placeholder="https://..." data-testid="input-link-renovacao" /></div>
             <div class="field"><label for="observacoes">Observações</label><input id="observacoes" placeholder="Opcional" data-testid="input-observacoes" /></div>
           </div>
           <div class="form-actions">
             <button type="submit" class="btn-primary" data-testid="save-client-btn">Salvar teste</button>
-            <button type="button" class="btn-secondary" id="clearFormBtn" data-testid="clear-form-btn">Limpar formulÃ¡rio</button>
+            <button type="button" class="btn-secondary" id="clearFormBtn" data-testid="clear-form-btn">Limpar formulário</button>
           </div>
         </form>
       </div>
 
       <div class="table-card" style="margin-top:18px;">
         <div class="card-header">
-          <div class="card-title"><h2>Testes em andamento</h2><span class="tag">Aguardando ativaÃ§Ã£o</span></div>
+          <div class="card-title"><h2>Testes em andamento</h2><span class="tag">Aguardando ativação</span></div>
           <span class="count-badge" id="countTestes" data-testid="count-testes">0</span>
         </div>
-        <p class="card-hint">Clientes que fizeram o teste mas ainda não ativaram a assinatura.</p>
+        <p class="card-hint">Clientes que fizeram o teste mas ainda não ativaram a assinatura. 10 por página.</p>
         <div id="listaTestes" data-testid="lista-testes"></div>
         <div class="pagination-bar" id="paginationTestes"></div>
       </div>
@@ -899,7 +899,7 @@
           <div class="toolbar-left">
             <h2>Clientes cadastrados</h2>
             <span class="count-badge" id="countClientes" data-testid="count-clientes">0</span>
-            <input id="searchClientesInput" class="search" placeholder="Buscar por nome, telefone, usuÃ¡rio, app ou plano" data-testid="search-clientes-input" />
+            <input id="searchClientesInput" class="search" placeholder="Buscar por nome, telefone, usuário, app ou plano" data-testid="search-clientes-input" />
             <button class="btn-primary" id="btnAbrirNovoCliente" onclick="abrirModalNovoCliente()" data-testid="btn-abrir-novo-cliente" style="margin-left:auto;">
               <i class="fas fa-user-plus"></i> Cadastrar Cliente
             </button>
@@ -918,7 +918,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label"><i class="fas fa-box"></i> Pacote de CrÃ©ditos</label>
+          <label class="form-label"><i class="fas fa-box"></i> Pacote de Créditos</label>
           <select id="pacoteSelecionado" class="form-select">
             <option value="">Selecione um pacote</option>
           </select>
@@ -939,7 +939,7 @@
           <div id="listaCustos"></div>
           <div class="input-group-2" style="margin-top: 12px;">
             <input type="number" id="valorCusto" class="form-input" placeholder="Valor (R$)" step="0.01">
-            <input type="text" id="descricaoCusto" class="form-input" placeholder="InformaÃ§Ãµes do custo">
+            <input type="text" id="descricaoCusto" class="form-input" placeholder="Informações do custo">
             <button class="btn-secondary" onclick="adicionarCusto()"><i class="fas fa-plus"></i> Adicionar</button>
           </div>
         </div>
@@ -952,15 +952,15 @@
       </div>
     </section>
 
-    <!-- GESTÃƒO -->
+    <!-- GESTÃO -->
     <section id="gestao" class="panel">
       <!-- Month filter bar -->
       <div class="month-filter-bar" data-testid="month-filter-bar">
-        <label><i class="fas fa-filter"></i> Filtrar por mÃªs</label>
+        <label><i class="fas fa-filter"></i> Filtrar por mês</label>
         <select id="filtroMesGestao" class="form-select" data-testid="filtro-mes-gestao">
           <option value="all">Todos os meses</option>
         </select>
-        <span class="month-filter-hint" id="filtroMesHint">Aplicado aos cards, grÃ¡fico e resumo.</span>
+        <span class="month-filter-hint" id="filtroMesHint">Aplicado aos cards, gráfico e resumo.</span>
       </div>
 
       <div class="credit-stats" style="margin-bottom: 18px;">
@@ -974,20 +974,20 @@
         </div>
         <div class="credit-stat-card">
           <div class="credit-stat-value" id="totalLiquido" style="color: var(--info);" data-testid="total-liquido">R$ 0,00</div>
-          <div class="credit-stat-label">Lucro LÃ­quido</div>
+          <div class="credit-stat-label">Lucro Líquido</div>
         </div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title"><i class="fas fa-users"></i><h2>MovimentaÃ§Ã£o de Clientes</h2></div>
+          <div class="card-title"><i class="fas fa-users"></i><h2>Movimentação de Clientes</h2></div>
         </div>
         <div class="chart-container"><canvas id="graficoClientes"></canvas></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title"><i class="fab fa-whatsapp"></i><h2>Resumo Completo â€” WhatsApp</h2></div>
+          <div class="card-title"><i class="fab fa-whatsapp"></i><h2>Resumo Completo — WhatsApp</h2></div>
         </div>
         <div class="form-group">
           <textarea id="textoWhatsAppGestao" class="form-textarea" rows="16" readonly></textarea>
@@ -998,46 +998,46 @@
       </div>
     </section>
 
-    <!-- CONFIGURAÃ‡ÃƒO -->
+    <!-- CONFIGURAÇÃO -->
     <section id="config" class="panel">
       <div class="card">
         <div class="card-header">
-          <div class="card-title"><i class="fas fa-coins"></i><h2>GestÃ£o de CrÃ©ditos</h2></div>
+          <div class="card-title"><i class="fas fa-coins"></i><h2>Gestão de Créditos</h2></div>
         </div>
 
         <div class="credit-stats">
           <div class="credit-stat-card">
             <div class="credit-stat-value" id="creditosAtuais" data-testid="creditos-atuais">0</div>
-            <div class="credit-stat-label">CrÃ©ditos DisponÃ­veis</div>
+            <div class="credit-stat-label">Créditos Disponíveis</div>
           </div>
           <div class="credit-stat-card">
             <div class="credit-stat-value" id="creditosUsados" data-testid="creditos-usados">0</div>
-            <div class="credit-stat-label">CrÃ©ditos Usados</div>
+            <div class="credit-stat-label">Créditos Usados</div>
           </div>
           <div class="credit-stat-card">
             <div class="credit-stat-value" id="custoTotalCreditos" style="color: #ff9b9b;" data-testid="custo-total-creditos">R$ 0</div>
-            <div class="credit-stat-label">Custo Total CrÃ©ditos</div>
+            <div class="credit-stat-label">Custo Total Créditos</div>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label"><i class="fas fa-box"></i> Adicionar CrÃ©dito pelo Pacote</label>
+          <label class="form-label"><i class="fas fa-box"></i> Adicionar Crédito pelo Pacote</label>
           <div class="input-group-2" style="grid-template-columns: 1fr auto;">
             <select id="pacoteAddCredito" class="form-select" data-testid="pacote-add-credito">
               <option value="">Selecione um pacote cadastrado</option>
             </select>
             <button class="btn-primary" onclick="adicionarCreditoPacote()" data-testid="btn-adicionar-credito-pacote"><i class="fas fa-plus"></i> Adicionar</button>
           </div>
-          <p class="card-hint" style="margin: 8px 0 0;">Os crÃ©ditos e o custo sÃ£o calculados automaticamente a partir do pacote selecionado.</p>
+          <p class="card-hint" style="margin: 8px 0 0;">Os créditos e o custo são calculados automaticamente a partir do pacote selecionado.</p>
         </div>
 
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-faint);">
           <label class="form-label" style="display:flex; margin-bottom:10px;">
-            <i class="fas fa-user-times"></i> NÃ£o Renovaram neste mÃªs
-            <span class="tag" style="margin-left:8px; font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 6px; background:#050505; border:1px solid var(--border-faint); color: var(--muted); letter-spacing:.08em;">nÃ£o desconta crÃ©dito</span>
+            <i class="fas fa-user-times"></i> Não Renovaram neste mês
+            <span class="tag" style="margin-left:8px; font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 6px; background:#050505; border:1px solid var(--border-faint); color: var(--muted); letter-spacing:.08em;">não desconta crédito</span>
           </label>
           <div class="input-group-2" style="grid-template-columns: 1fr auto;">
-            <input type="number" id="qtdNaoRenovou" class="form-input" placeholder="Quantidade de clientes que nÃ£o renovaram" min="1">
+            <input type="number" id="qtdNaoRenovou" class="form-input" placeholder="Quantidade de clientes que não renovaram" min="1">
             <button class="btn-secondary" onclick="registrarNaoRenovou()"><i class="fas fa-plus"></i> Registrar</button>
           </div>
         </div>
@@ -1049,17 +1049,17 @@
           </h3>
           <div id="listaLucrosCustos"></div>
           <div class="input-group-2" style="margin-top: 12px;">
-            <input type="number" id="valorLucroCusto" class="form-input" placeholder="Valor (R$) â€” use negativo p/ custo" step="0.01">
-            <input type="text" id="infoLucroCusto" class="form-input" placeholder="InformaÃ§Ã£o (ex: Venda equipamento)">
+            <input type="number" id="valorLucroCusto" class="form-input" placeholder="Valor (R$) — use negativo p/ custo" step="0.01">
+            <input type="text" id="infoLucroCusto" class="form-input" placeholder="Informação (ex: Venda equipamento)">
             <button class="btn-secondary" onclick="adicionarLucroCusto()"><i class="fas fa-plus"></i> Adicionar</button>
           </div>
         </div>
       </div>
 
-      <!-- PACOTES (colapsÃ¡vel) â€” ACIMA do histÃ³rico agora -->
+      <!-- PACOTES (colapsável) — ACIMA do histórico agora -->
       <div class="card collapsed" id="cardPacotes">
         <div class="card-header collapsible" id="headerPacotes" data-testid="header-pacotes">
-          <div class="card-title"><i class="fas fa-box"></i><h2>Pacotes de CrÃ©ditos</h2></div>
+          <div class="card-title"><i class="fas fa-box"></i><h2>Pacotes de Créditos</h2></div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="count-badge" id="countPacotes" data-testid="count-pacotes">0</span>
             <span class="chev"><i class="fas fa-chevron-down"></i></span>
@@ -1075,7 +1075,7 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title"><i class="fas fa-history"></i><h2>HistÃ³rico de MovimentaÃ§Ãµes</h2></div>
+          <div class="card-title"><i class="fas fa-history"></i><h2>Histórico de Movimentações</h2></div>
         </div>
         <div id="historicoRecargas"></div>
         <div class="pagination-bar" id="paginationHistorico"></div>
@@ -1091,11 +1091,11 @@
         <button class="modal-close" onclick="fecharModalPacote()"><i class="fas fa-times"></i></button>
       </div>
       <div class="form-group">
-        <label class="form-label"><i class="fas fa-hashtag"></i> Quantidade de CrÃ©ditos</label>
+        <label class="form-label"><i class="fas fa-hashtag"></i> Quantidade de Créditos</label>
         <input type="number" id="qtdCreditos" class="form-input" placeholder="Ex: 50">
       </div>
       <div class="form-group">
-        <label class="form-label"><i class="fas fa-money-bill-wave"></i> PreÃ§o por CrÃ©dito (R$)</label>
+        <label class="form-label"><i class="fas fa-money-bill-wave"></i> Preço por Crédito (R$)</label>
         <input type="number" id="precoCredito" class="form-input" placeholder="Ex: 8.00" step="0.01">
       </div>
       <button class="btn-primary btn-block" onclick="salvarPacote()">
@@ -1104,16 +1104,16 @@
     </div>
   </div>
 
-  <!-- MODAL EDITAR MOVIMENTAÃ‡ÃƒO -->
+  <!-- MODAL EDITAR MOVIMENTAÇÃO -->
   <div id="modalEditarMov" class="modal">
     <div class="modal-content sm">
       <div class="modal-header">
-        <h3 class="modal-title">Editar MovimentaÃ§Ã£o</h3>
+        <h3 class="modal-title">Editar Movimentação</h3>
         <button class="modal-close" onclick="fecharModalEditarMov()"><i class="fas fa-times"></i></button>
       </div>
       <div id="formEditarMov"></div>
       <button class="btn-primary btn-block" onclick="salvarEdicaoMov()">
-        <i class="fas fa-check"></i> Salvar AlteraÃ§Ãµes
+        <i class="fas fa-check"></i> Salvar Alterações
       </button>
     </div>
   </div>
@@ -1132,24 +1132,24 @@
           <div class="field"><label for="ec_nome">Nome</label><input id="ec_nome" required data-testid="ec-nome" /></div>
           <div class="field"><label for="ec_telefone">Telefone</label><input id="ec_telefone" placeholder="Ex.: 41999998888" data-testid="ec-telefone" /></div>
           <div class="field"><label for="ec_aplicativo">Aplicativo</label><input id="ec_aplicativo" data-testid="ec-aplicativo" /></div>
-          <div class="field"><label for="ec_usuario">UsuÃ¡rio</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
+          <div class="field"><label for="ec_usuario">Usuário</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
           <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
           <div class="field"><label for="ec_plano">Plano</label><input id="ec_plano" data-testid="ec-plano" /></div>
           <div class="field"><label for="ec_valor">Valor</label><input id="ec_valor" placeholder="Ex.: 30,00" data-testid="ec-valor" /></div>
-          <div class="field" id="ec_inicio_wrap"><label for="ec_dataInicio">Data de inÃ­cio</label><input type="date" id="ec_dataInicio" data-testid="ec-data-inicio" /></div>
+          <div class="field" id="ec_inicio_wrap"><label for="ec_dataInicio">Data de início</label><input type="date" id="ec_dataInicio" data-testid="ec-data-inicio" /></div>
           <div class="field" id="ec_renovacao_wrap">
             <label for="ec_dataRenovacao" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <span>Data de renovaÃ§Ã£o</span>
-              <button type="button" id="ec_btnPlus30" class="btn-secondary" style="padding:4px 8px; min-height:26px; font-size:11px; text-transform:none; letter-spacing:0;" title="Recalcular: inÃ­cio + 30 dias">+30 dias</button>
+              <span>Data de renovação</span>
+              <button type="button" id="ec_btnPlus30" class="btn-secondary" style="padding:4px 8px; min-height:26px; font-size:11px; text-transform:none; letter-spacing:0;" title="Recalcular: início + 30 dias">+30 dias</button>
             </label>
             <input type="date" id="ec_dataRenovacao" data-testid="ec-data-renovacao" />
           </div>
-          <div class="field" style="grid-column: span 2;"><label for="ec_linkRenovacao">Link de ativaÃ§Ã£o / renovaÃ§Ã£o</label><input id="ec_linkRenovacao" placeholder="https://..." data-testid="ec-link" /></div>
-          <div class="field" style="grid-column: span 3;"><label for="ec_observacoes">ObservaÃ§Ãµes</label><input id="ec_observacoes" data-testid="ec-observacoes" /></div>
+          <div class="field" style="grid-column: span 2;"><label for="ec_linkRenovacao">Link de ativação / renovação</label><input id="ec_linkRenovacao" placeholder="https://..." data-testid="ec-link" /></div>
+          <div class="field" style="grid-column: span 3;"><label for="ec_observacoes">Observações</label><input id="ec_observacoes" data-testid="ec-observacoes" /></div>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn-primary" data-testid="save-editar-cliente">
-            <i class="fas fa-check"></i> Salvar alteraÃ§Ãµes
+            <i class="fas fa-check"></i> Salvar alterações
           </button>
           <button type="button" class="btn-secondary" onclick="fecharModalEditarCliente()">Cancelar</button>
         </div>
@@ -1169,26 +1169,26 @@
           <div class="field"><label for="nc_nome">Nome</label><input id="nc_nome" required data-testid="nc-nome" /></div>
           <div class="field"><label for="nc_telefone">Telefone</label><input id="nc_telefone" placeholder="Ex.: 41999998888" data-testid="nc-telefone" /></div>
           <div class="field"><label for="nc_aplicativo">Aplicativo</label><input id="nc_aplicativo" placeholder="Ex.: XCIPTV" data-testid="nc-aplicativo" /></div>
-          <div class="field"><label for="nc_usuario">UsuÃ¡rio</label><input id="nc_usuario" required data-testid="nc-usuario" /></div>
+          <div class="field"><label for="nc_usuario">Usuário</label><input id="nc_usuario" required data-testid="nc-usuario" /></div>
           <div class="field"><label for="nc_senha">Senha</label><input id="nc_senha" required data-testid="nc-senha" /></div>
           <div class="field"><label for="nc_plano">Plano</label><input id="nc_plano" placeholder="Ex.: Mensal" data-testid="nc-plano" /></div>
           <div class="field"><label for="nc_valor">Valor</label><input id="nc_valor" placeholder="Ex.: 30,00" data-testid="nc-valor" /></div>
-          <div class="field"><label for="nc_dataInicio">Data de inÃ­cio</label><input type="date" id="nc_dataInicio" data-testid="nc-data-inicio" /></div>
+          <div class="field"><label for="nc_dataInicio">Data de início</label><input type="date" id="nc_dataInicio" data-testid="nc-data-inicio" /></div>
           <div class="field">
             <label for="nc_dataRenovacao" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <span>Data de renovaÃ§Ã£o</span>
-              <button type="button" id="nc_btnPlus30" class="btn-secondary" style="padding:4px 8px; min-height:26px; font-size:11px; text-transform:none; letter-spacing:0;" title="Recalcular: inÃ­cio + 30 dias">+30 dias</button>
+              <span>Data de renovação</span>
+              <button type="button" id="nc_btnPlus30" class="btn-secondary" style="padding:4px 8px; min-height:26px; font-size:11px; text-transform:none; letter-spacing:0;" title="Recalcular: início + 30 dias">+30 dias</button>
             </label>
             <input type="date" id="nc_dataRenovacao" data-testid="nc-data-renovacao" />
           </div>
           <div class="field" style="grid-column: span 2;"><label for="nc_linkRenovacao">Link de ativação / renovação</label><input id="nc_linkRenovacao" placeholder="https://..." data-testid="nc-link" /></div>
-          <div class="field" style="grid-column: span 3;"><label for="nc_observacoes">ObservaÃ§Ãµes</label><input id="nc_observacoes" placeholder="Opcional" data-testid="nc-observacoes" /></div>
+          <div class="field" style="grid-column: span 3;"><label for="nc_observacoes">Observações</label><input id="nc_observacoes" placeholder="Opcional" data-testid="nc-observacoes" /></div>
         </div>
 
         <div class="form-group" style="margin-top: 18px;">
-          <label class="form-label"><i class="fas fa-coins"></i> Contabilizar credito na criação?</label>
-          <p class="card-hint" style="margin: 0 0 10px;">Sim: desconta 1 crédito, soma no faturamento e aparece no gráfico. Não: apenas cadastra o cliente sem impactar créditos ou gráfico.</p>
-          <div class="radio-group" role="radiogroup" aria-label="Contabilizar crÃ©dito">
+          <label class="form-label"><i class="fas fa-coins"></i> Contabilizar crédito na criação?</label>
+          <p class="card-hint" style="margin: 0 0 10px;">Sim: desconta 1 crédito, soma no faturamento e aparece no gráfico. Não: apenas cadastra o cliente sem impactar créditos/gráfico.</p>
+          <div class="radio-group" role="radiogroup" aria-label="Contabilizar crédito">
             <label class="radio-option active" id="nc_contab_sim" data-testid="nc-contab-sim">
               <input type="radio" name="nc_contabilizar" value="sim" checked>
               <i class="fas fa-check-circle"></i> Sim, contabilizar
@@ -1214,7 +1214,7 @@
 
   <script>
     /* =========================================================
-       PARTE 1 â€” GESTÃƒO DE CLIENTES (Cadastros / Vencimento / Clientes)
+       PARTE 1 — GESTÃO DE CLIENTES (Cadastros / Vencimento / Clientes)
        ========================================================= */
     const STORAGE_KEY = 'iptv_clientes_v1';
     const STORAGE_KEY_TESTES = 'iptv_testes_v1';
@@ -1312,9 +1312,9 @@
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
     }
     function formatDate(value) {
-      if (!value) return 'â€”';
+      if (!value) return '—';
       const d = parseDate(value);
-      if (!d || isNaN(d.getTime())) return 'â€”';
+      if (!d || isNaN(d.getTime())) return '—';
       return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
     }
     function addDays(date, days) {
@@ -1334,9 +1334,9 @@
     function getStatus(client) {
       const diff = getDaysUntil(client);
       if (diff === null) return { label: 'Sem data', cls: 'pill-week' };
-      if (diff < 0) return { label: `Vencido hÃ¡ ${Math.abs(diff)}d`, cls: 'pill-expired' };
+      if (diff < 0) return { label: `Vencido há ${Math.abs(diff)}d`, cls: 'pill-expired' };
       if (diff === 0) return { label: 'Vence hoje', cls: 'pill-today' };
-      if (diff === 1) return { label: 'Vence amanha', cls: 'pill-tomorrow' };
+      if (diff === 1) return { label: 'Vence amanhã', cls: 'pill-tomorrow' };
       if (diff <= 7) return { label: `Vence em ${diff}d`, cls: 'pill-week' };
       return { label: `${diff}d restantes`, cls: 'pill-ok' };
     }
@@ -1353,29 +1353,29 @@
     function buildMessage(client) {
       const diff = getDaysUntil(client);
       let statusTag;
-      if (diff === null) statusTag = `PrÃ³ximo do vencimento`;
+      if (diff === null) statusTag = `Próximo do vencimento`;
       else if (diff > 1) statusTag = `Vence em ${diff} dias`;
       else if (diff === 1) statusTag = `Vence em 1 dia`;
       else if (diff === 0) statusTag = `Vence hoje`;
-      else if (diff === -1) statusTag = `Venceu hÃ¡ 1 dia`;
-      else statusTag = `Venceu hÃ¡ ${Math.abs(diff)} dias`;
+      else if (diff === -1) statusTag = `Venceu há 1 dia`;
+      else statusTag = `Venceu há ${Math.abs(diff)} dias`;
 
       const valor = (client.valor || '').toString().trim();
       const valorLinha = valor ? `R$ ${valor}` : '';
 
       return [
-        `ðŸ‘‹ OlÃ¡ *${client.nome || ''}* Seu plano *${statusTag}*`,
+        `👋 Olá *${client.nome || ''}* Seu plano *${statusTag}*`,
         ``,
-        `Para evitar cortes, acesse o link abaixo e realize o pagamento e fique sem preocupaÃ§Ãµes!`,
+        `Para evitar cortes, acesse o link abaixo e realize o pagamento e fique sem preocupações!`,
         ``,
-        `ðŸ‘¤ *UsuÃ¡rio*: ${client.usuario || ''}`,
-        `ðŸ”‘ *Senha*: ${client.senha || ''}`,
-        `ðŸ“¦ *Plano*: ${client.plano || ''}`,
-        `ðŸ’° *Valor*: ${valorLinha}`,
+        `👤 *Usuário*: ${client.usuario || ''}`,
+        `🔑 *Senha*: ${client.senha || ''}`,
+        `📦 *Plano*: ${client.plano || ''}`,
+        `💰 *Valor*: ${valorLinha}`,
         ``,
-        `ðŸ”— *Link de renovação*: ${client.linkRenovacao || ''}`,
+        `🔗 *Link de renovação*: ${client.linkRenovacao || ''}`,
         ``,
-        `ðŸ™ Obrigado pela preferÃªncia!`
+        `🙏 Obrigado pela preferência!`
       ].join('\n');
     }
 
@@ -1397,7 +1397,7 @@
         document.body.appendChild(ta); ta.select();
         document.execCommand('copy'); document.body.removeChild(ta);
         showToast(`Mensagem copiada para ${name}`);
-      } catch (e) { showToast('NÃ£o foi possÃ­vel copiar.', true); }
+      } catch (e) { showToast('Não foi possível copiar.', true); }
     }
     function openWhatsApp(id) {
       const client = clients.find(c => c.id === id);
@@ -1451,7 +1451,7 @@
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
-      showToast(`Renovado â€¢ Novo vencimento: ${formatDate(client.dataRenovacao)} â€¢ -1 crÃ©dito`);
+      showToast(`Renovado • Novo vencimento: ${formatDate(client.dataRenovacao)} • -1 crédito`);
     }
     window.openWhatsApp = openWhatsApp;
     window.copyMessage = copyMessage;
@@ -1480,9 +1480,9 @@
       if (!targetEl) return;
       if (totalPages <= 1) { targetEl.innerHTML = ''; return; }
       targetEl.innerHTML = `
-        <button class="btn-secondary" onclick="${onChangeName}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>â† Anterior</button>
-        <span class="page-info">PÃ¡gina ${currentPage} de ${totalPages}</span>
-        <button class="btn-secondary" onclick="${onChangeName}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>PrÃ³xima â†’</button>
+        <button class="btn-secondary" onclick="${onChangeName}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Anterior</button>
+        <span class="page-info">Página ${currentPage} de ${totalPages}</span>
+        <button class="btn-secondary" onclick="${onChangeName}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Próxima →</button>
       `;
     }
 
@@ -1506,19 +1506,19 @@
       }
       targetEl.innerHTML = list.map(c => {
         const st = getStatus(c);
-        const metaLabel = isExpired ? 'Vencimento' : 'RenovaÃ§Ã£o';
+        const metaLabel = isExpired ? 'Vencimento' : 'Renovação';
         return `
           <div class="client-row" data-testid="venc-row-${c.id}">
             <div class="client-row-main">
               <div class="client-row-name">
-                ${escapeHtml(c.nome || 'â€”')}
+                ${escapeHtml(c.nome || '—')}
                 <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
               </div>
               <div class="client-row-meta">
-                <span><b>Tel:</b> ${escapeHtml(c.telefone || 'â€”')}</span>
-                <span><b>User:</b> ${escapeHtml(c.usuario || 'â€”')}</span>
-                <span><b>Plano:</b> ${escapeHtml(c.plano || 'â€”')}</span>
-                <span><b>Valor:</b> ${escapeHtml(c.valor || 'â€”')}</span>
+                <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
+                <span><b>User:</b> ${escapeHtml(c.usuario || '—')}</span>
+                <span><b>Plano:</b> ${escapeHtml(c.plano || '—')}</span>
+                <span><b>Valor:</b> ${escapeHtml(c.valor || '—')}</span>
                 <span><b>${metaLabel}:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
               </div>
             </div>
@@ -1596,7 +1596,7 @@
       state.clientesPage = pag.safePage;
 
       if (!pag.items.length) {
-        els.clientesList.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Use o botÃ£o "Cadastrar Cliente" acima.' : 'Nenhum resultado para a busca.'}</p></div>`;
+        els.clientesList.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Use o botão "Cadastrar Cliente" acima.' : 'Nenhum resultado para a busca.'}</p></div>`;
       } else {
         els.clientesList.innerHTML = pag.items.map(c => {
           const st = getStatus(c);
@@ -1604,17 +1604,17 @@
             <div class="client-row" data-testid="cliente-row-${c.id}">
               <div class="client-row-main">
                 <div class="client-row-name">
-                  ${escapeHtml(c.nome || 'â€”')}
+                  ${escapeHtml(c.nome || '—')}
                   <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
                 </div>
                 <div class="client-row-meta">
-                  <span><b>Tel:</b> ${escapeHtml(c.telefone || 'â€”')}</span>
-                  <span><b>App:</b> ${escapeHtml(c.aplicativo || 'â€”')}</span>
-                  <span><b>User:</b> ${escapeHtml(c.usuario || 'â€”')}</span>
-                  <span><b>Plano:</b> ${escapeHtml(c.plano || 'â€”')}</span>
-                  <span><b>Valor:</b> ${escapeHtml(c.valor || 'â€”')}</span>
-                  <span><b>InÃ­cio:</b> ${escapeHtml(formatDate(c.dataInicio || c.dataPagamento))}</span>
-                  <span><b>RenovaÃ§Ã£o:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
+                  <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
+                  <span><b>App:</b> ${escapeHtml(c.aplicativo || '—')}</span>
+                  <span><b>User:</b> ${escapeHtml(c.usuario || '—')}</span>
+                  <span><b>Plano:</b> ${escapeHtml(c.plano || '—')}</span>
+                  <span><b>Valor:</b> ${escapeHtml(c.valor || '—')}</span>
+                  <span><b>Início:</b> ${escapeHtml(formatDate(c.dataInicio || c.dataPagamento))}</span>
+                  <span><b>Renovação:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
                 </div>
               </div>
               <div class="client-row-actions">
@@ -1641,11 +1641,11 @@
     function buildTesteMessage(t) {
       const link = (t.linkRenovacao || '').trim();
       return [
-        `OlÃ¡! ðŸ˜Š`,
-        `Vimos que vocÃª realizou o teste, mas ainda nÃ£o ativou sua assinatura.`,
-        `Para continuar aproveitando tudo, basta acessar o link abaixo e concluir a ativaÃ§Ã£o ðŸ‘‡`,
+        `Olá! 😊`,
+        `Vimos que você realizou o teste, mas ainda não ativou sua assinatura.`,
+        `Para continuar aproveitando tudo, basta acessar o link abaixo e concluir a ativação 👇`,
         ``,
-        link || '[informe o link de ativaÃ§Ã£o no cadastro]'
+        link || '[informe o link de ativação no cadastro]'
       ].join('\n');
     }
 
@@ -1665,19 +1665,19 @@
       state.testesPage = pag.safePage;
 
       cont.innerHTML = pag.items.map(t => {
-        const data = t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : 'â€”';
+        const data = t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : '—';
         const linhaInfo = [
-          t.plano ? `ðŸ“¦ ${escapeHtml(t.plano)}` : '',
-          t.valor ? `ðŸ’° R$ ${escapeHtml(t.valor)}` : '',
-          t.aplicativo ? `ðŸ“± ${escapeHtml(t.aplicativo)}` : ''
-        ].filter(Boolean).join(' â€¢ ');
+          t.plano ? `📦 ${escapeHtml(t.plano)}` : '',
+          t.valor ? `💰 R$ ${escapeHtml(t.valor)}` : '',
+          t.aplicativo ? `📱 ${escapeHtml(t.aplicativo)}` : ''
+        ].filter(Boolean).join(' • ');
         return `
           <div class="list-item" style="flex-wrap:wrap; gap:10px;" data-testid="teste-item-${t.id}">
             <div class="list-item-content">
               <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-flask"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">${escapeHtml(t.nome || 'â€”')} ${t.telefone ? `â€¢ <span style="font-family:var(--font-mono); color:var(--muted); font-size:12.5px;">${escapeHtml(t.telefone)}</span>` : ''}</div>
-                <div class="list-item-sub">${linhaInfo || 'â€”'}</div>
+                <div class="list-item-text">${escapeHtml(t.nome || '—')} ${t.telefone ? `• <span style="font-family:var(--font-mono); color:var(--muted); font-size:12.5px;">${escapeHtml(t.telefone)}</span>` : ''}</div>
+                <div class="list-item-sub">${linhaInfo || '—'}</div>
                 <div class="list-item-sub" style="opacity:.7;">Cadastrado em ${data}</div>
               </div>
             </div>
@@ -1746,7 +1746,7 @@
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
       switchTab('clientes');
-      showToast(`${novoCliente.nome} ativado â€¢ -1 crÃ©dito â€¢ Vence em ${formatDate(novoCliente.dataRenovacao)}`);
+      showToast(`${novoCliente.nome} ativado • -1 crédito • Vence em ${formatDate(novoCliente.dataRenovacao)}`);
     }
 
     function excluirTeste(id) {
@@ -1768,7 +1768,7 @@
       atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
-      showToast('Teste excluÃ­do.');
+      showToast('Teste excluído.');
     }
 
     window.whatsAppTeste = whatsAppTeste;
@@ -1838,19 +1838,19 @@
         renovWrap.style.display = '';
         document.getElementById('ec_dataInicio').value = target.dataInicio || target.dataPagamento || '';
         document.getElementById('ec_dataRenovacao').value = target.dataRenovacao || '';
-        document.getElementById('modalEditarClienteTitle').textContent = `Editar Cliente â€¢ ${target.nome || ''}`;
+        document.getElementById('modalEditarClienteTitle').textContent = `Editar Cliente • ${target.nome || ''}`;
       } else {
         inicioWrap.style.display = 'none';
         renovWrap.style.display = 'none';
         document.getElementById('ec_dataInicio').value = '';
         document.getElementById('ec_dataRenovacao').value = '';
-        document.getElementById('modalEditarClienteTitle').textContent = `Editar Teste â€¢ ${target.nome || ''}`;
+        document.getElementById('modalEditarClienteTitle').textContent = `Editar Teste • ${target.nome || ''}`;
       }
       abrirModalEditarCliente();
     }
     window.editClient = editClient;
 
-    // Auto-sincroniza Data de renovaÃ§Ã£o = Data de inÃ­cio + 30 dias ao alterar inÃ­cio
+    // Auto-sincroniza Data de renovação = Data de início + 30 dias ao alterar início
     (function wireEcDateSync() {
       const inicio = document.getElementById('ec_dataInicio');
       const renov = document.getElementById('ec_dataRenovacao');
@@ -1882,7 +1882,7 @@
       };
       if (kind === 'client') {
         const idx = clients.findIndex(x => x.id === id);
-        if (idx < 0) { showToast('Cliente nÃ£o encontrado.', true); return; }
+        if (idx < 0) { showToast('Cliente não encontrado.', true); return; }
         const prev = clients[idx];
         const dataInicio = document.getElementById('ec_dataInicio').value || prev.dataInicio || prev.dataPagamento || '';
         const dataRenovacao = document.getElementById('ec_dataRenovacao').value || prev.dataRenovacao || '';
@@ -1902,13 +1902,13 @@
         gerarTextoWhatsAppGestao();
       } else {
         const idx = testes.findIndex(x => x.id === id);
-        if (idx < 0) { showToast('Teste nÃ£o encontrado.', true); return; }
+        if (idx < 0) { showToast('Teste não encontrado.', true); return; }
         testes[idx] = { ...testes[idx], ...base, updatedAt: new Date().toISOString() };
         salvarTestes();
         renderTestes();
       }
       fecharModalEditarCliente();
-      showToast('AlteraÃ§Ãµes salvas.');
+      showToast('Alterações salvas.');
     });
 
     /* ---------- NOVO CLIENTE (modal na aba Clientes) ---------- */
@@ -1932,7 +1932,7 @@
     window.abrirModalNovoCliente = abrirModalNovoCliente;
     window.fecharModalNovoCliente = fecharModalNovoCliente;
 
-    // Sync: data inÃ­cio + 30 = renovaÃ§Ã£o
+    // Sync: data início + 30 = renovação
     (function wireNcDateSync() {
       const inicio = document.getElementById('nc_dataInicio');
       const renov = document.getElementById('nc_dataRenovacao');
@@ -1970,7 +1970,7 @@
       const nome = document.getElementById('nc_nome').value.trim();
       const usuario = document.getElementById('nc_usuario').value.trim();
       const senha = document.getElementById('nc_senha').value.trim();
-      if (!nome || !usuario || !senha) { showToast('Preencha Nome, UsuÃ¡rio e Senha.', true); return; }
+      if (!nome || !usuario || !senha) { showToast('Preencha Nome, Usuário e Senha.', true); return; }
 
       const hoje = todayLocalDate();
       const dataInicio = document.getElementById('nc_dataInicio').value || toInputDate(hoje);
@@ -2018,8 +2018,8 @@
       atualizarSelectMesGestao();
       fecharModalNovoCliente();
       showToast(contabilizar
-        ? `${novo.nome} cadastrado â€¢ -1 crÃ©dito contabilizado`
-        : `${novo.nome} cadastrado (sem impacto no grÃ¡fico/crÃ©ditos)`);
+        ? `${novo.nome} cadastrado • -1 crédito contabilizado`
+        : `${novo.nome} cadastrado (sem impacto no gráfico/créditos)`);
     });
 
     window.deleteClient = id => {
@@ -2029,7 +2029,7 @@
       renderAll();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
-      showToast('Cliente excluÃ­do.');
+      showToast('Cliente excluído.');
     };
 
     els.clientForm.addEventListener('submit', (e) => {
@@ -2083,7 +2083,7 @@
           if (Array.isArray(data.movimentacoes)) { movimentacoes = data.movimentacoes; salvarMovimentacoes(); }
           if (Array.isArray(data.lucrosCustos)) { lucrosCustos = data.lucrosCustos; salvarLucrosCustos(); }
         } else {
-          throw new Error('Formato invÃ¡lido');
+          throw new Error('Formato inválido');
         }
         renderAll();
         renderTestes();
@@ -2093,12 +2093,12 @@
         atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
         showToast('Backup importado com sucesso.');
       } catch (err) {
-        showToast('Arquivo invÃ¡lido.', true);
+        showToast('Arquivo inválido.', true);
       } finally { e.target.value = ''; }
     });
 
     /* =========================================================
-       PARTE 2 â€” CALCULADORA / CRÃ‰DITO / GESTÃƒO / CONFIGURAÃ‡ÃƒO
+       PARTE 2 — CALCULADORA / CRÉDITO / GESTÃO / CONFIGURAÇÃO
        ========================================================= */
     let pacotes = [];
     let assinaturas = [];
@@ -2137,7 +2137,7 @@
       const id = parseInt(sel.value);
       if (!id) { showToast('Selecione um pacote cadastrado.', true); return; }
       const pacote = pacotes.find(p => p.id === id);
-      if (!pacote) { showToast('Pacote nÃ£o encontrado.', true); return; }
+      if (!pacote) { showToast('Pacote não encontrado.', true); return; }
       const custoTotal = pacote.quantidade * pacote.preco;
       movimentacoes.push({
         data: new Date().toISOString(),
@@ -2151,7 +2151,7 @@
       atualizarSelectMesGestao();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       sel.value = '';
-      showToast(`+${pacote.quantidade} crÃ©ditos â€¢ Custo R$ ${custoTotal.toFixed(2)}`);
+      showToast(`+${pacote.quantidade} créditos • Custo R$ ${custoTotal.toFixed(2)}`);
     }
     window.adicionarCreditoPacote = adicionarCreditoPacote;
 
@@ -2159,7 +2159,7 @@
       const sel = document.getElementById('pacoteAddCredito');
       if (!sel) return;
       sel.innerHTML = '<option value="">Selecione um pacote cadastrado</option>' +
-        pacotes.map(p => `<option value="${p.id}">${p.quantidade} crÃ©ditos â€¢ R$ ${p.preco.toFixed(2)}/un â€¢ Total R$ ${(p.quantidade * p.preco).toFixed(2)}</option>`).join('');
+        pacotes.map(p => `<option value="${p.id}">${p.quantidade} créditos • R$ ${p.preco.toFixed(2)}/un • Total R$ ${(p.quantidade * p.preco).toFixed(2)}</option>`).join('');
     }
 
     function atualizarCreditos() {
@@ -2178,7 +2178,7 @@
 
     function registrarNaoRenovou() {
       const qtd = parseInt(document.getElementById('qtdNaoRenovou').value);
-      if (!qtd || qtd < 1) { showToast('Informe uma quantidade vÃ¡lida.', true); return; }
+      if (!qtd || qtd < 1) { showToast('Informe uma quantidade válida.', true); return; }
       movimentacoes.push({
         data: new Date().toISOString(),
         tipo: 'churn',
@@ -2192,21 +2192,21 @@
       atualizarStatsFinanceiras();
       gerarTextoWhatsAppGestao();
       document.getElementById('qtdNaoRenovou').value = '';
-      showToast(`${qtd} nÃ£o renovaÃ§Ã£o(Ãµes) registrada(s).`);
+      showToast(`${qtd} não renovação(ões) registrada(s).`);
     }
     window.registrarNaoRenovou = registrarNaoRenovou;
 
     function renderMovimentacaoHtml(m, realIdx) {
       const data = new Date(m.data).toLocaleString('pt-BR');
-      const tipos = { novo: 'Cliente Novo', renovacao: 'RenovaÃ§Ã£o', nao_renovou: 'NÃ£o Renovou' };
+      const tipos = { novo: 'Cliente Novo', renovacao: 'Renovação', nao_renovou: 'Não Renovou' };
       if (m.tipo === 'add') {
         return `
           <div class="list-item">
             <div class="list-item-content">
               <div class="list-item-icon" style="color: var(--primary);"><i class="fas fa-plus-circle"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">Adicionado: ${m.quantidade} crÃ©ditos</div>
-                <div class="list-item-sub">${data} â€¢ Custo: R$ ${m.custo.toFixed(2)}</div>
+                <div class="list-item-text">Adicionado: ${m.quantidade} créditos</div>
+                <div class="list-item-sub">${data} • Custo: R$ ${m.custo.toFixed(2)}</div>
               </div>
             </div>
             <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
@@ -2218,8 +2218,8 @@
             <div class="list-item-content">
               <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-user-times"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">NÃ£o Renovaram: ${m.quantidade} cliente(s)</div>
-                <div class="list-item-sub">${data} â€¢ Sem impacto nos crÃ©ditos</div>
+                <div class="list-item-text">Não Renovaram: ${m.quantidade} cliente(s)</div>
+                <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
               </div>
             </div>
             <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
@@ -2231,8 +2231,8 @@
             <div class="list-item-content">
               <div class="list-item-icon" style="color: var(--info);"><i class="fas fa-flask"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">Teste criado${m.nome ? ` â€¢ ${escapeHtml(m.nome)}` : ''}</div>
-                <div class="list-item-sub">${data} â€¢ Sem impacto nos crÃ©ditos</div>
+                <div class="list-item-text">Teste criado${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
+                <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
               </div>
             </div>
             <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
@@ -2243,8 +2243,8 @@
             <div class="list-item-content">
               <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-vial-circle-check"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">Teste excluÃ­do${m.nome ? ` â€¢ ${escapeHtml(m.nome)}` : ''}</div>
-                <div class="list-item-sub">${data} â€¢ Sem impacto nos crÃ©ditos</div>
+                <div class="list-item-text">Teste excluído${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
+                <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
               </div>
             </div>
             <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
@@ -2255,7 +2255,7 @@
             <div class="list-item-content">
               <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-minus-circle"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">${tipos[m.tipoCliente] || m.tipoCliente} â€¢ R$ ${(m.valor || 0).toFixed(2)}</div>
+                <div class="list-item-text">${tipos[m.tipoCliente] || m.tipoCliente} • R$ ${(m.valor || 0).toFixed(2)}</div>
                 <div class="list-item-sub">${data}</div>
               </div>
             </div>
@@ -2270,7 +2270,7 @@
       const pagEl = document.getElementById('paginationHistorico');
       if (!container) return;
       if (movimentacoes.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentaÃ§Ã£o registrada</p></div>';
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';
         if (pagEl) pagEl.innerHTML = '';
         return;
       }
@@ -2292,7 +2292,7 @@
       if (m.tipo === 'add') {
         html = `
           <div class="form-group">
-            <label class="form-label"><i class="fas fa-hashtag"></i> Quantidade de CrÃ©ditos</label>
+            <label class="form-label"><i class="fas fa-hashtag"></i> Quantidade de Créditos</label>
             <input type="number" id="editQtd" class="form-input" value="${m.quantidade}">
           </div>
           <div class="form-group">
@@ -2302,7 +2302,7 @@
       } else if (m.tipo === 'churn') {
         html = `
           <div class="form-group">
-            <label class="form-label"><i class="fas fa-user-times"></i> Qtd. Clientes que NÃ£o Renovaram</label>
+            <label class="form-label"><i class="fas fa-user-times"></i> Qtd. Clientes que Não Renovaram</label>
             <input type="number" id="editQtd" class="form-input" value="${m.quantidade}" min="1">
           </div>`;
       } else {
@@ -2311,7 +2311,7 @@
             <label class="form-label"><i class="fas fa-user-tag"></i> Tipo de Cliente</label>
             <select id="editTipo" class="form-select">
               <option value="novo" ${m.tipoCliente === 'novo' ? 'selected' : ''}>Cliente Novo</option>
-              <option value="renovacao" ${m.tipoCliente === 'renovacao' ? 'selected' : ''}>RenovaÃ§Ã£o</option>
+              <option value="renovacao" ${m.tipoCliente === 'renovacao' ? 'selected' : ''}>Renovação</option>
             </select>
           </div>
           <div class="form-group">
@@ -2336,7 +2336,7 @@
         m.quantidade = qtd; m.custo = valor;
       } else if (m.tipo === 'churn') {
         const qtd = parseInt(document.getElementById('editQtd').value);
-        if (!qtd || qtd < 1) { showToast('Informe uma quantidade vÃ¡lida.', true); return; }
+        if (!qtd || qtd < 1) { showToast('Informe uma quantidade válida.', true); return; }
         m.quantidade = qtd;
       } else {
         const tipo = document.getElementById('editTipo').value;
@@ -2348,10 +2348,10 @@
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       fecharModalEditarMov();
-      showToast('MovimentaÃ§Ã£o atualizada.');
+      showToast('Movimentação atualizada.');
     }
     function removerMovimentacao(idx) {
-      if (!confirm('Remover esta movimentaÃ§Ã£o?')) return;
+      if (!confirm('Remover esta movimentação?')) return;
       movimentacoes.splice(idx, 1);
       salvarMovimentacoes();
       atualizarCreditos(); atualizarHistorico();
@@ -2366,7 +2366,7 @@
     function adicionarLucroCusto() {
       const valor = parseFloat(document.getElementById('valorLucroCusto').value);
       const info = document.getElementById('infoLucroCusto').value;
-      if (isNaN(valor) || !info) { showToast('Preencha valor e informaÃ§Ã£o.', true); return; }
+      if (isNaN(valor) || !info) { showToast('Preencha valor e informação.', true); return; }
       lucrosCustos.push({ data: new Date().toISOString(), valor, info });
       salvarLucrosCustos();
       atualizarListaLucrosCustos();
@@ -2416,7 +2416,7 @@
           <div class="list-item-content">
             <div class="list-item-icon"><i class="fas fa-box"></i></div>
             <div>
-              <div class="list-item-text">${p.quantidade} crÃ©ditos</div>
+              <div class="list-item-text">${p.quantidade} créditos</div>
               <div class="list-item-sub">Total: R$ ${(p.quantidade * p.preco).toFixed(2)}</div>
             </div>
           </div>
@@ -2428,7 +2428,7 @@
     function atualizarSelectPacotes() {
       const select = document.getElementById('pacoteSelecionado');
       select.innerHTML = '<option value="">Selecione um pacote</option>' +
-        pacotes.map(p => `<option value="${p.id}">${p.quantidade} crÃ©ditos - R$ ${p.preco.toFixed(2)} cada</option>`).join('');
+        pacotes.map(p => `<option value="${p.id}">${p.quantidade} créditos - R$ ${p.preco.toFixed(2)} cada</option>`).join('');
     }
     let pacoteEditandoId = null;
     function abrirModalPacote() {
@@ -2512,7 +2512,7 @@
     function adicionarCusto() {
       const valor = parseFloat(document.getElementById('valorCusto').value);
       const descricao = document.getElementById('descricaoCusto').value;
-      if (!valor || !descricao) { showToast('Preencha valor e descriÃ§Ã£o.', true); return; }
+      if (!valor || !descricao) { showToast('Preencha valor e descrição.', true); return; }
       custos.push({ valor, descricao });
       atualizarListaCustos();
       document.getElementById('valorCusto').value = '';
@@ -2554,14 +2554,14 @@
             <h3><i class="fas fa-box"></i> Pacote</h3>
             <div class="result-row">
               <div class="result-label">Pacote selecionado</div>
-              <div class="result-value">${pacote.quantidade} crÃ©ditos â€¢ R$ ${pacote.preco.toFixed(2)} cada</div>
+              <div class="result-value">${pacote.quantidade} créditos • R$ ${pacote.preco.toFixed(2)} cada</div>
             </div>
           </div>
           <div class="result-section">
             <h3><i class="fas fa-users"></i> Assinaturas</h3>
             ${assinaturas.map(a => `
               <div class="result-row">
-                <div class="result-label">${a.quantidade} Ã— R$ ${a.valor.toFixed(2)}</div>
+                <div class="result-label">${a.quantidade} × R$ ${a.valor.toFixed(2)}</div>
                 <div class="result-value">R$ ${(a.quantidade * a.valor).toFixed(2)}</div>
               </div>`).join('')}
             <div class="result-row large">
@@ -2572,7 +2572,7 @@
           <div class="result-section">
             <h3><i class="fas fa-file-invoice-dollar"></i> Custos</h3>
             <div class="result-row">
-              <div class="result-label">Custo crÃ©ditos (${totalClientes} clientes)</div>
+              <div class="result-label">Custo créditos (${totalClientes} clientes)</div>
               <div class="result-value">R$ ${custoCredito.toFixed(2)}</div>
             </div>
             ${custos.map(c => `
@@ -2600,7 +2600,7 @@
     }
     window.calcular = calcular;
 
-    /* ---------- GESTÃƒO: filtro por mÃªs ---------- */
+    /* ---------- GESTÃO: filtro por mês ---------- */
     function monthKey(dateLike) {
       const d = new Date(dateLike);
       if (isNaN(d.getTime())) return null;
@@ -2729,9 +2729,9 @@
               borderColor: '#ffe45c', backgroundColor: 'rgba(255,228,92,.15)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
             { label: 'Novos Clientes', data: meses.map(m => porMes[m].novos),
               borderColor: '#39ff14', backgroundColor: 'rgba(57,255,20,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'RenovaÃ§Ãµes', data: meses.map(m => porMes[m].renovacoes),
+            { label: 'Renovações', data: meses.map(m => porMes[m].renovacoes),
               borderColor: '#5cf0ff', backgroundColor: 'rgba(92,240,255,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'NÃ£o Renovaram (manual)', data: meses.map(m => porMes[m].naoRenovou),
+            { label: 'Não Renovaram (manual)', data: meses.map(m => porMes[m].naoRenovou),
               borderColor: '#ff9b5c', backgroundColor: 'rgba(255,155,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6, borderDash: [6,4] },
             { label: 'Vencidos (atual)', data: meses.map(m => porMes[m].vencidos),
               borderColor: '#ff5c5c', backgroundColor: 'rgba(255,92,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 }
@@ -2742,7 +2742,7 @@
           interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { position: 'top', labels: { color: '#f5f5f5', font: { size: 12, weight: '600' }, padding: 12, usePointStyle: true } },
-            title: { display: true, text: state.filtroMes === 'all' ? 'MovimentaÃ§Ã£o mensal de clientes' : `MovimentaÃ§Ã£o em ${monthLabel(state.filtroMes)}`, color: '#f5f5f5', font: { size: 14, weight: '700' }, padding: 12 },
+            title: { display: true, text: state.filtroMes === 'all' ? 'Movimentação mensal de clientes' : `Movimentação em ${monthLabel(state.filtroMes)}`, color: '#f5f5f5', font: { size: 14, weight: '700' }, padding: 12 },
             tooltip: { backgroundColor: '#0a0a0a', titleColor: '#fff', bodyColor: '#f5f5f5', borderColor: 'rgba(57,255,20,.3)', borderWidth: 1 }
           },
           scales: {
@@ -2778,25 +2778,25 @@
       const { custo, lucro, liquido } = computeTotaisFinanceiros();
       const rotuloMes = state.filtroMes === 'all' ? 'GERAL' : monthLabel(state.filtroMes).toUpperCase();
 
-      let t = `ðŸ“Š *RESUMO COMPLETO - GESTÃƒO IPTV (${rotuloMes})*\n\n`;
-      t += `ðŸ‘¥ *CLIENTES*\n`;
-      t += `â€¢ Novos: ${novos}\nâ€¢ RenovaÃ§Ãµes: ${renov}\nâ€¢ NÃ£o Renovaram (manual): ${nren}\nâ€¢ Vencidos agora: ${vencidosAtuais}\nâ€¢ Testes criados: ${testes_criados}\nâ€¢ Total Ativos: ${clients.length}\n\n`;
-      t += `ðŸ’° *FINANCEIRO*\n`;
-      t += `â€¢ Custo Total: R$ ${custo.toFixed(2)}\nâ€¢ Lucro Total: R$ ${lucro.toFixed(2)}\nâ€¢ Lucro LÃ­quido: R$ ${liquido.toFixed(2)}\n\n`;
+      let t = `📊 *RESUMO COMPLETO - GESTÃO IPTV (${rotuloMes})*\n\n`;
+      t += `👥 *CLIENTES*\n`;
+      t += `• Novos: ${novos}\n• Renovações: ${renov}\n• Não Renovaram (manual): ${nren}\n• Vencidos agora: ${vencidosAtuais}\n• Testes criados: ${testes_criados}\n• Total Ativos: ${clients.length}\n\n`;
+      t += `💰 *FINANCEIRO*\n`;
+      t += `• Custo Total: R$ ${custo.toFixed(2)}\n• Lucro Total: R$ ${lucro.toFixed(2)}\n• Lucro Líquido: R$ ${liquido.toFixed(2)}\n\n`;
 
       const lcFiltrados = lucrosCustos.filter(lc => passaFiltroMes(lc.data));
       if (lcFiltrados.length > 0) {
-        t += `ðŸ“ *LUCROS/CUSTOS PERSONALIZADOS*\n`;
+        t += `📝 *LUCROS/CUSTOS PERSONALIZADOS*\n`;
         lcFiltrados.forEach(lc => {
-          const sig = lc.valor >= 0 ? 'âž•' : 'âž–';
+          const sig = lc.valor >= 0 ? '➕' : '➖';
           t += `${sig} ${lc.info}: R$ ${Math.abs(lc.valor).toFixed(2)}\n`;
         });
         t += '\n';
       }
-      t += `ðŸ“ˆ *RESUMO*\n`;
+      t += `📈 *RESUMO*\n`;
       const base = renov + nren + vencidosAtuais;
-      t += `â€¢ Taxa RenovaÃ§Ã£o: ${base > 0 ? ((renov / base) * 100).toFixed(1) : 0}%\n`;
-      t += `â€¢ Margem Lucro: ${lucro > 0 ? ((liquido / lucro) * 100).toFixed(1) : 0}%`;
+      t += `• Taxa Renovação: ${base > 0 ? ((renov / base) * 100).toFixed(1) : 0}%\n`;
+      t += `• Margem Lucro: ${lucro > 0 ? ((liquido / lucro) * 100).toFixed(1) : 0}%`;
 
       const ta = document.getElementById('textoWhatsAppGestao');
       if (ta) ta.value = t;
@@ -2805,7 +2805,7 @@
       const ta = document.getElementById('textoWhatsAppGestao');
       ta.select();
       try { document.execCommand('copy'); showToast('Resumo copiado.'); }
-      catch (e) { showToast('NÃ£o foi possÃ­vel copiar.', true); }
+      catch (e) { showToast('Não foi possível copiar.', true); }
     }
     window.copiarTextoGestao = copiarTextoGestao;
 
@@ -2821,7 +2821,7 @@
       const d7 = toInputDate(addDays(todayLocalDate(), 7));
       clients = [
         { id: generateId(), nome: 'Cliente Exemplo Hoje', telefone: '5541999999999', aplicativo: 'XCIPTV', usuario: 'clientehoje', senha: '123456', plano: 'Mensal', valor: '30,00', dataInicio: toInputDate(addDays(todayLocalDate(), -30)), dataPagamento: toInputDate(addDays(todayLocalDate(), -30)), dataRenovacao: d0, linkRenovacao: 'https://seulink.com/renovar/hoje', observacoes: '', msgSentAt: null },
-        { id: generateId(), nome: 'Cliente Exemplo Amanha', telefone: '5541988888888', aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321', plano: 'Mensal', valor: '35,00', dataInicio: toInputDate(addDays(todayLocalDate(), -29)), dataPagamento: toInputDate(addDays(todayLocalDate(), -29)), dataRenovacao: d1, linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: '', msgSentAt: null },
+        { id: generateId(), nome: 'Cliente Exemplo Amanhã', telefone: '5541988888888', aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321', plano: 'Mensal', valor: '35,00', dataInicio: toInputDate(addDays(todayLocalDate(), -29)), dataPagamento: toInputDate(addDays(todayLocalDate(), -29)), dataRenovacao: d1, linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: '', msgSentAt: null },
         { id: generateId(), nome: 'Cliente Exemplo 7 Dias', telefone: '5541977777777', aplicativo: 'Bob Player', usuario: 'cliente7dias', senha: '789456', plano: 'Mensal', valor: '25,00', dataInicio: toInputDate(addDays(todayLocalDate(), -23)), dataPagamento: toInputDate(addDays(todayLocalDate(), -23)), dataRenovacao: d7, linkRenovacao: 'https://seulink.com/renovar/7dias', observacoes: '', msgSentAt: null }
       ];
       saveClients();
