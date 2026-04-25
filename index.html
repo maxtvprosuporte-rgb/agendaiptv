@@ -601,7 +601,7 @@
       color: var(--muted); font-size: 12px; font-family: var(--font-mono);
     }
 
-    /* Collapsible card (Pacotes) */
+    /* Collapsible card (Pacotes/Planos/Gestão de Créditos/Histórico) */
     .card-header.collapsible { cursor: pointer; user-select: none; }
     .card-header .chev {
       margin-left: auto;
@@ -869,7 +869,7 @@
             <div class="field"><label for="aplicativo">Aplicativo</label><input id="aplicativo" placeholder="Ex.: XCIPTV" data-testid="input-aplicativo" /></div>
             <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
             <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
-            <div class="field"><label for="plano">Plano</label><input id="plano" placeholder="Ex.: Mensal" data-testid="input-plano" /></div>
+            <div class="field"><label for="plano">Plano</label><select id="plano" data-testid="input-plano"><option value="">Selecione um plano</option></select></div>
             <div class="field"><label for="valor">Valor</label><input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" /></div>
             <div class="field" style="grid-column: span 2;"><label for="linkRenovacao">Link de ativação / renovação</label><input id="linkRenovacao" placeholder="https://..." data-testid="input-link-renovacao" /></div>
             <div class="field"><label for="observacoes">Observações</label><input id="observacoes" placeholder="Opcional" data-testid="input-observacoes" /></div>
@@ -1000,63 +1000,60 @@
 
     <!-- CONFIGURAÇÃO -->
     <section id="config" class="panel">
-      <div class="card">
-        <div class="card-header">
+      <!-- GESTÃO DE CRÉDITOS (colapsável) -->
+      <div class="card" id="cardGestaoCreditos">
+        <div class="card-header collapsible" id="headerGestaoCreditos" data-testid="header-gestao-creditos">
           <div class="card-title"><i class="fas fa-coins"></i><h2>Gestão de Créditos</h2></div>
+          <span class="chev"><i class="fas fa-chevron-down"></i></span>
         </div>
+        <div class="card-body" id="bodyGestaoCreditos">
+          <div class="credit-stats">
+            <div class="credit-stat-card">
+              <div class="credit-stat-value" id="creditosAtuais" data-testid="creditos-atuais">0</div>
+              <div class="credit-stat-label">Créditos Disponíveis</div>
+            </div>
+            <div class="credit-stat-card">
+              <div class="credit-stat-value" id="creditosUsados" data-testid="creditos-usados">0</div>
+              <div class="credit-stat-label">Créditos Usados</div>
+            </div>
+            <div class="credit-stat-card">
+              <div class="credit-stat-value" id="custoTotalCreditos" style="color: #ff9b9b;" data-testid="custo-total-creditos">R$ 0</div>
+              <div class="credit-stat-label">Custo Total Créditos</div>
+            </div>
+          </div>
 
-        <div class="credit-stats">
-          <div class="credit-stat-card">
-            <div class="credit-stat-value" id="creditosAtuais" data-testid="creditos-atuais">0</div>
-            <div class="credit-stat-label">Créditos Disponíveis</div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-box"></i> Adicionar Crédito pelo Pacote</label>
+            <div class="input-group-2" style="grid-template-columns: 1fr auto;">
+              <select id="pacoteAddCredito" class="form-select" data-testid="pacote-add-credito">
+                <option value="">Selecione um pacote cadastrado</option>
+              </select>
+              <button class="btn-primary" onclick="adicionarCreditoPacote()" data-testid="btn-adicionar-credito-pacote"><i class="fas fa-plus"></i> Adicionar</button>
+            </div>
+            <p class="card-hint" style="margin: 8px 0 0;">Os créditos e o custo são calculados automaticamente a partir do pacote selecionado.</p>
           </div>
-          <div class="credit-stat-card">
-            <div class="credit-stat-value" id="creditosUsados" data-testid="creditos-usados">0</div>
-            <div class="credit-stat-label">Créditos Usados</div>
-          </div>
-          <div class="credit-stat-card">
-            <div class="credit-stat-value" id="custoTotalCreditos" style="color: #ff9b9b;" data-testid="custo-total-creditos">R$ 0</div>
-            <div class="credit-stat-label">Custo Total Créditos</div>
-          </div>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label"><i class="fas fa-box"></i> Adicionar Crédito pelo Pacote</label>
-          <div class="input-group-2" style="grid-template-columns: 1fr auto;">
-            <select id="pacoteAddCredito" class="form-select" data-testid="pacote-add-credito">
-              <option value="">Selecione um pacote cadastrado</option>
-            </select>
-            <button class="btn-primary" onclick="adicionarCreditoPacote()" data-testid="btn-adicionar-credito-pacote"><i class="fas fa-plus"></i> Adicionar</button>
+          <div style="margin-top: 28px; padding-top: 24px; border-top: 1px dashed var(--border-faint);">
+            <h3 style="margin: 0 0 14px; font-family: var(--font-display); font-size: 18px; color: #fff;">
+              <i class="fas fa-chart-pie" style="color: var(--primary); margin-right:8px;"></i>
+              Lucros e Custos Personalizados
+            </h3>
+            <div id="listaLucrosCustos"></div>
+            <div class="input-group-2" style="margin-top: 12px;">
+              <input type="number" id="valorLucroCusto" class="form-input" placeholder="Valor (R$) — use negativo p/ custo" step="0.01">
+              <input type="text" id="infoLucroCusto" class="form-input" placeholder="Informação (ex: Venda equipamento)">
+              <button class="btn-secondary" onclick="adicionarLucroCusto()"><i class="fas fa-plus"></i> Adicionar</button>
+            </div>
           </div>
-          <p class="card-hint" style="margin: 8px 0 0;">Os créditos e o custo são calculados automaticamente a partir do pacote selecionado.</p>
-        </div>
 
-        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-faint);">
-          <label class="form-label" style="display:flex; margin-bottom:10px;">
-            <i class="fas fa-user-times"></i> Não Renovaram neste mês
-            <span class="tag" style="margin-left:8px; font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 6px; background:#050505; border:1px solid var(--border-faint); color: var(--muted); letter-spacing:.08em;">não desconta crédito</span>
-          </label>
-          <div class="input-group-2" style="grid-template-columns: 1fr auto;">
-            <input type="number" id="qtdNaoRenovou" class="form-input" placeholder="Quantidade de clientes que não renovaram" min="1">
-            <button class="btn-secondary" onclick="registrarNaoRenovou()"><i class="fas fa-plus"></i> Registrar</button>
-          </div>
-        </div>
-
-        <div style="margin-top: 28px; padding-top: 24px; border-top: 1px dashed var(--border-faint);">
-          <h3 style="margin: 0 0 14px; font-family: var(--font-display); font-size: 18px; color: #fff;">
-            <i class="fas fa-chart-pie" style="color: var(--primary); margin-right:8px;"></i>
-            Lucros e Custos Personalizados
-          </h3>
-          <div id="listaLucrosCustos"></div>
-          <div class="input-group-2" style="margin-top: 12px;">
-            <input type="number" id="valorLucroCusto" class="form-input" placeholder="Valor (R$) — use negativo p/ custo" step="0.01">
-            <input type="text" id="infoLucroCusto" class="form-input" placeholder="Informação (ex: Venda equipamento)">
-            <button class="btn-secondary" onclick="adicionarLucroCusto()"><i class="fas fa-plus"></i> Adicionar</button>
+          <div style="margin-top: 16px; padding: 12px 14px; background: #060606; border: 1px dashed var(--border-faint); border-radius: 12px; color: var(--muted); font-size: 12.5px;">
+            <i class="fas fa-info-circle" style="color: var(--info); margin-right:6px;"></i>
+            Clientes com vencimento atrasado em <b style="color:var(--text-dim);">20 dias ou mais</b> são contabilizados automaticamente como <b style="color:#ff9b5c;">"Não Renovaram"</b> no gráfico. Se a assinatura for renovada, eles voltam a contar como <b style="color:var(--info);">renovação</b>.
           </div>
         </div>
       </div>
 
-      <!-- PACOTES (colapsável) — ACIMA do histórico agora -->
+      <!-- PACOTES (colapsável) -->
       <div class="card collapsed" id="cardPacotes">
         <div class="card-header collapsible" id="headerPacotes" data-testid="header-pacotes">
           <div class="card-title"><i class="fas fa-box"></i><h2>Pacotes de Créditos</h2></div>
@@ -1073,12 +1070,37 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-history"></i><h2>Histórico de Movimentações</h2></div>
+      <!-- PLANOS (colapsável) -->
+      <div class="card collapsed" id="cardPlanos">
+        <div class="card-header collapsible" id="headerPlanos" data-testid="header-planos">
+          <div class="card-title"><i class="fas fa-list-ul"></i><h2>Planos Disponíveis</h2></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count-badge" id="countPlanos" data-testid="count-planos">0</span>
+            <span class="chev"><i class="fas fa-chevron-down"></i></span>
+          </div>
         </div>
-        <div id="historicoRecargas"></div>
-        <div class="pagination-bar" id="paginationHistorico"></div>
+        <div class="card-body" id="bodyPlanos">
+          <p class="card-hint">Cadastre os planos disponíveis. Eles aparecerão como lista nos formulários de cadastro de Teste e Cliente, preenchendo automaticamente valor, link de pagamento e quantidade de dias.</p>
+          <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+            <button class="btn-primary" onclick="abrirModalPlano()" data-testid="btn-novo-plano"><i class="fas fa-plus"></i> Novo Plano</button>
+          </div>
+          <div id="listaPlanos"></div>
+        </div>
+      </div>
+
+      <!-- HISTÓRICO (colapsável) -->
+      <div class="card collapsed" id="cardHistorico">
+        <div class="card-header collapsible" id="headerHistorico" data-testid="header-historico">
+          <div class="card-title"><i class="fas fa-history"></i><h2>Histórico de Movimentações</h2></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count-badge" id="countHistorico" data-testid="count-historico">0</span>
+            <span class="chev"><i class="fas fa-chevron-down"></i></span>
+          </div>
+        </div>
+        <div class="card-body" id="bodyHistorico">
+          <div id="historicoRecargas"></div>
+          <div class="pagination-bar" id="paginationHistorico"></div>
+        </div>
       </div>
     </section>
   </div>
@@ -1100,6 +1122,35 @@
       </div>
       <button class="btn-primary btn-block" onclick="salvarPacote()">
         <i class="fas fa-check"></i> Salvar Pacote
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL PLANO -->
+  <div id="modalPlano" class="modal">
+    <div class="modal-content sm">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalPlanoTitle">Adicionar Plano</h3>
+        <button class="modal-close" onclick="fecharModalPlano()" data-testid="close-plano"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-tag"></i> Nome do Plano</label>
+        <input type="text" id="planoNome" class="form-input" placeholder="Ex: Mensal Premium" data-testid="plano-nome">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-money-bill-wave"></i> Valor (R$)</label>
+        <input type="number" id="planoValor" class="form-input" placeholder="Ex: 30.00" step="0.01" data-testid="plano-valor">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-link"></i> Link de Pagamento</label>
+        <input type="text" id="planoLink" class="form-input" placeholder="https://..." data-testid="plano-link">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-calendar-day"></i> Quantidade de Dias</label>
+        <input type="number" id="planoDias" class="form-input" placeholder="Ex: 30" min="1" data-testid="plano-dias">
+      </div>
+      <button class="btn-primary btn-block" onclick="salvarPlano()" data-testid="save-plano">
+        <i class="fas fa-check"></i> Salvar Plano
       </button>
     </div>
   </div>
@@ -1134,13 +1185,13 @@
           <div class="field"><label for="ec_aplicativo">Aplicativo</label><input id="ec_aplicativo" data-testid="ec-aplicativo" /></div>
           <div class="field"><label for="ec_usuario">Usuário</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
           <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
-          <div class="field"><label for="ec_plano">Plano</label><input id="ec_plano" data-testid="ec-plano" /></div>
+          <div class="field"><label for="ec_plano">Plano</label><select id="ec_plano" data-testid="ec-plano"><option value="">Selecione um plano</option></select></div>
           <div class="field"><label for="ec_valor">Valor</label><input id="ec_valor" placeholder="Ex.: 30,00" data-testid="ec-valor" /></div>
           <div class="field" id="ec_inicio_wrap"><label for="ec_dataInicio">Data de início</label><input type="date" id="ec_dataInicio" data-testid="ec-data-inicio" /></div>
           <div class="field" id="ec_renovacao_wrap">
             <label for="ec_dataRenovacao" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
               <span>Data de renovação</span>
-              <button type="button" id="ec_btnPlus30" class="btn-secondary" style="padding:4px 8px; min-height:26px; font-size:11px; text-transform:none; letter-spacing:0;" title="Recalcular: início + 30 dias">+30 dias</button>
+              <button type="button" id="ec_btnPlus30" class="btn-secondary" style="padding:4px 8px; min-height:26px; font-size:11px; text-transform:none; letter-spacing:0;" title="Recalcular: início + dias do plano">+dias plano</button>
             </label>
             <input type="date" id="ec_dataRenovacao" data-testid="ec-data-renovacao" />
           </div>
@@ -1171,13 +1222,13 @@
           <div class="field"><label for="nc_aplicativo">Aplicativo</label><input id="nc_aplicativo" placeholder="Ex.: XCIPTV" data-testid="nc-aplicativo" /></div>
           <div class="field"><label for="nc_usuario">Usuário</label><input id="nc_usuario" required data-testid="nc-usuario" /></div>
           <div class="field"><label for="nc_senha">Senha</label><input id="nc_senha" required data-testid="nc-senha" /></div>
-          <div class="field"><label for="nc_plano">Plano</label><input id="nc_plano" placeholder="Ex.: Mensal" data-testid="nc-plano" /></div>
+          <div class="field"><label for="nc_plano">Plano</label><select id="nc_plano" data-testid="nc-plano"><option value="">Selecione um plano</option></select></div>
           <div class="field"><label for="nc_valor">Valor</label><input id="nc_valor" placeholder="Ex.: 30,00" data-testid="nc-valor" /></div>
           <div class="field"><label for="nc_dataInicio">Data de início</label><input type="date" id="nc_dataInicio" data-testid="nc-data-inicio" /></div>
           <div class="field">
             <label for="nc_dataRenovacao" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
               <span>Data de renovação</span>
-              <button type="button" id="nc_btnPlus30" class="btn-secondary" style="padding:4px 8px; min-height:26px; font-size:11px; text-transform:none; letter-spacing:0;" title="Recalcular: início + 30 dias">+30 dias</button>
+              <button type="button" id="nc_btnPlus30" class="btn-secondary" style="padding:4px 8px; min-height:26px; font-size:11px; text-transform:none; letter-spacing:0;" title="Recalcular: início + dias do plano">+dias plano</button>
             </label>
             <input type="date" id="nc_dataRenovacao" data-testid="nc-data-renovacao" />
           </div>
@@ -1428,10 +1479,11 @@
     function renewClient(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
-      const base = parseDate(client.dataRenovacao) || todayLocalDate();
+      // Determina dias do plano (se cadastrado), senão 30 (default histórico)
+      const planoCadastrado = encontrarPlanoPorNome(client.plano);
+      const dias = planoCadastrado ? planoCadastrado.dias : 30;
       const today = todayLocalDate();
-      const ref = base < today ? today : base;
-      const nd = addDays(ref, 30);
+      const nd = addDays(today, dias);
       client.dataInicio = toInputDate(today);
       client.dataPagamento = toInputDate(today);
       client.dataRenovacao = toInputDate(nd);
@@ -1709,6 +1761,8 @@
       const idx = testes.findIndex(x => x.id === id);
       if (idx < 0) return;
       const t = testes[idx];
+      const planoCad = encontrarPlanoPorNome(t.plano);
+      const dias = planoCad ? planoCad.dias : 30;
       const hoje = todayLocalDate();
       const novoCliente = {
         id: generateId(),
@@ -1721,7 +1775,7 @@
         valor: t.valor,
         dataInicio: toInputDate(hoje),
         dataPagamento: toInputDate(hoje),
-        dataRenovacao: toInputDate(addDays(hoje, 30)),
+        dataRenovacao: toInputDate(addDays(hoje, dias)),
         linkRenovacao: t.linkRenovacao,
         observacoes: t.observacoes,
         msgSentAt: null,
@@ -1787,6 +1841,8 @@
       els.formTitle.textContent = 'Cadastrar Teste IPTV';
     }
     function getFormData() {
+      const sel = els.plano;
+      const planoNome = sel && sel.tagName === 'SELECT' ? getPlanoNomeDoSelect(sel) : (sel ? sel.value.trim() : '');
       return {
         id: els.clientId.value || generateId(),
         nome: els.nome.value.trim(),
@@ -1794,7 +1850,7 @@
         aplicativo: els.aplicativo.value.trim(),
         usuario: els.usuario.value.trim(),
         senha: els.senha.value.trim(),
-        plano: els.plano.value.trim(),
+        plano: planoNome,
         valor: els.valor.value.trim(),
         linkRenovacao: els.linkRenovacao.value.trim(),
         observacoes: els.observacoes.value.trim(),
@@ -1826,7 +1882,9 @@
       document.getElementById('ec_aplicativo').value = target.aplicativo || '';
       document.getElementById('ec_usuario').value = target.usuario || '';
       document.getElementById('ec_senha').value = target.senha || '';
-      document.getElementById('ec_plano').value = target.plano || '';
+      // plano (select): tenta selecionar pelo nome existente
+      const ecPlanoSel = document.getElementById('ec_plano');
+      selecionarPlanoPorNome(ecPlanoSel, target.plano);
       document.getElementById('ec_valor').value = target.valor || '';
       document.getElementById('ec_linkRenovacao').value = target.linkRenovacao || '';
       document.getElementById('ec_observacoes').value = target.observacoes || '';
@@ -1850,16 +1908,19 @@
     }
     window.editClient = editClient;
 
-    // Auto-sincroniza Data de renovação = Data de início + 30 dias ao alterar início
+    // Auto-sincroniza Data de renovação = Data de início + dias do plano (ou 30) ao alterar início
     (function wireEcDateSync() {
       const inicio = document.getElementById('ec_dataInicio');
       const renov = document.getElementById('ec_dataRenovacao');
       const btn = document.getElementById('ec_btnPlus30');
+      const planoSel = document.getElementById('ec_plano');
       if (!inicio || !renov) return;
       const recalc = () => {
         const d = parseDate(inicio.value);
         if (!d) return;
-        renov.value = toInputDate(addDays(d, 30));
+        const planoCad = planoPorIdSelect(planoSel);
+        const dias = planoCad ? planoCad.dias : 30;
+        renov.value = toInputDate(addDays(d, dias));
       };
       inicio.addEventListener('change', recalc);
       if (btn) btn.addEventListener('click', recalc);
@@ -1869,13 +1930,15 @@
       e.preventDefault();
       const id = document.getElementById('ec_id').value;
       const kind = document.getElementById('ec_kind').value;
+      const ecPlanoSel = document.getElementById('ec_plano');
+      const planoNome = ecPlanoSel && ecPlanoSel.tagName === 'SELECT' ? getPlanoNomeDoSelect(ecPlanoSel) : (ecPlanoSel ? ecPlanoSel.value.trim() : '');
       const base = {
         nome: document.getElementById('ec_nome').value.trim(),
         telefone: document.getElementById('ec_telefone').value.trim(),
         aplicativo: document.getElementById('ec_aplicativo').value.trim(),
         usuario: document.getElementById('ec_usuario').value.trim(),
         senha: document.getElementById('ec_senha').value.trim(),
-        plano: document.getElementById('ec_plano').value.trim(),
+        plano: planoNome,
         valor: document.getElementById('ec_valor').value.trim(),
         linkRenovacao: document.getElementById('ec_linkRenovacao').value.trim(),
         observacoes: document.getElementById('ec_observacoes').value.trim()
@@ -1915,6 +1978,8 @@
     function abrirModalNovoCliente() {
       const form = document.getElementById('formNovoCliente');
       form.reset();
+      // re-preencher select de planos (form.reset não recria options)
+      atualizarSelectPlanos();
       // defaults de data
       const hoje = todayLocalDate();
       document.getElementById('nc_dataInicio').value = toInputDate(hoje);
@@ -1932,16 +1997,19 @@
     window.abrirModalNovoCliente = abrirModalNovoCliente;
     window.fecharModalNovoCliente = fecharModalNovoCliente;
 
-    // Sync: data início + 30 = renovação
+    // Sync: data início + dias do plano (ou 30) = renovação
     (function wireNcDateSync() {
       const inicio = document.getElementById('nc_dataInicio');
       const renov = document.getElementById('nc_dataRenovacao');
       const btn = document.getElementById('nc_btnPlus30');
+      const planoSel = document.getElementById('nc_plano');
       if (!inicio || !renov) return;
       const recalc = () => {
         const d = parseDate(inicio.value);
         if (!d) return;
-        renov.value = toInputDate(addDays(d, 30));
+        const planoCad = planoPorIdSelect(planoSel);
+        const dias = planoCad ? planoCad.dias : 30;
+        renov.value = toInputDate(addDays(d, dias));
       };
       inicio.addEventListener('change', recalc);
       if (btn) btn.addEventListener('click', recalc);
@@ -1974,8 +2042,12 @@
 
       const hoje = todayLocalDate();
       const dataInicio = document.getElementById('nc_dataInicio').value || toInputDate(hoje);
-      const dataRenovacao = document.getElementById('nc_dataRenovacao').value || toInputDate(addDays(parseDate(dataInicio) || hoje, 30));
+      const ncPlanoSel = document.getElementById('nc_plano');
+      const planoCad = planoPorIdSelect(ncPlanoSel);
+      const dias = planoCad ? planoCad.dias : 30;
+      const dataRenovacao = document.getElementById('nc_dataRenovacao').value || toInputDate(addDays(parseDate(dataInicio) || hoje, dias));
       const valor = document.getElementById('nc_valor').value.trim();
+      const planoNome = ncPlanoSel && ncPlanoSel.tagName === 'SELECT' ? getPlanoNomeDoSelect(ncPlanoSel) : '';
 
       const novo = {
         id: generateId(),
@@ -1984,7 +2056,7 @@
         aplicativo: document.getElementById('nc_aplicativo').value.trim(),
         usuario,
         senha,
-        plano: document.getElementById('nc_plano').value.trim(),
+        plano: planoNome,
         valor,
         dataInicio,
         dataPagamento: dataInicio,
@@ -2058,7 +2130,7 @@
     els.tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
 
     els.exportBtn.addEventListener('click', () => {
-      const payload = { clients, testes, pacotes, movimentacoes, lucrosCustos };
+      const payload = { clients, testes, pacotes, planos, movimentacoes, lucrosCustos };
       const data = JSON.stringify(payload, null, 2);
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -2080,6 +2152,7 @@
           if (Array.isArray(data.clients)) clients = data.clients;
           if (Array.isArray(data.testes)) { testes = data.testes; salvarTestes(); }
           if (Array.isArray(data.pacotes)) { pacotes = data.pacotes; salvarPacotes(); }
+          if (Array.isArray(data.planos)) { planos = data.planos; salvarPlanos(); }
           if (Array.isArray(data.movimentacoes)) { movimentacoes = data.movimentacoes; salvarMovimentacoes(); }
           if (Array.isArray(data.lucrosCustos)) { lucrosCustos = data.lucrosCustos; salvarLucrosCustos(); }
         } else {
@@ -2088,6 +2161,7 @@
         renderAll();
         renderTestes();
         atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
+        atualizarListaPlanos(); atualizarSelectPlanos();
         atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
         atualizarSelectMesGestao();
         atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
@@ -2101,6 +2175,7 @@
        PARTE 2 — CALCULADORA / CRÉDITO / GESTÃO / CONFIGURAÇÃO
        ========================================================= */
     let pacotes = [];
+    let planos = [];
     let assinaturas = [];
     let custos = [];
     let movimentacoes = [];
@@ -2109,6 +2184,7 @@
     let movimentacaoEditando = null;
 
     function salvarPacotes() { localStorage.setItem('iptv_pacotes', JSON.stringify(pacotes)); }
+    function salvarPlanos()  { localStorage.setItem('iptv_planos',  JSON.stringify(planos));  }
     function salvarMovimentacoes() { localStorage.setItem('iptv_movimentacoes', JSON.stringify(movimentacoes)); }
     function salvarLucrosCustos() { localStorage.setItem('iptv_lucros_custos', JSON.stringify(lucrosCustos)); }
 
@@ -2126,12 +2202,162 @@
         ];
         salvarPacotes();
       }
+      const pl = localStorage.getItem('iptv_planos');
+      if (pl) {
+        try { planos = JSON.parse(pl) || []; } catch (e) { planos = []; }
+      }
       const m = localStorage.getItem('iptv_movimentacoes');
       if (m) movimentacoes = JSON.parse(m);
       const lc = localStorage.getItem('iptv_lucros_custos');
       if (lc) lucrosCustos = JSON.parse(lc);
     }
 
+    /* ---------- PLANOS (cadastro / select / autopreenchimento) ---------- */
+    function encontrarPlanoPorNome(nome) {
+      if (!nome) return null;
+      const n = String(nome).trim().toLowerCase();
+      return planos.find(p => String(p.nome).trim().toLowerCase() === n) || null;
+    }
+    function planoPorIdSelect(selectEl) {
+      if (!selectEl) return null;
+      const id = parseInt(selectEl.value);
+      if (!id) return null;
+      return planos.find(p => p.id === id) || null;
+    }
+    function getPlanoNomeDoSelect(selectEl) {
+      const p = planoPorIdSelect(selectEl);
+      return p ? p.nome : '';
+    }
+    function selecionarPlanoPorNome(selectEl, nome) {
+      if (!selectEl) return;
+      atualizarSelectPlanos(); // garante options atualizadas
+      const p = encontrarPlanoPorNome(nome);
+      selectEl.value = p ? String(p.id) : '';
+    }
+
+    let planoEditandoId = null;
+    function abrirModalPlano() {
+      planoEditandoId = null;
+      document.getElementById('modalPlanoTitle').textContent = 'Adicionar Plano';
+      document.getElementById('planoNome').value = '';
+      document.getElementById('planoValor').value = '';
+      document.getElementById('planoLink').value = '';
+      document.getElementById('planoDias').value = '30';
+      document.getElementById('modalPlano').classList.add('active');
+    }
+    function fecharModalPlano() {
+      document.getElementById('modalPlano').classList.remove('active');
+      planoEditandoId = null;
+    }
+    function editarPlano(id) {
+      const p = planos.find(x => x.id === id);
+      if (!p) return;
+      planoEditandoId = id;
+      document.getElementById('modalPlanoTitle').textContent = 'Editar Plano';
+      document.getElementById('planoNome').value = p.nome;
+      document.getElementById('planoValor').value = p.valor;
+      document.getElementById('planoLink').value = p.link || '';
+      document.getElementById('planoDias').value = p.dias;
+      document.getElementById('modalPlano').classList.add('active');
+    }
+    function salvarPlano() {
+      const nome = document.getElementById('planoNome').value.trim();
+      const valor = parseFloat(document.getElementById('planoValor').value);
+      const link = document.getElementById('planoLink').value.trim();
+      const dias = parseInt(document.getElementById('planoDias').value);
+      if (!nome || isNaN(valor) || !dias || dias < 1) {
+        showToast('Preencha nome, valor e dias (>=1).', true); return;
+      }
+      if (planoEditandoId) {
+        const idx = planos.findIndex(p => p.id === planoEditandoId);
+        if (idx >= 0) planos[idx] = { id: planoEditandoId, nome, valor, link, dias };
+      } else {
+        const novoId = planos.length > 0 ? Math.max(...planos.map(p => p.id)) + 1 : 1;
+        planos.push({ id: novoId, nome, valor, link, dias });
+      }
+      salvarPlanos();
+      atualizarListaPlanos();
+      atualizarSelectPlanos();
+      fecharModalPlano();
+      showToast(planoEditandoId ? 'Plano atualizado.' : 'Plano adicionado.');
+    }
+    function removerPlano(id) {
+      if (!confirm('Remover este plano?')) return;
+      planos = planos.filter(p => p.id !== id);
+      salvarPlanos();
+      atualizarListaPlanos();
+      atualizarSelectPlanos();
+    }
+    function atualizarListaPlanos() {
+      const lista = document.getElementById('listaPlanos');
+      const cnt = document.getElementById('countPlanos');
+      if (cnt) cnt.textContent = planos.length;
+      if (!lista) return;
+      if (planos.length === 0) {
+        lista.innerHTML = '<div class="empty-state"><i class="fas fa-list-ul"></i><p>Nenhum plano cadastrado</p></div>';
+        return;
+      }
+      lista.innerHTML = planos.map(p => `
+        <div class="list-item" data-testid="plano-item-${p.id}">
+          <div class="list-item-content">
+            <div class="list-item-icon"><i class="fas fa-list-ul"></i></div>
+            <div style="flex:1; min-width:0;">
+              <div class="list-item-text">${escapeHtml(p.nome)}</div>
+              <div class="list-item-sub">${p.dias} dias${p.link ? ` • <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--info); text-decoration:none;">link</a>` : ''}</div>
+            </div>
+          </div>
+          <div class="list-item-badge">R$ ${Number(p.valor).toFixed(2)}</div>
+          <button class="btn-info" onclick="editarPlano(${p.id})" data-testid="btn-editar-plano-${p.id}"><i class="fas fa-edit"></i></button>
+          <button class="btn-danger" onclick="removerPlano(${p.id})" data-testid="btn-remover-plano-${p.id}"><i class="fas fa-trash"></i></button>
+        </div>`).join('');
+    }
+    function atualizarSelectPlanos() {
+      const ids = ['plano', 'nc_plano', 'ec_plano'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || el.tagName !== 'SELECT') return;
+        const currentVal = el.value;
+        const opcoes = planos.map(p => `<option value="${p.id}">${escapeHtml(p.nome)} • R$ ${Number(p.valor).toFixed(2)} • ${p.dias} dias</option>`).join('');
+        el.innerHTML = '<option value="">Selecione um plano</option>' + opcoes;
+        if (currentVal && planos.some(p => String(p.id) === String(currentVal))) {
+          el.value = currentVal;
+        }
+      });
+    }
+    function aplicarPlanoSelecionado(selectEl, valorElId, linkElId, dataInicioElId, dataRenovacaoElId) {
+      const p = planoPorIdSelect(selectEl);
+      if (!p) return;
+      if (valorElId) {
+        const elV = document.getElementById(valorElId);
+        if (elV) elV.value = Number(p.valor).toFixed(2).replace('.', ',');
+      }
+      if (linkElId) {
+        const elL = document.getElementById(linkElId);
+        if (elL) elL.value = p.link || '';
+      }
+      if (dataInicioElId && dataRenovacaoElId) {
+        const inicioStr = document.getElementById(dataInicioElId).value;
+        const baseDate = parseDate(inicioStr) || todayLocalDate();
+        document.getElementById(dataRenovacaoElId).value = toInputDate(addDays(baseDate, p.dias));
+      }
+    }
+    // Wire change listeners on plan selects (autofill)
+    (function wirePlanSelects() {
+      const sel1 = document.getElementById('plano');
+      if (sel1) sel1.addEventListener('change', () => aplicarPlanoSelecionado(sel1, 'valor', 'linkRenovacao'));
+      const sel2 = document.getElementById('nc_plano');
+      if (sel2) sel2.addEventListener('change', () => aplicarPlanoSelecionado(sel2, 'nc_valor', 'nc_linkRenovacao', 'nc_dataInicio', 'nc_dataRenovacao'));
+      const sel3 = document.getElementById('ec_plano');
+      if (sel3) sel3.addEventListener('change', () => aplicarPlanoSelecionado(sel3, 'ec_valor', 'ec_linkRenovacao', 'ec_dataInicio', 'ec_dataRenovacao'));
+    })();
+
+    window.abrirModalPlano = abrirModalPlano;
+    window.fecharModalPlano = fecharModalPlano;
+    window.salvarPlano = salvarPlano;
+    window.editarPlano = editarPlano;
+    window.removerPlano = removerPlano;
+
+    /* ---------- CRÉDITOS / PACOTES ---------- */
     function adicionarCreditoPacote() {
       const sel = document.getElementById('pacoteAddCredito');
       const id = parseInt(sel.value);
@@ -2176,26 +2402,6 @@
       if (c) c.textContent = `R$ ${custoTotal.toFixed(2)}`;
     }
 
-    function registrarNaoRenovou() {
-      const qtd = parseInt(document.getElementById('qtdNaoRenovou').value);
-      if (!qtd || qtd < 1) { showToast('Informe uma quantidade válida.', true); return; }
-      movimentacoes.push({
-        data: new Date().toISOString(),
-        tipo: 'churn',
-        tipoCliente: 'nao_renovou',
-        quantidade: qtd
-      });
-      salvarMovimentacoes();
-      atualizarHistorico();
-      atualizarSelectMesGestao();
-      atualizarGraficoClientes();
-      atualizarStatsFinanceiras();
-      gerarTextoWhatsAppGestao();
-      document.getElementById('qtdNaoRenovou').value = '';
-      showToast(`${qtd} não renovação(ões) registrada(s).`);
-    }
-    window.registrarNaoRenovou = registrarNaoRenovou;
-
     function renderMovimentacaoHtml(m, realIdx) {
       const data = new Date(m.data).toLocaleString('pt-BR');
       const tipos = { novo: 'Cliente Novo', renovacao: 'Renovação', nao_renovou: 'Não Renovou' };
@@ -2213,16 +2419,16 @@
             <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
           </div>`;
       } else if (m.tipo === 'churn') {
+        // Movimentação legada (manual). Sem botão editar (recurso removido).
         return `
           <div class="list-item">
             <div class="list-item-content">
               <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-user-times"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">Não Renovaram: ${m.quantidade} cliente(s)</div>
+                <div class="list-item-text">Não Renovaram (legado): ${m.quantidade} cliente(s)</div>
                 <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
               </div>
             </div>
-            <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
             <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
           </div>`;
       } else if (m.tipo === 'teste') {
@@ -2268,6 +2474,8 @@
     function atualizarHistorico() {
       const container = document.getElementById('historicoRecargas');
       const pagEl = document.getElementById('paginationHistorico');
+      const cnt = document.getElementById('countHistorico');
+      if (cnt) cnt.textContent = movimentacoes.length;
       if (!container) return;
       if (movimentacoes.length === 0) {
         container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma movimentação registrada</p></div>';
@@ -2299,12 +2507,6 @@
             <label class="form-label"><i class="fas fa-money-bill-wave"></i> Valor Total (R$)</label>
             <input type="number" id="editValor" class="form-input" value="${m.custo}" step="0.01">
           </div>`;
-      } else if (m.tipo === 'churn') {
-        html = `
-          <div class="form-group">
-            <label class="form-label"><i class="fas fa-user-times"></i> Qtd. Clientes que Não Renovaram</label>
-            <input type="number" id="editQtd" class="form-input" value="${m.quantidade}" min="1">
-          </div>`;
       } else {
         html = `
           <div class="form-group">
@@ -2334,10 +2536,6 @@
         const valor = parseFloat(document.getElementById('editValor').value);
         if (!qtd || !valor) { showToast('Preencha todos os campos.', true); return; }
         m.quantidade = qtd; m.custo = valor;
-      } else if (m.tipo === 'churn') {
-        const qtd = parseInt(document.getElementById('editQtd').value);
-        if (!qtd || qtd < 1) { showToast('Informe uma quantidade válida.', true); return; }
-        m.quantidade = qtd;
       } else {
         const tipo = document.getElementById('editTipo').value;
         const valor = parseFloat(document.getElementById('editValor').value);
@@ -2479,8 +2677,18 @@
     window.removerPacote = removerPacote;
     window.editarPacote = editarPacote;
 
+    /* ---------- Toggles colapsáveis ---------- */
     document.getElementById('headerPacotes').addEventListener('click', () => {
       document.getElementById('cardPacotes').classList.toggle('collapsed');
+    });
+    document.getElementById('headerPlanos').addEventListener('click', () => {
+      document.getElementById('cardPlanos').classList.toggle('collapsed');
+    });
+    document.getElementById('headerGestaoCreditos').addEventListener('click', () => {
+      document.getElementById('cardGestaoCreditos').classList.toggle('collapsed');
+    });
+    document.getElementById('headerHistorico').addEventListener('click', () => {
+      document.getElementById('cardHistorico').classList.toggle('collapsed');
     });
 
     function adicionarAssinatura() {
@@ -2676,6 +2884,26 @@
     }
     window.atualizarStatsFinanceiras = atualizarStatsFinanceiras;
 
+    /* Auto-deteção: cliente com vencimento atrasado >= 20 dias = não renovou */
+    function detectarNaoRenovaramPorCliente() {
+      const today = todayLocalDate();
+      const result = []; // { mesKey, count }
+      const map = {};
+      clients.forEach(c => {
+        const due = parseDate(c.dataRenovacao);
+        if (!due) return;
+        const overdue = diffInDays(today, due);
+        if (overdue >= 20) {
+          // mês de "due + 20 dias" = momento em que oficialmente "não renovou"
+          const churnDate = addDays(due, 20);
+          const k = `${churnDate.getFullYear()}-${String(churnDate.getMonth() + 1).padStart(2, '0')}`;
+          map[k] = (map[k] || 0) + 1;
+        }
+      });
+      Object.keys(map).forEach(k => result.push({ mesKey: k, count: map[k] }));
+      return result;
+    }
+
     function atualizarGraficoClientes() {
       const parent = document.querySelector('#gestao .chart-container');
       if (!parent) return;
@@ -2688,15 +2916,26 @@
         ensure(k);
         if (m.tipo === 'use' && m.tipoCliente === 'novo') porMes[k].novos += (m.quantidade || 1);
         else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') porMes[k].renovacoes += (m.quantidade || 1);
-        else if (m.tipo === 'churn') porMes[k].naoRenovou += (m.quantidade || 1);
+        else if (m.tipo === 'churn') porMes[k].naoRenovou += (m.quantidade || 1); // legado
         else if (m.tipo === 'teste') porMes[k].testes += (m.quantidade || 1);
       });
 
+      // Vencidos (1 a 19 dias) e Não Renovaram (20+ dias) — calculados por cliente
       const today = todayLocalDate();
       clients.forEach(c => {
         const due = parseDate(c.dataRenovacao);
         if (!due) return;
-        if (due < today) {
+        const overdue = diffInDays(today, due);
+        if (overdue <= 0) return;
+        if (overdue >= 20) {
+          // não renovou — atribui ao mês de due + 20 dias
+          const churnDate = addDays(due, 20);
+          const k = `${churnDate.getFullYear()}-${String(churnDate.getMonth() + 1).padStart(2, '0')}`;
+          if (state.filtroMes !== 'all' && k !== state.filtroMes) return;
+          ensure(k);
+          porMes[k].naoRenovou += 1;
+        } else {
+          // vencido (1-19 dias) — atribui ao mês de vencimento
           const k = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`;
           if (state.filtroMes !== 'all' && k !== state.filtroMes) return;
           ensure(k);
@@ -2731,9 +2970,9 @@
               borderColor: '#39ff14', backgroundColor: 'rgba(57,255,20,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
             { label: 'Renovações', data: meses.map(m => porMes[m].renovacoes),
               borderColor: '#5cf0ff', backgroundColor: 'rgba(92,240,255,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'Não Renovaram (manual)', data: meses.map(m => porMes[m].naoRenovou),
+            { label: 'Não Renovaram (20+ dias)', data: meses.map(m => porMes[m].naoRenovou),
               borderColor: '#ff9b5c', backgroundColor: 'rgba(255,155,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6, borderDash: [6,4] },
-            { label: 'Vencidos (atual)', data: meses.map(m => porMes[m].vencidos),
+            { label: 'Vencidos (1-19 dias)', data: meses.map(m => porMes[m].vencidos),
               borderColor: '#ff5c5c', backgroundColor: 'rgba(255,92,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 }
           ]
         },
@@ -2754,25 +2993,36 @@
     }
 
     function gerarTextoWhatsAppGestao() {
-      let novos = 0, renov = 0, nren = 0, testes_criados = 0;
+      let novos = 0, renov = 0, testes_criados = 0;
       movimentacoes.forEach(m => {
         if (!passaFiltroMes(m.data)) return;
         if (m.tipo === 'use' && m.tipoCliente === 'novo') novos += (m.quantidade || 1);
         else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') renov += (m.quantidade || 1);
-        else if (m.tipo === 'churn') nren += (m.quantidade || 1);
         else if (m.tipo === 'teste') testes_criados += (m.quantidade || 1);
       });
 
+      // Não renovaram (auto: 20+ dias atrasado) e vencidos (1-19 dias)
       const today = todayLocalDate();
-      let vencidosAtuais = 0;
+      let nren = 0, vencidosAtuais = 0;
       clients.forEach(c => {
         const due = parseDate(c.dataRenovacao);
-        if (!due || due >= today) return;
-        if (state.filtroMes !== 'all') {
-          const k = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`;
-          if (k !== state.filtroMes) return;
+        if (!due) return;
+        const overdue = diffInDays(today, due);
+        if (overdue <= 0) return;
+        if (overdue >= 20) {
+          if (state.filtroMes !== 'all') {
+            const churnDate = addDays(due, 20);
+            const k = `${churnDate.getFullYear()}-${String(churnDate.getMonth() + 1).padStart(2, '0')}`;
+            if (k !== state.filtroMes) return;
+          }
+          nren += 1;
+        } else {
+          if (state.filtroMes !== 'all') {
+            const k = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`;
+            if (k !== state.filtroMes) return;
+          }
+          vencidosAtuais += 1;
         }
-        vencidosAtuais += 1;
       });
 
       const { custo, lucro, liquido } = computeTotaisFinanceiros();
@@ -2780,7 +3030,7 @@
 
       let t = `📊 *RESUMO COMPLETO - GESTÃO IPTV (${rotuloMes})*\n\n`;
       t += `👥 *CLIENTES*\n`;
-      t += `• Novos: ${novos}\n• Renovações: ${renov}\n• Não Renovaram (manual): ${nren}\n• Vencidos agora: ${vencidosAtuais}\n• Testes criados: ${testes_criados}\n• Total Ativos: ${clients.length}\n\n`;
+      t += `• Novos: ${novos}\n• Renovações: ${renov}\n• Não Renovaram (20+ dias): ${nren}\n• Vencidos (1-19 dias): ${vencidosAtuais}\n• Testes criados: ${testes_criados}\n• Total Ativos: ${clients.length}\n\n`;
       t += `💰 *FINANCEIRO*\n`;
       t += `• Custo Total: R$ ${custo.toFixed(2)}\n• Lucro Total: R$ ${lucro.toFixed(2)}\n• Lucro Líquido: R$ ${liquido.toFixed(2)}\n\n`;
 
@@ -2835,6 +3085,8 @@
     atualizarListaPacotes();
     atualizarSelectPacotes();
     atualizarSelectPacotesAddCredito();
+    atualizarListaPlanos();
+    atualizarSelectPlanos();
     atualizarCreditos();
     atualizarHistorico();
     atualizarListaLucrosCustos();
