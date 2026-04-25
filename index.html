@@ -762,10 +762,19 @@
       .actions button, .actions .btn { flex: 1 1 calc(50% - 5px); }
       .tab { padding: 10px 14px; font-size: 13px; }
       .form-grid { grid-template-columns: 1fr; }
+      /* Neutraliza spans inline em qualquer form-grid (Cadastros, modais, etc.) no mobile */
+      .form-grid .field[style*="span 2"],
+      .form-grid .field[style*="span 3"] { grid-column: auto !important; }
       .input-group-2 { grid-template-columns: 1fr; }
       .list-box, .form-card, .table-card, .card { padding: 16px; }
       .radio-group { grid-template-columns: 1fr; }
       .chart-container { height: 320px; padding: 10px; }
+      /* Evita overflow horizontal quando há conteúdo longo (links, telefones, usuários) na lista de testes */
+      .list-item { flex-wrap: wrap; }
+      .list-item-content { min-width: 0; flex: 1 1 100%; }
+      .list-item-text, .list-item-sub { overflow-wrap: anywhere; word-break: break-word; }
+      .client-row-actions { width: 100% !important; justify-content: stretch; }
+      .client-row-actions button { flex: 1 1 calc(50% - 3px); }
     }
 
     @media (max-width: 640px) {
