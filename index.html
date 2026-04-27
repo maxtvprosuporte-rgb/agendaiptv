@@ -221,7 +221,6 @@
       box-shadow: var(--glow-sm);
     }
 
-    /* WhatsApp button variants (sent / not sent) — usado SOMENTE para vencimento hoje */
     .btn-whatsapp-sent {
       background: linear-gradient(180deg, #0d1d08, #060e04);
       color: var(--primary);
@@ -437,7 +436,6 @@
     }
     .search::placeholder { color: #5a5a5a; }
 
-    /* LIST ROW (cliente/vencimento em formato lista) */
     .client-row {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -580,7 +578,6 @@
       text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
     }
 
-    /* Month filter in Gestão */
     .month-filter-bar {
       display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
       background: linear-gradient(180deg, var(--card), var(--card-2));
@@ -601,7 +598,6 @@
       color: var(--muted); font-size: 12px; font-family: var(--font-mono);
     }
 
-    /* Collapsible card (Pacotes/Planos/Gestão de Créditos/Histórico) */
     .card-header.collapsible { cursor: pointer; user-select: none; }
     .card-header .chev {
       margin-left: auto;
@@ -748,7 +744,6 @@
       .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
-    /* Ensure modal edit form becomes single column earlier and neutralizes inline spans */
     @media (max-width: 720px) {
       .modal-content .form-grid { grid-template-columns: 1fr !important; }
       .modal-content .form-grid .field[style*="span 2"],
@@ -762,14 +757,12 @@
       .actions button, .actions .btn { flex: 1 1 calc(50% - 5px); }
       .tab { padding: 10px 14px; font-size: 13px; }
       .form-grid { grid-template-columns: 1fr; }
-      /* Neutraliza spans inline em qualquer form-grid (Cadastros, modais, etc.) no mobile */
       .form-grid .field[style*="span 2"],
       .form-grid .field[style*="span 3"] { grid-column: auto !important; }
       .input-group-2 { grid-template-columns: 1fr; }
       .list-box, .form-card, .table-card, .card { padding: 16px; }
       .radio-group { grid-template-columns: 1fr; }
       .chart-container { height: 320px; padding: 10px; }
-      /* Evita overflow horizontal quando há conteúdo longo (links, telefones, usuários) na lista de testes */
       .list-item { flex-wrap: wrap; }
       .list-item-content { min-width: 0; flex: 1 1 100%; }
       .list-item-text, .list-item-sub { overflow-wrap: anywhere; word-break: break-word; }
@@ -782,14 +775,11 @@
       .title p { font-size: 12.5px; }
       .actions button, .actions .btn { flex: 1 1 100%; font-size: 13px; }
       .tab { padding: 10px 12px; font-size: 12.5px; min-height: 40px; }
-
       .form-actions button { flex: 1 1 100%; }
-
       .toolbar-left { gap: 8px; }
       .search { max-width: 100%; }
       .pagination-bar .page-info { order: -1; width: 100%; text-align: center; }
       .card-title, .card-title h2 { font-size: 17px; }
-
       .list-item { flex-wrap: wrap; }
       .cost-item, .assinatura-item { grid-template-columns: 1fr; text-align: left; }
     }
@@ -880,6 +870,7 @@
             <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
             <div class="field"><label for="plano">Plano</label><select id="plano" data-testid="input-plano"><option value="">Selecione um plano</option></select></div>
             <div class="field"><label for="valor">Valor</label><input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" /></div>
+            <div class="field"><label for="creditos">Créditos a descontar</label><input type="number" id="creditos" min="0" step="1" placeholder="Ex.: 1" data-testid="input-creditos" /></div>
             <div class="field" style="grid-column: span 2;"><label for="linkRenovacao">Link de ativação / renovação</label><input id="linkRenovacao" placeholder="https://..." data-testid="input-link-renovacao" /></div>
             <div class="field"><label for="observacoes">Observações</label><input id="observacoes" placeholder="Opcional" data-testid="input-observacoes" /></div>
           </div>
@@ -963,7 +954,6 @@
 
     <!-- GESTÃO -->
     <section id="gestao" class="panel">
-      <!-- Month filter bar -->
       <div class="month-filter-bar" data-testid="month-filter-bar">
         <label><i class="fas fa-filter"></i> Filtrar por mês</label>
         <select id="filtroMesGestao" class="form-select" data-testid="filtro-mes-gestao">
@@ -1009,7 +999,6 @@
 
     <!-- CONFIGURAÇÃO -->
     <section id="config" class="panel">
-      <!-- GESTÃO DE CRÉDITOS (colapsável) -->
       <div class="card" id="cardGestaoCreditos">
         <div class="card-header collapsible" id="headerGestaoCreditos" data-testid="header-gestao-creditos">
           <div class="card-title"><i class="fas fa-coins"></i><h2>Gestão de Créditos</h2></div>
@@ -1054,15 +1043,9 @@
               <button class="btn-secondary" onclick="adicionarLucroCusto()"><i class="fas fa-plus"></i> Adicionar</button>
             </div>
           </div>
-
-          <div style="margin-top: 16px; padding: 12px 14px; background: #060606; border: 1px dashed var(--border-faint); border-radius: 12px; color: var(--muted); font-size: 12.5px;">
-            <i class="fas fa-info-circle" style="color: var(--info); margin-right:6px;"></i>
-            Clientes com vencimento atrasado em <b style="color:var(--text-dim);">20 dias ou mais</b> são contabilizados automaticamente como <b style="color:#ff9b5c;">"Não Renovaram"</b> no gráfico. Se a assinatura for renovada, eles voltam a contar como <b style="color:var(--info);">renovação</b>.
-          </div>
         </div>
       </div>
 
-      <!-- PACOTES (colapsável) -->
       <div class="card collapsed" id="cardPacotes">
         <div class="card-header collapsible" id="headerPacotes" data-testid="header-pacotes">
           <div class="card-title"><i class="fas fa-box"></i><h2>Pacotes de Créditos</h2></div>
@@ -1079,7 +1062,6 @@
         </div>
       </div>
 
-      <!-- PLANOS (colapsável) -->
       <div class="card collapsed" id="cardPlanos">
         <div class="card-header collapsible" id="headerPlanos" data-testid="header-planos">
           <div class="card-title"><i class="fas fa-list-ul"></i><h2>Planos Disponíveis</h2></div>
@@ -1089,7 +1071,7 @@
           </div>
         </div>
         <div class="card-body" id="bodyPlanos">
-          <p class="card-hint">Cadastre os planos disponíveis. Eles aparecerão como lista nos formulários de cadastro de Teste e Cliente, preenchendo automaticamente valor, link de pagamento e quantidade de dias.</p>
+          <p class="card-hint">Cadastre os planos disponíveis. Eles aparecerão como lista nos formulários de cadastro de Teste e Cliente, preenchendo automaticamente valor, link de pagamento, quantidade de dias e <b style="color:var(--primary);">créditos descontados</b>.</p>
           <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
             <button class="btn-primary" onclick="abrirModalPlano()" data-testid="btn-novo-plano"><i class="fas fa-plus"></i> Novo Plano</button>
           </div>
@@ -1097,7 +1079,6 @@
         </div>
       </div>
 
-      <!-- HISTÓRICO (colapsável) -->
       <div class="card collapsed" id="cardHistorico">
         <div class="card-header collapsible" id="headerHistorico" data-testid="header-historico">
           <div class="card-title"><i class="fas fa-history"></i><h2>Histórico de Movimentações</h2></div>
@@ -1158,6 +1139,11 @@
         <label class="form-label"><i class="fas fa-calendar-day"></i> Quantidade de Dias</label>
         <input type="number" id="planoDias" class="form-input" placeholder="Ex: 30" min="1" data-testid="plano-dias">
       </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-coins"></i> Créditos descontados por venda/renovação</label>
+        <input type="number" id="planoCreditos" class="form-input" placeholder="Ex: 1" min="0" step="1" value="1" data-testid="plano-creditos">
+        <p class="card-hint" style="margin: 6px 0 0;">Quantos créditos serão consumidos do seu saldo a cada venda ou renovação deste plano.</p>
+      </div>
       <button class="btn-primary btn-block" onclick="salvarPlano()" data-testid="save-plano">
         <i class="fas fa-check"></i> Salvar Plano
       </button>
@@ -1178,7 +1164,7 @@
     </div>
   </div>
 
-  <!-- MODAL EDITAR CLIENTE (permanece na mesma aba) -->
+  <!-- MODAL EDITAR CLIENTE -->
   <div id="modalEditarCliente" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1196,6 +1182,7 @@
           <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
           <div class="field"><label for="ec_plano">Plano</label><select id="ec_plano" data-testid="ec-plano"><option value="">Selecione um plano</option></select></div>
           <div class="field"><label for="ec_valor">Valor</label><input id="ec_valor" placeholder="Ex.: 30,00" data-testid="ec-valor" /></div>
+          <div class="field"><label for="ec_creditos">Créditos a descontar</label><input type="number" id="ec_creditos" min="0" step="1" placeholder="Ex.: 1" data-testid="ec-creditos" /></div>
           <div class="field" id="ec_inicio_wrap"><label for="ec_dataInicio">Data de início</label><input type="date" id="ec_dataInicio" data-testid="ec-data-inicio" /></div>
           <div class="field" id="ec_renovacao_wrap">
             <label for="ec_dataRenovacao" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
@@ -1217,7 +1204,7 @@
     </div>
   </div>
 
-  <!-- MODAL NOVO CLIENTE (cadastro direto na aba Clientes) -->
+  <!-- MODAL NOVO CLIENTE -->
   <div id="modalNovoCliente" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1233,6 +1220,7 @@
           <div class="field"><label for="nc_senha">Senha</label><input id="nc_senha" required data-testid="nc-senha" /></div>
           <div class="field"><label for="nc_plano">Plano</label><select id="nc_plano" data-testid="nc-plano"><option value="">Selecione um plano</option></select></div>
           <div class="field"><label for="nc_valor">Valor</label><input id="nc_valor" placeholder="Ex.: 30,00" data-testid="nc-valor" /></div>
+          <div class="field"><label for="nc_creditos">Créditos a descontar</label><input type="number" id="nc_creditos" min="0" step="1" placeholder="Ex.: 1" data-testid="nc-creditos" /></div>
           <div class="field"><label for="nc_dataInicio">Data de início</label><input type="date" id="nc_dataInicio" data-testid="nc-data-inicio" /></div>
           <div class="field">
             <label for="nc_dataRenovacao" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
@@ -1247,7 +1235,7 @@
 
         <div class="form-group" style="margin-top: 18px;">
           <label class="form-label"><i class="fas fa-coins"></i> Contabilizar crédito na criação?</label>
-          <p class="card-hint" style="margin: 0 0 10px;">Sim: desconta 1 crédito, soma no faturamento e aparece no gráfico. Não: apenas cadastra o cliente sem impactar créditos/gráfico.</p>
+          <p class="card-hint" style="margin: 0 0 10px;">Sim: desconta os créditos definidos acima, soma no faturamento e aparece no gráfico. Não: apenas cadastra o cliente sem impactar créditos/gráfico.</p>
           <div class="radio-group" role="radiogroup" aria-label="Contabilizar crédito">
             <label class="radio-option active" id="nc_contab_sim" data-testid="nc-contab-sim">
               <input type="radio" name="nc_contabilizar" value="sim" checked>
@@ -1313,6 +1301,7 @@
       senha: document.getElementById('senha'),
       plano: document.getElementById('plano'),
       valor: document.getElementById('valor'),
+      creditos: document.getElementById('creditos'),
       linkRenovacao: document.getElementById('linkRenovacao'),
       observacoes: document.getElementById('observacoes'),
       clientesList: document.getElementById('clientesList'),
@@ -1410,6 +1399,19 @@
       return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
     }
 
+    // Helper: resolve quantidade de créditos a descontar para um cliente/teste
+    function resolverCreditosCliente(target) {
+      if (target && Number.isFinite(parseInt(target.creditos))) {
+        const v = parseInt(target.creditos);
+        if (v >= 0) return v;
+      }
+      const planoCad = encontrarPlanoPorNome(target ? target.plano : '');
+      if (planoCad && Number.isFinite(parseInt(planoCad.creditos))) {
+        return parseInt(planoCad.creditos);
+      }
+      return 1;
+    }
+
     function buildMessage(client) {
       const diff = getDaysUntil(client);
       let statusTag;
@@ -1462,7 +1464,6 @@
     function openWhatsApp(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
-      // Marca como "mensagem enviada neste ciclo" apenas para quem vence HOJE
       if (getDaysUntil(client) === 0) {
         client.msgSentAt = new Date().toISOString();
         saveClients();
@@ -1488,22 +1489,22 @@
     function renewClient(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
-      // Determina dias do plano (se cadastrado), senão 30 (default histórico)
       const planoCadastrado = encontrarPlanoPorNome(client.plano);
       const dias = planoCadastrado ? planoCadastrado.dias : 30;
+      const creditosUsar = resolverCreditosCliente(client);
       const today = todayLocalDate();
       const nd = addDays(today, dias);
       client.dataInicio = toInputDate(today);
       client.dataPagamento = toInputDate(today);
       client.dataRenovacao = toInputDate(nd);
-      client.msgSentAt = null; // reset do indicador WhatsApp no novo ciclo
+      client.msgSentAt = null;
       client.updatedAt = new Date().toISOString();
       movimentacoes.push({
         data: new Date().toISOString(),
         tipo: 'use',
         tipoCliente: 'renovacao',
         valor: parseValor(client.valor),
-        quantidade: 1,
+        quantidade: creditosUsar,
         clientId: client.id,
         clientNome: client.nome
       });
@@ -1512,7 +1513,7 @@
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
-      showToast(`Renovado • Novo vencimento: ${formatDate(client.dataRenovacao)} • -1 crédito`);
+      showToast(`Renovado • Novo vencimento: ${formatDate(client.dataRenovacao)} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'}`);
     }
     window.openWhatsApp = openWhatsApp;
     window.copyMessage = copyMessage;
@@ -1547,7 +1548,6 @@
       `;
     }
 
-    /* ----- WhatsApp button: vermelho/verde SOMENTE para vencimento hoje ----- */
     function whatsBtnHtml(client) {
       const isToday = getDaysUntil(client) === 0;
       if (!isToday) {
@@ -1611,46 +1611,38 @@
         if (da && db && da - db !== 0) return da - db;
         return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
       };
-      dueToday.sort(sortByRenewal); dueTomorrow.sort(sortByRenewal); dueWeek.sort(sortByRenewal);
-      expired.sort(sortByRenewal);
+      dueToday.sort(sortByRenewal);
+      dueTomorrow.sort(sortByRenewal);
+      dueWeek.sort(sortByRenewal);
+      expired.sort((a, b) => parseDate(b.dataRenovacao) - parseDate(a.dataRenovacao));
 
       els.countToday.textContent = dueToday.length;
       els.countTomorrow.textContent = dueTomorrow.length;
       els.countWeek.textContent = dueWeek.length;
-      if (els.countExpired) els.countExpired.textContent = expired.length;
+      els.countExpired.textContent = expired.length;
 
-      const pE = paginate(expired, state.expiredPage); state.expiredPage = pE.safePage;
-      renderVencimentoList(els.listExpired, pE.items, true);
-      renderPagination(els.paginationExpired, pE.safePage, pE.totalPages, 'changeExpiredPage');
+      const pToday = paginate(dueToday, state.todayPage); state.todayPage = pToday.safePage;
+      const pTomorrow = paginate(dueTomorrow, state.tomorrowPage); state.tomorrowPage = pTomorrow.safePage;
+      const pWeek = paginate(dueWeek, state.weekPage); state.weekPage = pWeek.safePage;
+      const pExpired = paginate(expired, state.expiredPage); state.expiredPage = pExpired.safePage;
 
-      const pT = paginate(dueToday, state.todayPage); state.todayPage = pT.safePage;
-      renderVencimentoList(els.listToday, pT.items);
-      renderPagination(els.paginationToday, pT.safePage, pT.totalPages, 'changeTodayPage');
+      renderVencimentoList(els.listToday, pToday.items, false);
+      renderVencimentoList(els.listTomorrow, pTomorrow.items, false);
+      renderVencimentoList(els.listWeek, pWeek.items, false);
+      renderVencimentoList(els.listExpired, pExpired.items, true);
 
-      const pTm = paginate(dueTomorrow, state.tomorrowPage); state.tomorrowPage = pTm.safePage;
-      renderVencimentoList(els.listTomorrow, pTm.items);
-      renderPagination(els.paginationTomorrow, pTm.safePage, pTm.totalPages, 'changeTomorrowPage');
-
-      const pW = paginate(dueWeek, state.weekPage); state.weekPage = pW.safePage;
-      renderVencimentoList(els.listWeek, pW.items);
-      renderPagination(els.paginationWeek, pW.safePage, pW.totalPages, 'changeWeekPage');
-    }
-
-    function filterClients() {
-      const term = (els.searchClientesInput.value || '').trim().toLowerCase();
-      if (!term) return [...clients];
-      return clients.filter(c => [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano]
-        .map(v => String(v || '').toLowerCase()).join(' | ').includes(term));
+      renderPagination(els.paginationToday, pToday.safePage, pToday.totalPages, 'changeTodayPage');
+      renderPagination(els.paginationTomorrow, pTomorrow.safePage, pTomorrow.totalPages, 'changeTomorrowPage');
+      renderPagination(els.paginationWeek, pWeek.safePage, pWeek.totalPages, 'changeWeekPage');
+      renderPagination(els.paginationExpired, pExpired.safePage, pExpired.totalPages, 'changeExpiredPage');
     }
 
     function renderClientes() {
-      const filtered = filterClients();
-      filtered.sort((a, b) => {
-        const da = parseDate(a.dataRenovacao), db = parseDate(b.dataRenovacao);
-        if (da && db) return da - db;
-        if (da && !db) return -1;
-        if (!da && db) return 1;
-        return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+      const term = (els.searchClientesInput.value || '').trim().toLowerCase();
+      const filtered = clients.filter(c => {
+        if (!term) return true;
+        return [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano]
+          .some(v => String(v || '').toLowerCase().includes(term));
       });
       els.countClientes.textContent = filtered.length;
       const pag = paginate(filtered, state.clientesPage);
@@ -1772,6 +1764,7 @@
       const t = testes[idx];
       const planoCad = encontrarPlanoPorNome(t.plano);
       const dias = planoCad ? planoCad.dias : 30;
+      const creditosUsar = resolverCreditosCliente(t);
       const hoje = todayLocalDate();
       const novoCliente = {
         id: generateId(),
@@ -1782,6 +1775,7 @@
         senha: t.senha,
         plano: t.plano,
         valor: t.valor,
+        creditos: creditosUsar,
         dataInicio: toInputDate(hoje),
         dataPagamento: toInputDate(hoje),
         dataRenovacao: toInputDate(addDays(hoje, dias)),
@@ -1796,7 +1790,7 @@
         tipo: 'use',
         tipoCliente: 'novo',
         valor: parseValor(t.valor),
-        quantidade: 1,
+        quantidade: creditosUsar,
         clientId: novoCliente.id,
         clientNome: novoCliente.nome
       });
@@ -1809,7 +1803,7 @@
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
       switchTab('clientes');
-      showToast(`${novoCliente.nome} ativado • -1 crédito • Vence em ${formatDate(novoCliente.dataRenovacao)}`);
+      showToast(`${novoCliente.nome} ativado • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} • Vence em ${formatDate(novoCliente.dataRenovacao)}`);
     }
 
     function excluirTeste(id) {
@@ -1852,6 +1846,10 @@
     function getFormData() {
       const sel = els.plano;
       const planoNome = sel && sel.tagName === 'SELECT' ? getPlanoNomeDoSelect(sel) : (sel ? sel.value.trim() : '');
+      const planoCad = encontrarPlanoPorNome(planoNome);
+      const creditosVal = els.creditos && els.creditos.value !== ''
+        ? Math.max(0, parseInt(els.creditos.value) || 0)
+        : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
       return {
         id: els.clientId.value || generateId(),
         nome: els.nome.value.trim(),
@@ -1861,14 +1859,15 @@
         senha: els.senha.value.trim(),
         plano: planoNome,
         valor: els.valor.value.trim(),
+        creditos: creditosVal,
         linkRenovacao: els.linkRenovacao.value.trim(),
         observacoes: els.observacoes.value.trim(),
         createdAt: new Date().toISOString()
       };
     }
 
-    /* ---------- EDIT CLIENT (modal na mesma aba) ---------- */
-    let editKind = null; // 'client' | 'teste'
+    /* ---------- EDIT CLIENT ---------- */
+    let editKind = null;
     function abrirModalEditarCliente() {
       document.getElementById('modalEditarCliente').classList.add('active');
     }
@@ -1891,10 +1890,13 @@
       document.getElementById('ec_aplicativo').value = target.aplicativo || '';
       document.getElementById('ec_usuario').value = target.usuario || '';
       document.getElementById('ec_senha').value = target.senha || '';
-      // plano (select): tenta selecionar pelo nome existente
       const ecPlanoSel = document.getElementById('ec_plano');
       selecionarPlanoPorNome(ecPlanoSel, target.plano);
       document.getElementById('ec_valor').value = target.valor || '';
+      const creditosFallback = (encontrarPlanoPorNome(target.plano) || {}).creditos;
+      document.getElementById('ec_creditos').value =
+        Number.isFinite(parseInt(target.creditos)) ? target.creditos
+        : (Number.isFinite(parseInt(creditosFallback)) ? creditosFallback : 1);
       document.getElementById('ec_linkRenovacao').value = target.linkRenovacao || '';
       document.getElementById('ec_observacoes').value = target.observacoes || '';
 
@@ -1917,7 +1919,6 @@
     }
     window.editClient = editClient;
 
-    // Auto-sincroniza Data de renovação = Data de início + dias do plano (ou 30) ao alterar início
     (function wireEcDateSync() {
       const inicio = document.getElementById('ec_dataInicio');
       const renov = document.getElementById('ec_dataRenovacao');
@@ -1941,6 +1942,11 @@
       const kind = document.getElementById('ec_kind').value;
       const ecPlanoSel = document.getElementById('ec_plano');
       const planoNome = ecPlanoSel && ecPlanoSel.tagName === 'SELECT' ? getPlanoNomeDoSelect(ecPlanoSel) : (ecPlanoSel ? ecPlanoSel.value.trim() : '');
+      const ecCredVal = document.getElementById('ec_creditos').value;
+      const planoCad = encontrarPlanoPorNome(planoNome);
+      const creditosFinal = ecCredVal !== ''
+        ? Math.max(0, parseInt(ecCredVal) || 0)
+        : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
       const base = {
         nome: document.getElementById('ec_nome').value.trim(),
         telefone: document.getElementById('ec_telefone').value.trim(),
@@ -1949,6 +1955,7 @@
         senha: document.getElementById('ec_senha').value.trim(),
         plano: planoNome,
         valor: document.getElementById('ec_valor').value.trim(),
+        creditos: creditosFinal,
         linkRenovacao: document.getElementById('ec_linkRenovacao').value.trim(),
         observacoes: document.getElementById('ec_observacoes').value.trim()
       };
@@ -1983,17 +1990,15 @@
       showToast('Alterações salvas.');
     });
 
-    /* ---------- NOVO CLIENTE (modal na aba Clientes) ---------- */
+    /* ---------- NOVO CLIENTE ---------- */
     function abrirModalNovoCliente() {
       const form = document.getElementById('formNovoCliente');
       form.reset();
-      // re-preencher select de planos (form.reset não recria options)
       atualizarSelectPlanos();
-      // defaults de data
       const hoje = todayLocalDate();
       document.getElementById('nc_dataInicio').value = toInputDate(hoje);
       document.getElementById('nc_dataRenovacao').value = toInputDate(addDays(hoje, 30));
-      // reset radio state (default = sim)
+      document.getElementById('nc_creditos').value = 1;
       document.querySelector('input[name="nc_contabilizar"][value="sim"]').checked = true;
       document.getElementById('nc_contab_sim').classList.add('active');
       document.getElementById('nc_contab_nao').classList.remove('active');
@@ -2006,7 +2011,6 @@
     window.abrirModalNovoCliente = abrirModalNovoCliente;
     window.fecharModalNovoCliente = fecharModalNovoCliente;
 
-    // Sync: data início + dias do plano (ou 30) = renovação
     (function wireNcDateSync() {
       const inicio = document.getElementById('nc_dataInicio');
       const renov = document.getElementById('nc_dataRenovacao');
@@ -2024,7 +2028,6 @@
       if (btn) btn.addEventListener('click', recalc);
     })();
 
-    // Radio visual toggle
     (function wireNcRadio() {
       const sim = document.getElementById('nc_contab_sim');
       const nao = document.getElementById('nc_contab_nao');
@@ -2057,6 +2060,10 @@
       const dataRenovacao = document.getElementById('nc_dataRenovacao').value || toInputDate(addDays(parseDate(dataInicio) || hoje, dias));
       const valor = document.getElementById('nc_valor').value.trim();
       const planoNome = ncPlanoSel && ncPlanoSel.tagName === 'SELECT' ? getPlanoNomeDoSelect(ncPlanoSel) : '';
+      const ncCredVal = document.getElementById('nc_creditos').value;
+      const creditosFinal = ncCredVal !== ''
+        ? Math.max(0, parseInt(ncCredVal) || 0)
+        : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
 
       const novo = {
         id: generateId(),
@@ -2067,6 +2074,7 @@
         senha,
         plano: planoNome,
         valor,
+        creditos: creditosFinal,
         dataInicio,
         dataPagamento: dataInicio,
         dataRenovacao,
@@ -2085,7 +2093,7 @@
           tipo: 'use',
           tipoCliente: 'novo',
           valor: parseValor(valor),
-          quantidade: 1,
+          quantidade: creditosFinal,
           clientId: novo.id,
           clientNome: novo.nome
         });
@@ -2099,7 +2107,7 @@
       atualizarSelectMesGestao();
       fecharModalNovoCliente();
       showToast(contabilizar
-        ? `${novo.nome} cadastrado • -1 crédito contabilizado`
+        ? `${novo.nome} cadastrado • -${creditosFinal} crédito${creditosFinal === 1 ? '' : 's'} contabilizado${creditosFinal === 1 ? '' : 's'}`
         : `${novo.nome} cadastrado (sem impacto no gráfico/créditos)`);
     });
 
@@ -2215,13 +2223,20 @@
       if (pl) {
         try { planos = JSON.parse(pl) || []; } catch (e) { planos = []; }
       }
+      // Backfill: planos antigos sem o campo creditos -> default 1
+      let mutated = false;
+      planos.forEach(pl => {
+        if (!Number.isFinite(parseInt(pl.creditos))) { pl.creditos = 1; mutated = true; }
+      });
+      if (mutated) salvarPlanos();
+
       const m = localStorage.getItem('iptv_movimentacoes');
       if (m) movimentacoes = JSON.parse(m);
       const lc = localStorage.getItem('iptv_lucros_custos');
       if (lc) lucrosCustos = JSON.parse(lc);
     }
 
-    /* ---------- PLANOS (cadastro / select / autopreenchimento) ---------- */
+    /* ---------- PLANOS ---------- */
     function encontrarPlanoPorNome(nome) {
       if (!nome) return null;
       const n = String(nome).trim().toLowerCase();
@@ -2239,7 +2254,7 @@
     }
     function selecionarPlanoPorNome(selectEl, nome) {
       if (!selectEl) return;
-      atualizarSelectPlanos(); // garante options atualizadas
+      atualizarSelectPlanos();
       const p = encontrarPlanoPorNome(nome);
       selectEl.value = p ? String(p.id) : '';
     }
@@ -2252,6 +2267,7 @@
       document.getElementById('planoValor').value = '';
       document.getElementById('planoLink').value = '';
       document.getElementById('planoDias').value = '30';
+      document.getElementById('planoCreditos').value = '1';
       document.getElementById('modalPlano').classList.add('active');
     }
     function fecharModalPlano() {
@@ -2267,6 +2283,7 @@
       document.getElementById('planoValor').value = p.valor;
       document.getElementById('planoLink').value = p.link || '';
       document.getElementById('planoDias').value = p.dias;
+      document.getElementById('planoCreditos').value = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
       document.getElementById('modalPlano').classList.add('active');
     }
     function salvarPlano() {
@@ -2274,15 +2291,17 @@
       const valor = parseFloat(document.getElementById('planoValor').value);
       const link = document.getElementById('planoLink').value.trim();
       const dias = parseInt(document.getElementById('planoDias').value);
+      const creditosRaw = document.getElementById('planoCreditos').value;
+      const creditos = creditosRaw === '' ? 1 : Math.max(0, parseInt(creditosRaw) || 0);
       if (!nome || isNaN(valor) || !dias || dias < 1) {
         showToast('Preencha nome, valor e dias (>=1).', true); return;
       }
       if (planoEditandoId) {
         const idx = planos.findIndex(p => p.id === planoEditandoId);
-        if (idx >= 0) planos[idx] = { id: planoEditandoId, nome, valor, link, dias };
+        if (idx >= 0) planos[idx] = { id: planoEditandoId, nome, valor, link, dias, creditos };
       } else {
         const novoId = planos.length > 0 ? Math.max(...planos.map(p => p.id)) + 1 : 1;
-        planos.push({ id: novoId, nome, valor, link, dias });
+        planos.push({ id: novoId, nome, valor, link, dias, creditos });
       }
       salvarPlanos();
       atualizarListaPlanos();
@@ -2306,19 +2325,22 @@
         lista.innerHTML = '<div class="empty-state"><i class="fas fa-list-ul"></i><p>Nenhum plano cadastrado</p></div>';
         return;
       }
-      lista.innerHTML = planos.map(p => `
+      lista.innerHTML = planos.map(p => {
+        const cred = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
+        return `
         <div class="list-item" data-testid="plano-item-${p.id}">
           <div class="list-item-content">
             <div class="list-item-icon"><i class="fas fa-list-ul"></i></div>
             <div style="flex:1; min-width:0;">
               <div class="list-item-text">${escapeHtml(p.nome)}</div>
-              <div class="list-item-sub">${p.dias} dias${p.link ? ` • <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--info); text-decoration:none;">link</a>` : ''}</div>
+              <div class="list-item-sub">${p.dias} dias • <span style="color:var(--primary);"><i class="fas fa-coins"></i> ${cred} créd.</span>${p.link ? ` • <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--info); text-decoration:none;">link</a>` : ''}</div>
             </div>
           </div>
           <div class="list-item-badge">R$ ${Number(p.valor).toFixed(2)}</div>
           <button class="btn-info" onclick="editarPlano(${p.id})" data-testid="btn-editar-plano-${p.id}"><i class="fas fa-edit"></i></button>
           <button class="btn-danger" onclick="removerPlano(${p.id})" data-testid="btn-remover-plano-${p.id}"><i class="fas fa-trash"></i></button>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
     function atualizarSelectPlanos() {
       const ids = ['plano', 'nc_plano', 'ec_plano'];
@@ -2326,14 +2348,17 @@
         const el = document.getElementById(id);
         if (!el || el.tagName !== 'SELECT') return;
         const currentVal = el.value;
-        const opcoes = planos.map(p => `<option value="${p.id}">${escapeHtml(p.nome)} • R$ ${Number(p.valor).toFixed(2)} • ${p.dias} dias</option>`).join('');
+        const opcoes = planos.map(p => {
+          const cred = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
+          return `<option value="${p.id}">${escapeHtml(p.nome)} • R$ ${Number(p.valor).toFixed(2)} • ${p.dias}d • ${cred} créd.</option>`;
+        }).join('');
         el.innerHTML = '<option value="">Selecione um plano</option>' + opcoes;
         if (currentVal && planos.some(p => String(p.id) === String(currentVal))) {
           el.value = currentVal;
         }
       });
     }
-    function aplicarPlanoSelecionado(selectEl, valorElId, linkElId, dataInicioElId, dataRenovacaoElId) {
+    function aplicarPlanoSelecionado(selectEl, valorElId, linkElId, dataInicioElId, dataRenovacaoElId, creditosElId) {
       const p = planoPorIdSelect(selectEl);
       if (!p) return;
       if (valorElId) {
@@ -2349,15 +2374,18 @@
         const baseDate = parseDate(inicioStr) || todayLocalDate();
         document.getElementById(dataRenovacaoElId).value = toInputDate(addDays(baseDate, p.dias));
       }
+      if (creditosElId) {
+        const elC = document.getElementById(creditosElId);
+        if (elC) elC.value = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
+      }
     }
-    // Wire change listeners on plan selects (autofill)
     (function wirePlanSelects() {
       const sel1 = document.getElementById('plano');
-      if (sel1) sel1.addEventListener('change', () => aplicarPlanoSelecionado(sel1, 'valor', 'linkRenovacao'));
+      if (sel1) sel1.addEventListener('change', () => aplicarPlanoSelecionado(sel1, 'valor', 'linkRenovacao', null, null, 'creditos'));
       const sel2 = document.getElementById('nc_plano');
-      if (sel2) sel2.addEventListener('change', () => aplicarPlanoSelecionado(sel2, 'nc_valor', 'nc_linkRenovacao', 'nc_dataInicio', 'nc_dataRenovacao'));
+      if (sel2) sel2.addEventListener('change', () => aplicarPlanoSelecionado(sel2, 'nc_valor', 'nc_linkRenovacao', 'nc_dataInicio', 'nc_dataRenovacao', 'nc_creditos'));
       const sel3 = document.getElementById('ec_plano');
-      if (sel3) sel3.addEventListener('change', () => aplicarPlanoSelecionado(sel3, 'ec_valor', 'ec_linkRenovacao', 'ec_dataInicio', 'ec_dataRenovacao'));
+      if (sel3) sel3.addEventListener('change', () => aplicarPlanoSelecionado(sel3, 'ec_valor', 'ec_linkRenovacao', 'ec_dataInicio', 'ec_dataRenovacao', 'ec_creditos'));
     })();
 
     window.abrirModalPlano = abrirModalPlano;
@@ -2428,7 +2456,6 @@
             <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
           </div>`;
       } else if (m.tipo === 'churn') {
-        // Movimentação legada (manual). Sem botão editar (recurso removido).
         return `
           <div class="list-item">
             <div class="list-item-content">
@@ -2465,12 +2492,13 @@
             <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
           </div>`;
       } else {
+        const qtdInfo = (m.quantidade && m.quantidade > 1) ? ` • -${m.quantidade} créd.` : '';
         return `
           <div class="list-item">
             <div class="list-item-content">
               <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-minus-circle"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">${tipos[m.tipoCliente] || m.tipoCliente} • R$ ${(m.valor || 0).toFixed(2)}</div>
+                <div class="list-item-text">${tipos[m.tipoCliente] || m.tipoCliente} • R$ ${(m.valor || 0).toFixed(2)}${qtdInfo}</div>
                 <div class="list-item-sub">${data}</div>
               </div>
             </div>
@@ -2528,6 +2556,10 @@
           <div class="form-group">
             <label class="form-label"><i class="fas fa-dollar-sign"></i> Valor da Assinatura (R$)</label>
             <input type="number" id="editValor" class="form-input" value="${m.valor || 0}" step="0.01">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-coins"></i> Créditos descontados</label>
+            <input type="number" id="editQtdUse" class="form-input" value="${m.quantidade || 1}" min="0" step="1">
           </div>`;
       }
       document.getElementById('formEditarMov').innerHTML = html;
@@ -2548,8 +2580,10 @@
       } else {
         const tipo = document.getElementById('editTipo').value;
         const valor = parseFloat(document.getElementById('editValor').value);
+        const qtdUse = parseInt(document.getElementById('editQtdUse').value);
         if (!tipo || isNaN(valor)) { showToast('Preencha todos os campos.', true); return; }
         m.tipoCliente = tipo; m.valor = valor;
+        if (Number.isFinite(qtdUse) && qtdUse >= 0) m.quantidade = qtdUse;
       }
       salvarMovimentacoes();
       atualizarCreditos(); atualizarHistorico();
@@ -2893,26 +2927,6 @@
     }
     window.atualizarStatsFinanceiras = atualizarStatsFinanceiras;
 
-    /* Auto-deteção: cliente com vencimento atrasado >= 20 dias = não renovou */
-    function detectarNaoRenovaramPorCliente() {
-      const today = todayLocalDate();
-      const result = []; // { mesKey, count }
-      const map = {};
-      clients.forEach(c => {
-        const due = parseDate(c.dataRenovacao);
-        if (!due) return;
-        const overdue = diffInDays(today, due);
-        if (overdue >= 20) {
-          // mês de "due + 20 dias" = momento em que oficialmente "não renovou"
-          const churnDate = addDays(due, 20);
-          const k = `${churnDate.getFullYear()}-${String(churnDate.getMonth() + 1).padStart(2, '0')}`;
-          map[k] = (map[k] || 0) + 1;
-        }
-      });
-      Object.keys(map).forEach(k => result.push({ mesKey: k, count: map[k] }));
-      return result;
-    }
-
     function atualizarGraficoClientes() {
       const parent = document.querySelector('#gestao .chart-container');
       if (!parent) return;
@@ -2923,13 +2937,12 @@
         if (!passaFiltroMes(m.data)) return;
         const k = monthKey(m.data); if (!k) return;
         ensure(k);
-        if (m.tipo === 'use' && m.tipoCliente === 'novo') porMes[k].novos += (m.quantidade || 1);
-        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') porMes[k].renovacoes += (m.quantidade || 1);
-        else if (m.tipo === 'churn') porMes[k].naoRenovou += (m.quantidade || 1); // legado
+        if (m.tipo === 'use' && m.tipoCliente === 'novo') porMes[k].novos += 1;
+        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') porMes[k].renovacoes += 1;
+        else if (m.tipo === 'churn') porMes[k].naoRenovou += (m.quantidade || 1);
         else if (m.tipo === 'teste') porMes[k].testes += (m.quantidade || 1);
       });
 
-      // Vencidos (1 a 19 dias) e Não Renovaram (20+ dias) — calculados por cliente
       const today = todayLocalDate();
       clients.forEach(c => {
         const due = parseDate(c.dataRenovacao);
@@ -2937,14 +2950,12 @@
         const overdue = diffInDays(today, due);
         if (overdue <= 0) return;
         if (overdue >= 20) {
-          // não renovou — atribui ao mês de due + 20 dias
           const churnDate = addDays(due, 20);
           const k = `${churnDate.getFullYear()}-${String(churnDate.getMonth() + 1).padStart(2, '0')}`;
           if (state.filtroMes !== 'all' && k !== state.filtroMes) return;
           ensure(k);
           porMes[k].naoRenovou += 1;
         } else {
-          // vencido (1-19 dias) — atribui ao mês de vencimento
           const k = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`;
           if (state.filtroMes !== 'all' && k !== state.filtroMes) return;
           ensure(k);
@@ -3005,12 +3016,11 @@
       let novos = 0, renov = 0, testes_criados = 0;
       movimentacoes.forEach(m => {
         if (!passaFiltroMes(m.data)) return;
-        if (m.tipo === 'use' && m.tipoCliente === 'novo') novos += (m.quantidade || 1);
-        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') renov += (m.quantidade || 1);
+        if (m.tipo === 'use' && m.tipoCliente === 'novo') novos += 1;
+        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') renov += 1;
         else if (m.tipo === 'teste') testes_criados += (m.quantidade || 1);
       });
 
-      // Não renovaram (auto: 20+ dias atrasado) e vencidos (1-19 dias)
       const today = todayLocalDate();
       let nren = 0, vencidosAtuais = 0;
       clients.forEach(c => {
@@ -3079,9 +3089,9 @@
       const d1 = toInputDate(addDays(todayLocalDate(), 1));
       const d7 = toInputDate(addDays(todayLocalDate(), 7));
       clients = [
-        { id: generateId(), nome: 'Cliente Exemplo Hoje', telefone: '5541999999999', aplicativo: 'XCIPTV', usuario: 'clientehoje', senha: '123456', plano: 'Mensal', valor: '30,00', dataInicio: toInputDate(addDays(todayLocalDate(), -30)), dataPagamento: toInputDate(addDays(todayLocalDate(), -30)), dataRenovacao: d0, linkRenovacao: 'https://seulink.com/renovar/hoje', observacoes: '', msgSentAt: null },
-        { id: generateId(), nome: 'Cliente Exemplo Amanhã', telefone: '5541988888888', aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321', plano: 'Mensal', valor: '35,00', dataInicio: toInputDate(addDays(todayLocalDate(), -29)), dataPagamento: toInputDate(addDays(todayLocalDate(), -29)), dataRenovacao: d1, linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: '', msgSentAt: null },
-        { id: generateId(), nome: 'Cliente Exemplo 7 Dias', telefone: '5541977777777', aplicativo: 'Bob Player', usuario: 'cliente7dias', senha: '789456', plano: 'Mensal', valor: '25,00', dataInicio: toInputDate(addDays(todayLocalDate(), -23)), dataPagamento: toInputDate(addDays(todayLocalDate(), -23)), dataRenovacao: d7, linkRenovacao: 'https://seulink.com/renovar/7dias', observacoes: '', msgSentAt: null }
+        { id: generateId(), nome: 'Cliente Exemplo Hoje', telefone: '5541999999999', aplicativo: 'XCIPTV', usuario: 'clientehoje', senha: '123456', plano: 'Mensal', valor: '30,00', creditos: 1, dataInicio: toInputDate(addDays(todayLocalDate(), -30)), dataPagamento: toInputDate(addDays(todayLocalDate(), -30)), dataRenovacao: d0, linkRenovacao: 'https://seulink.com/renovar/hoje', observacoes: '', msgSentAt: null },
+        { id: generateId(), nome: 'Cliente Exemplo Amanhã', telefone: '5541988888888', aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321', plano: 'Mensal', valor: '35,00', creditos: 1, dataInicio: toInputDate(addDays(todayLocalDate(), -29)), dataPagamento: toInputDate(addDays(todayLocalDate(), -29)), dataRenovacao: d1, linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: '', msgSentAt: null },
+        { id: generateId(), nome: 'Cliente Exemplo 7 Dias', telefone: '5541977777777', aplicativo: 'Bob Player', usuario: 'cliente7dias', senha: '789456', plano: 'Mensal', valor: '25,00', creditos: 1, dataInicio: toInputDate(addDays(todayLocalDate(), -23)), dataPagamento: toInputDate(addDays(todayLocalDate(), -23)), dataRenovacao: d7, linkRenovacao: 'https://seulink.com/renovar/7dias', observacoes: '', msgSentAt: null }
       ];
       saveClients();
     }
