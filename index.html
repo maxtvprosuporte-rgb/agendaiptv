@@ -70,719 +70,187 @@
     ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 999px; border: 2px solid #040404; }
     ::-webkit-scrollbar-thumb:hover { background: #242424; }
 
-    .container {
-      width: min(1400px, calc(100% - 28px));
-      margin: 28px auto 56px;
-      position: relative;
-      z-index: 1;
-    }
+    .container { width: min(1400px, calc(100% - 28px)); margin: 28px auto 56px; position: relative; z-index: 1; }
 
-    .topbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding-bottom: 22px;
-      border-bottom: 1px solid var(--border-faint);
-    }
+    .topbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 24px; padding-bottom: 22px; border-bottom: 1px solid var(--border-faint); }
     .brand { display: flex; align-items: center; gap: 14px; }
-    .brand-mark {
-      width: 46px; height: 46px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #0f1f0b, #050505);
-      border: 1px solid var(--border-strong);
-      display: grid; place-items: center;
-      box-shadow: var(--glow-sm), inset 0 0 0 1px rgba(255,255,255,.02);
-      position: relative;
-    }
-    .brand-mark::after {
-      content: "";
-      position: absolute; inset: 6px;
-      border-radius: 10px;
-      border: 1px dashed rgba(57,255,20,.35);
-      animation: spin 14s linear infinite;
-    }
+    .brand-mark { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #0f1f0b, #050505); border: 1px solid var(--border-strong); display: grid; place-items: center; box-shadow: var(--glow-sm), inset 0 0 0 1px rgba(255,255,255,.02); position: relative; }
+    .brand-mark::after { content: ""; position: absolute; inset: 6px; border-radius: 10px; border: 1px dashed rgba(57,255,20,.35); animation: spin 14s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .brand-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--primary);
-      box-shadow: 0 0 12px var(--primary);
-    }
-    .title h1 {
-      margin: 0;
-      font-family: var(--font-display);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      font-size: clamp(26px, 3.2vw, 40px);
-      line-height: 1;
-      color: #fff;
-    }
+    .brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 12px var(--primary); }
+    .title h1 { margin: 0; font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; font-size: clamp(26px, 3.2vw, 40px); line-height: 1; color: #fff; }
     .title h1 span { color: var(--primary); text-shadow: 0 0 18px rgba(57,255,20,.35); }
-    .title p {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 13.5px;
-      max-width: 620px;
-      letter-spacing: .01em;
-    }
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: flex-end;
-    }
+    .title p { margin: 8px 0 0; color: var(--muted); font-size: 13.5px; max-width: 620px; letter-spacing: .01em; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
 
-    button, .btn {
-      font-family: var(--font-body);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 11px 16px;
-      font-size: 13.5px;
-      font-weight: 600;
-      letter-spacing: .01em;
-      cursor: pointer;
-      transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
-      min-height: 42px;
-      background: #0a0a0a;
-      color: var(--text);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      user-select: none;
-    }
+    button, .btn { font-family: var(--font-body); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 16px; font-size: 13.5px; font-weight: 600; letter-spacing: .01em; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease; min-height: 42px; background: #0a0a0a; color: var(--text); display: inline-flex; align-items: center; justify-content: center; gap: 8px; user-select: none; }
     button:hover, .btn:hover { transform: translateY(-1px); }
     button:active, .btn:active { transform: translateY(0); }
     button:focus-visible, .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(57,255,20,.35); }
     button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
-    .btn-primary {
-      background: linear-gradient(180deg, #0d1d08, #060e04);
-      color: var(--primary);
-      border: 1px solid rgba(57,255,20,.45);
-      box-shadow: var(--glow-sm);
-    }
-    .btn-primary:hover {
-      background: linear-gradient(180deg, #132c0c, #081206);
-      border-color: rgba(57,255,20,.65);
-      box-shadow: var(--glow-md);
-    }
-
-    .btn-success {
-      background: linear-gradient(180deg, #0d1d08, #060e04);
-      color: var(--primary);
-      border: 1px solid rgba(57,255,20,.5);
-      box-shadow: var(--glow-sm);
-    }
-    .btn-success:hover {
-      background: linear-gradient(180deg, #143410, #0a1808);
-      border-color: rgba(57,255,20,.75);
-      box-shadow: var(--glow-md);
-    }
-
-    .btn-secondary {
-      background: #0b0b0b;
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,.08);
-    }
+    .btn-primary { background: linear-gradient(180deg, #0d1d08, #060e04); color: var(--primary); border: 1px solid rgba(57,255,20,.45); box-shadow: var(--glow-sm); }
+    .btn-primary:hover { background: linear-gradient(180deg, #132c0c, #081206); border-color: rgba(57,255,20,.65); box-shadow: var(--glow-md); }
+    .btn-success { background: linear-gradient(180deg, #0d1d08, #060e04); color: var(--primary); border: 1px solid rgba(57,255,20,.5); box-shadow: var(--glow-sm); }
+    .btn-success:hover { background: linear-gradient(180deg, #143410, #0a1808); border-color: rgba(57,255,20,.75); box-shadow: var(--glow-md); }
+    .btn-secondary { background: #0b0b0b; color: var(--text); border: 1px solid rgba(255,255,255,.08); }
     .btn-secondary:hover { background: #121212; border-color: rgba(255,255,255,.18); }
-
-    .btn-danger {
-      background: #0a0606;
-      color: #ffb5b5;
-      border: 1px solid rgba(255,92,92,.28);
-    }
+    .btn-danger { background: #0a0606; color: #ffb5b5; border: 1px solid rgba(255,92,92,.28); }
     .btn-danger:hover { background: #140808; border-color: rgba(255,92,92,.55); }
-
-    .btn-warning {
-      background: #0a0a03;
-      color: var(--warning);
-      border: 1px solid rgba(255,228,92,.25);
-    }
+    .btn-warning { background: #0a0a03; color: var(--warning); border: 1px solid rgba(255,228,92,.25); }
     .btn-warning:hover { background: #141406; border-color: rgba(255,228,92,.5); }
-
-    .btn-info {
-      background: #03090a;
-      color: var(--info);
-      border: 1px solid rgba(92,240,255,.22);
-    }
+    .btn-info { background: #03090a; color: var(--info); border: 1px solid rgba(92,240,255,.22); }
     .btn-info:hover { background: #061214; border-color: rgba(92,240,255,.45); }
-
-    .btn-whatsapp {
-      background: linear-gradient(180deg, #0d1d08, #060e04);
-      color: var(--primary);
-      border: 1px solid rgba(57,255,20,.38);
-    }
-    .btn-whatsapp:hover {
-      background: linear-gradient(180deg, #122a0b, #091106);
-      border-color: rgba(57,255,20,.6);
-      box-shadow: var(--glow-sm);
-    }
-
-    .btn-whatsapp-sent {
-      background: linear-gradient(180deg, #0d1d08, #060e04);
-      color: var(--primary);
-      border: 1px solid rgba(57,255,20,.55);
-      box-shadow: var(--glow-sm);
-    }
-    .btn-whatsapp-sent:hover {
-      background: linear-gradient(180deg, #143410, #0a1808);
-      border-color: rgba(57,255,20,.8);
-      box-shadow: var(--glow-md);
-    }
-    .btn-whatsapp-unsent {
-      background: #1a0707;
-      color: #ffb5b5;
-      border: 1px solid rgba(255,92,92,.45);
-    }
-    .btn-whatsapp-unsent:hover {
-      background: #240a0a;
-      border-color: rgba(255,92,92,.7);
-      box-shadow: 0 0 14px rgba(255,92,92,.2);
-    }
-
+    .btn-whatsapp { background: linear-gradient(180deg, #0d1d08, #060e04); color: var(--primary); border: 1px solid rgba(57,255,20,.38); }
+    .btn-whatsapp:hover { background: linear-gradient(180deg, #122a0b, #091106); border-color: rgba(57,255,20,.6); box-shadow: var(--glow-sm); }
+    .btn-whatsapp-sent { background: linear-gradient(180deg, #0d1d08, #060e04); color: var(--primary); border: 1px solid rgba(57,255,20,.55); box-shadow: var(--glow-sm); }
+    .btn-whatsapp-sent:hover { background: linear-gradient(180deg, #143410, #0a1808); border-color: rgba(57,255,20,.8); box-shadow: var(--glow-md); }
+    .btn-whatsapp-unsent { background: #1a0707; color: #ffb5b5; border: 1px solid rgba(255,92,92,.45); }
+    .btn-whatsapp-unsent:hover { background: #240a0a; border-color: rgba(255,92,92,.7); box-shadow: 0 0 14px rgba(255,92,92,.2); }
     .btn-block { width: 100%; }
 
-    .tabs {
-      display: flex;
-      gap: 4px;
-      padding: 5px;
-      margin-bottom: 22px;
-      background: #060606;
-      border: 1px solid var(--border-faint);
-      border-radius: 999px;
-      box-shadow: var(--shadow-sm);
-      overflow-x: auto;
-      scrollbar-width: thin;
-    }
+    .tabs { display: flex; gap: 4px; padding: 5px; margin-bottom: 22px; background: #060606; border: 1px solid var(--border-faint); border-radius: 999px; box-shadow: var(--shadow-sm); overflow-x: auto; scrollbar-width: thin; }
     .tabs::-webkit-scrollbar { height: 6px; }
-
-    .tab {
-      background: transparent;
-      color: var(--text-dim);
-      border: 1px solid transparent;
-      padding: 10px 18px;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 13.5px;
-      min-height: 38px;
-      box-shadow: none;
-      letter-spacing: .01em;
-      flex: 0 0 auto;
-      white-space: nowrap;
-    }
+    .tab { background: transparent; color: var(--text-dim); border: 1px solid transparent; padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 13.5px; min-height: 38px; box-shadow: none; letter-spacing: .01em; flex: 0 0 auto; white-space: nowrap; }
     .tab:hover { color: #fff; background: rgba(255,255,255,.03); }
-    .tab.active {
-      background: linear-gradient(180deg, #0e210a, #050a03);
-      color: var(--primary);
-      border-color: rgba(57,255,20,.4);
-      box-shadow: var(--glow-sm);
-    }
+    .tab.active { background: linear-gradient(180deg, #0e210a, #050a03); color: var(--primary); border-color: rgba(57,255,20,.4); box-shadow: var(--glow-sm); }
 
     .panel { display: none; animation: fadeUp .35s ease both; }
     .panel.active { display: block; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-    .list-box, .form-card, .table-card, .card {
-      background: linear-gradient(180deg, var(--card), var(--card-2));
-      border: 1px solid var(--border-faint);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 22px;
-      position: relative;
-      overflow: hidden;
-    }
-    .table-card + .table-card,
-    .form-card + .form-card,
-    .card + .card { margin-top: 18px; }
+    .list-box, .form-card, .table-card, .card { background: linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid var(--border-faint); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; position: relative; overflow: hidden; }
+    .table-card + .table-card, .form-card + .form-card, .card + .card { margin-top: 18px; }
 
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .card-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      color: #fff;
-    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .card-title { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
     .card-title h2 { margin: 0; font: inherit; color: inherit; }
-    .card-title i {
-      width: 34px; height: 34px;
-      display: grid; place-items: center;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #0f1f0b, #050505);
-      border: 1px solid var(--border-strong);
-      color: var(--primary);
-      font-size: 14px;
-      box-shadow: var(--glow-sm);
-    }
-    .card-title .tag {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: #050505;
-      border: 1px solid var(--border-faint);
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
+    .card-title i { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: linear-gradient(135deg, #0f1f0b, #050505); border: 1px solid var(--border-strong); color: var(--primary); font-size: 14px; box-shadow: var(--glow-sm); }
+    .card-title .tag { font-family: var(--font-mono); font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #050505; border: 1px solid var(--border-faint); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 
-    .count-badge {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 600;
-      background: rgba(57,255,20,.08);
-      color: var(--primary);
-      border: 1px solid rgba(57,255,20,.25);
-      padding: 5px 10px;
-      border-radius: 999px;
-      letter-spacing: .03em;
-    }
+    .count-badge { font-family: var(--font-mono); font-size: 12px; font-weight: 600; background: rgba(57,255,20,.08); color: var(--primary); border: 1px solid rgba(57,255,20,.25); padding: 5px 10px; border-radius: 999px; letter-spacing: .03em; }
     .count-badge.danger { background: rgba(255,92,92,.08); color: #ffb5b5; border-color: rgba(255,92,92,.25); }
     .count-badge.warning { background: rgba(255,228,92,.08); color: var(--warning); border-color: rgba(255,228,92,.25); }
 
     .card-hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
+    .form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
     .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
-    .field label {
-      font-size: 12px; font-weight: 600; color: var(--text-dim);
-      letter-spacing: .04em; text-transform: uppercase;
-    }
-    .field input, .field select, .field textarea,
-    .form-input, .form-select, .form-textarea {
-      width: 100%;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255,255,255,.08);
-      background: #040404;
-      color: #fff;
-      padding: 12px 14px;
-      font-size: 14px;
-      font-family: var(--font-body);
-      outline: none;
-      min-height: 46px;
-      transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
-    }
-    .field input::placeholder,
-    .form-input::placeholder, .form-textarea::placeholder { color: #5a5a5a; }
-    .field input:hover, .field select:hover, .field textarea:hover,
-    .form-input:hover, .form-select:hover, .form-textarea:hover { border-color: rgba(255,255,255,.16); }
-    .field input:focus, .field select:focus, .field textarea:focus,
-    .form-input:focus, .form-select:focus, .form-textarea:focus,
-    .search:focus {
-      border-color: var(--border-strong);
-      box-shadow: 0 0 0 3px rgba(57,255,20,.1);
-      background: #070707;
-    }
+    .field label { font-size: 12px; font-weight: 600; color: var(--text-dim); letter-spacing: .04em; text-transform: uppercase; }
+    .field input, .field select, .field textarea, .form-input, .form-select, .form-textarea { width: 100%; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,.08); background: #040404; color: #fff; padding: 12px 14px; font-size: 14px; font-family: var(--font-body); outline: none; min-height: 46px; transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease; }
+    .field input::placeholder, .form-input::placeholder, .form-textarea::placeholder { color: #5a5a5a; }
+    .field input:hover, .field select:hover, .field textarea:hover, .form-input:hover, .form-select:hover, .form-textarea:hover { border-color: rgba(255,255,255,.16); }
+    .field input:focus, .field select:focus, .field textarea:focus, .form-input:focus, .form-select:focus, .form-textarea:focus, .search:focus { border-color: var(--border-strong); box-shadow: 0 0 0 3px rgba(57,255,20,.1); background: #070707; }
     .field textarea, .form-textarea { min-height: 120px; resize: vertical; }
 
     .form-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
-    .form-label {
-      font-size: 12px; font-weight: 600; color: var(--text-dim);
-      letter-spacing: .04em; text-transform: uppercase;
-      display: inline-flex; align-items: center; gap: 8px;
-    }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--text-dim); letter-spacing: .04em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; }
     .form-label i { color: var(--primary); }
+    .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; align-items: center; }
+    .input-group-2 { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: stretch; }
 
-    .form-actions {
-      display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; align-items: center;
-    }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; align-items: center; }
+    .toolbar-left { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%; }
+    .toolbar-left h2 { margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff; }
 
-    .input-group-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 10px;
-      align-items: stretch;
-    }
-
-    .toolbar {
-      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; align-items: center;
-    }
-    .toolbar-left {
-      display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%;
-    }
-    .toolbar-left h2 {
-      margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 700; color: #fff;
-    }
-
-    .search {
-      flex: 1 1 280px; min-width: 240px; max-width: 440px;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255,255,255,.08);
-      background: #040404; color: #fff;
-      padding: 11px 14px; font-size: 14px;
-      min-height: 44px; outline: none;
-      font-family: var(--font-body);
-      transition: border-color .18s ease, box-shadow .18s ease;
-    }
+    .search { flex: 1 1 280px; min-width: 240px; max-width: 440px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,.08); background: #040404; color: #fff; padding: 11px 14px; font-size: 14px; min-height: 44px; outline: none; font-family: var(--font-body); transition: border-color .18s ease, box-shadow .18s ease; }
     .search::placeholder { color: #5a5a5a; }
 
-    .client-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      align-items: center;
-      padding: 14px 16px;
-      background: #0a0a0a;
-      border: 1px solid var(--border-faint);
-      border-radius: 12px;
-      margin-bottom: 10px;
-      transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
-    }
+    .client-row { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center; padding: 14px 16px; background: #0a0a0a; border: 1px solid var(--border-faint); border-radius: 12px; margin-bottom: 10px; transition: background-color .2s ease, border-color .2s ease, transform .2s ease; }
     .client-row:hover { background: #0f0f0f; border-color: rgba(57,255,20,.18); }
     .client-row-main { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-    .client-row-name {
-      font-weight: 700; font-size: 15px; color: #fff;
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    }
-    .client-row-meta {
-      color: var(--muted); font-size: 12.5px;
-      display: flex; flex-wrap: wrap; gap: 8px 14px; font-family: var(--font-mono);
-    }
+    .client-row-name { font-weight: 700; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .client-row-meta { color: var(--muted); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 8px 14px; font-family: var(--font-mono); }
     .client-row-meta b { color: var(--text-dim); font-weight: 600; }
-    .client-row-actions {
-      display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end;
-    }
+    .client-row-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
     .client-row-actions button { padding: 8px 12px; font-size: 12.5px; min-height: 36px; }
 
-    @media (max-width: 760px) {
-      .client-row { grid-template-columns: 1fr; }
-      .client-row-actions { justify-content: stretch; }
-      .client-row-actions button { flex: 1 1 calc(50% - 3px); }
-    }
+    @media (max-width: 760px) { .client-row { grid-template-columns: 1fr; } .client-row-actions { justify-content: stretch; } .client-row-actions button { flex: 1 1 calc(50% - 3px); } }
 
-    .pill {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 9px; border-radius: 999px; font-size: 11.5px;
-      font-weight: 600; border: 1px solid transparent;
-      letter-spacing: .02em; white-space: nowrap;
-    }
-    .pill::before {
-      content: ""; width: 6px; height: 6px; border-radius: 50%;
-      background: currentColor; box-shadow: 0 0 6px currentColor;
-    }
-    .pill-today    { background: rgba(255,92,92,.10); color: #ff9b9b; border-color: rgba(255,92,92,.3); }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; border: 1px solid transparent; letter-spacing: .02em; white-space: nowrap; }
+    .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+    .pill-today { background: rgba(255,92,92,.10); color: #ff9b9b; border-color: rgba(255,92,92,.3); }
     .pill-tomorrow { background: rgba(255,228,92,.08); color: var(--warning); border-color: rgba(255,228,92,.28); }
-    .pill-week     { background: rgba(92,240,255,.08); color: var(--info); border-color: rgba(92,240,255,.28); }
-    .pill-ok       { background: rgba(57,255,20,.07); color: var(--primary-soft); border-color: rgba(57,255,20,.25); }
-    .pill-expired  { background: rgba(255,92,92,.12); color: #ff8787; border-color: rgba(255,92,92,.4); }
+    .pill-week { background: rgba(92,240,255,.08); color: var(--info); border-color: rgba(92,240,255,.28); }
+    .pill-ok { background: rgba(57,255,20,.07); color: var(--primary-soft); border-color: rgba(57,255,20,.25); }
+    .pill-expired { background: rgba(255,92,92,.12); color: #ff8787; border-color: rgba(255,92,92,.4); }
 
-    .empty-state {
-      text-align: center;
-      color: var(--muted);
-      padding: 38px 20px;
-      font-size: 14px;
-      background: #080808;
-      border: 1px dashed var(--border-faint);
-      border-radius: 12px;
-    }
+    .empty-state { text-align: center; color: var(--muted); padding: 38px 20px; font-size: 14px; background: #080808; border: 1px dashed var(--border-faint); border-radius: 12px; }
     .empty-state i { font-size: 40px; opacity: .4; margin-bottom: 10px; display: block; }
     .empty-state p { margin: 0; font-weight: 500; }
-
     .hidden { display: none !important; }
 
-    .pagination-bar {
-      display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center; justify-content: center;
-    }
-    .pagination-bar .page-info {
-      align-self: center; color: var(--muted); padding: 8px 6px;
-      font-family: var(--font-mono); font-size: 12.5px;
-    }
+    .pagination-bar { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .pagination-bar .page-info { align-self: center; color: var(--muted); padding: 8px 6px; font-family: var(--font-mono); font-size: 12.5px; }
     .pagination-bar button { padding: 8px 14px; min-height: 36px; font-size: 12.5px; }
 
-    .list-item {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 16px;
-      background: #0a0a0a;
-      border: 1px solid var(--border-faint);
-      border-radius: 12px;
-      margin-bottom: 10px;
-      transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
-    }
+    .list-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #0a0a0a; border: 1px solid var(--border-faint); border-radius: 12px; margin-bottom: 10px; transition: background-color .2s ease, border-color .2s ease, transform .2s ease; }
     .list-item:hover { background: #101010; border-color: rgba(57,255,20,.18); transform: translateX(2px); }
     .list-item-content { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
-    .list-item-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: #050505; border: 1px solid var(--border-faint);
-      display: grid; place-items: center;
-      color: var(--primary); font-size: 16px;
-      flex: 0 0 auto;
-    }
+    .list-item-icon { width: 40px; height: 40px; border-radius: 10px; background: #050505; border: 1px solid var(--border-faint); display: grid; place-items: center; color: var(--primary); font-size: 16px; flex: 0 0 auto; }
     .list-item-text { font-weight: 600; font-size: 14px; color: var(--text); }
-    .list-item-sub  { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .list-item-badge {
-      font-family: var(--font-mono);
-      background: rgba(57,255,20,.08);
-      color: var(--primary);
-      border: 1px solid rgba(57,255,20,.25);
-      padding: 5px 12px;
-      border-radius: 999px;
-      font-size: 12.5px; font-weight: 700;
-    }
+    .list-item-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .list-item-badge { font-family: var(--font-mono); background: rgba(57,255,20,.08); color: var(--primary); border: 1px solid rgba(57,255,20,.25); padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; }
 
-    .cost-item, .assinatura-item {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 14px;
-      align-items: center;
-      padding: 12px 16px;
-      background: #0a0a0a;
-      border: 1px solid var(--border-faint);
-      border-radius: 12px;
-      margin-bottom: 10px;
-    }
+    .cost-item, .assinatura-item { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 12px 16px; background: #0a0a0a; border: 1px solid var(--border-faint); border-radius: 12px; margin-bottom: 10px; }
     .cost-name { font-size: 14px; font-weight: 600; }
     .cost-name i { color: var(--primary); margin-right: 6px; }
     .cost-value { font-family: var(--font-mono); color: var(--primary); font-weight: 700; font-size: 15px; }
 
-    .credit-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    .credit-stat-card {
-      background: #0a0a0a;
-      border: 1px solid var(--border-faint);
-      border-radius: 14px;
-      padding: 18px;
-      text-align: center;
-    }
-    .credit-stat-value {
-      font-family: var(--font-mono);
-      font-size: 28px; font-weight: 700;
-      color: var(--primary);
-      line-height: 1.1;
-    }
-    .credit-stat-label {
-      margin-top: 6px; font-size: 12px; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
-    }
+    .credit-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .credit-stat-card { background: #0a0a0a; border: 1px solid var(--border-faint); border-radius: 14px; padding: 18px; text-align: center; }
+    .credit-stat-value { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--primary); line-height: 1.1; }
+    .credit-stat-label { margin-top: 6px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
 
-    .month-filter-bar {
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-      background: linear-gradient(180deg, var(--card), var(--card-2));
-      border: 1px solid var(--border-faint);
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      margin-bottom: 18px;
-      box-shadow: var(--shadow-sm);
-    }
-    .month-filter-bar label {
-      font-size: 12px; font-weight: 700; color: var(--text-dim);
-      letter-spacing: .04em; text-transform: uppercase;
-      display: inline-flex; align-items: center; gap: 8px;
-    }
+    .month-filter-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid var(--border-faint); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 18px; box-shadow: var(--shadow-sm); }
+    .month-filter-bar label { font-size: 12px; font-weight: 700; color: var(--text-dim); letter-spacing: .04em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; }
     .month-filter-bar label i { color: var(--primary); }
     .month-filter-bar select { min-height: 42px; max-width: 260px; flex: 1 1 220px; }
-    .month-filter-bar .month-filter-hint {
-      color: var(--muted); font-size: 12px; font-family: var(--font-mono);
-    }
+    .month-filter-bar .month-filter-hint { color: var(--muted); font-size: 12px; font-family: var(--font-mono); }
 
     .card-header.collapsible { cursor: pointer; user-select: none; }
-    .card-header .chev {
-      margin-left: auto;
-      width: 34px; height: 34px;
-      display: grid; place-items: center;
-      border-radius: 10px;
-      background: #050505;
-      border: 1px solid var(--border-faint);
-      color: var(--muted);
-      transition: transform .25s ease, color .2s ease, border-color .2s ease;
-    }
+    .card-header .chev { margin-left: auto; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: #050505; border: 1px solid var(--border-faint); color: var(--muted); transition: transform .25s ease, color .2s ease, border-color .2s ease; }
     .card.collapsed .card-header .chev { transform: rotate(-90deg); color: var(--primary); border-color: var(--border-strong); }
     .card.collapsed .card-body { display: none; }
 
-    .radio-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .radio-option {
-      padding: 14px; border-radius: 12px;
-      background: #0a0a0a;
-      border: 1px solid var(--border-faint);
-      cursor: pointer; transition: all .2s ease;
-      text-align: center;
-      font-weight: 600; font-size: 13.5px; color: var(--text-dim);
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
+    .radio-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+    .radio-option { padding: 14px; border-radius: 12px; background: #0a0a0a; border: 1px solid var(--border-faint); cursor: pointer; transition: all .2s ease; text-align: center; font-weight: 600; font-size: 13.5px; color: var(--text-dim); display: flex; align-items: center; justify-content: center; gap: 8px; }
     .radio-option:hover { border-color: rgba(57,255,20,.3); color: #fff; }
-    .radio-option.active {
-      background: linear-gradient(180deg, #0e210a, #050a03);
-      color: var(--primary);
-      border-color: rgba(57,255,20,.45);
-      box-shadow: var(--glow-sm);
-    }
+    .radio-option.active { background: linear-gradient(180deg, #0e210a, #050a03); color: var(--primary); border-color: rgba(57,255,20,.45); box-shadow: var(--glow-sm); }
     .radio-option input { display: none; }
-    .radio-option.active.danger {
-      background: linear-gradient(180deg, #2a0b0b, #0e0404);
-      color: #ffb5b5;
-      border-color: rgba(255,92,92,.45);
-      box-shadow: 0 0 14px rgba(255,92,92,.15);
-    }
+    .radio-option.active.danger { background: linear-gradient(180deg, #2a0b0b, #0e0404); color: #ffb5b5; border-color: rgba(255,92,92,.45); box-shadow: 0 0 14px rgba(255,92,92,.15); }
 
-    .result-box {
-      background: #060606;
-      border: 1px solid var(--border-strong);
-      border-radius: 16px;
-      padding: 22px;
-      margin-top: 20px;
-      box-shadow: var(--glow-sm);
-    }
-    .result-section {
-      padding-bottom: 16px; margin-bottom: 16px;
-      border-bottom: 1px dashed rgba(255,255,255,.08);
-    }
+    .result-box { background: #060606; border: 1px solid var(--border-strong); border-radius: 16px; padding: 22px; margin-top: 20px; box-shadow: var(--glow-sm); }
+    .result-section { padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px dashed rgba(255,255,255,.08); }
     .result-section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-    .result-section h3 {
-      margin: 0 0 12px;
-      font-family: var(--font-display);
-      font-size: 15px; font-weight: 700;
-      color: var(--text); display: flex; align-items: center; gap: 8px;
-    }
+    .result-section h3 { margin: 0 0 12px; font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
     .result-section h3 i { color: var(--primary); font-size: 14px; }
-    .result-row {
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 12px; padding: 6px 0;
-      font-size: 14px;
-    }
+    .result-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; font-size: 14px; }
     .result-row.large { font-size: 16px; font-weight: 700; margin-top: 6px; }
     .result-label { color: var(--text-dim); }
     .result-value { font-family: var(--font-mono); color: var(--primary); font-weight: 700; }
 
-    .modal {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.78);
-      backdrop-filter: blur(4px);
-      z-index: 900;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.78); backdrop-filter: blur(4px); z-index: 900; align-items: center; justify-content: center; padding: 20px; }
     .modal.active { display: flex; }
-    .modal-content {
-      background: linear-gradient(180deg, var(--card), var(--card-2));
-      border: 1px solid var(--border-strong);
-      border-radius: var(--radius);
-      padding: 24px;
-      max-width: 720px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: var(--shadow-xl), var(--glow-sm);
-    }
+    .modal-content { background: linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 24px; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-xl), var(--glow-sm); }
     .modal-content.sm { max-width: 500px; }
-    .modal-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 20px; padding-bottom: 14px;
-      border-bottom: 1px solid var(--border-faint);
-    }
-    .modal-title {
-      margin: 0; font-family: var(--font-display);
-      font-size: 18px; font-weight: 700; color: #fff;
-    }
-    .modal-close {
-      width: 36px; height: 36px;
-      min-height: 36px;
-      padding: 0; border-radius: 10px;
-      background: #0a0a0a;
-      border: 1px solid var(--border-faint);
-      color: var(--muted);
-    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border-faint); }
+    .modal-title { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: #fff; }
+    .modal-close { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 10px; background: #0a0a0a; border: 1px solid var(--border-faint); color: var(--muted); }
     .modal-close:hover { background: #140808; border-color: rgba(255,92,92,.4); color: #ffb5b5; }
 
-    .chart-container {
-      position: relative;
-      height: 360px;
-      margin-top: 8px;
-      padding: 16px;
-      background: #040404;
-      border: 1px solid var(--border-faint);
-      border-radius: 14px;
-    }
+    .chart-container { position: relative; height: 360px; margin-top: 8px; padding: 16px; background: #040404; border: 1px solid var(--border-faint); border-radius: 14px; }
 
-    #toast {
-      position: fixed; bottom: 24px; left: 50%;
-      transform: translateX(-50%) translateY(12px);
-      background: #0a0a0a;
-      border: 1px solid var(--border-strong);
-      color: var(--text);
-      padding: 12px 18px;
-      border-radius: 999px;
-      font-size: 13.5px; font-weight: 600;
-      box-shadow: var(--shadow), var(--glow-sm);
-      opacity: 0;
-      transition: opacity .25s ease, transform .25s ease;
-      pointer-events: none; z-index: 1000; max-width: 90vw;
-    }
+    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(12px); background: #0a0a0a; border: 1px solid var(--border-strong); color: var(--text); padding: 12px 18px; border-radius: 999px; font-size: 13.5px; font-weight: 600; box-shadow: var(--shadow), var(--glow-sm); opacity: 0; transition: opacity .25s ease, transform .25s ease; pointer-events: none; z-index: 1000; max-width: 90vw; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     #toast.error { border-color: rgba(255,92,92,.5); color: #ffb5b5; }
 
-    @media (max-width: 1100px) {
-      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
+    .taxa-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    @media (max-width: 720px) {
-      .modal-content .form-grid { grid-template-columns: 1fr !important; }
-      .modal-content .form-grid .field[style*="span 2"],
-      .modal-content .form-grid .field[style*="span 3"] { grid-column: auto !important; }
-    }
-
-    @media (max-width: 820px) {
-      .container { width: calc(100% - 16px); margin: 16px auto 40px; }
-      .topbar { align-items: stretch; }
-      .actions { width: 100%; }
-      .actions button, .actions .btn { flex: 1 1 calc(50% - 5px); }
-      .tab { padding: 10px 14px; font-size: 13px; }
-      .form-grid { grid-template-columns: 1fr; }
-      .form-grid .field[style*="span 2"],
-      .form-grid .field[style*="span 3"] { grid-column: auto !important; }
-      .input-group-2 { grid-template-columns: 1fr; }
-      .list-box, .form-card, .table-card, .card { padding: 16px; }
-      .radio-group { grid-template-columns: 1fr; }
-      .chart-container { height: 320px; padding: 10px; }
-      .list-item { flex-wrap: wrap; }
-      .list-item-content { min-width: 0; flex: 1 1 100%; }
-      .list-item-text, .list-item-sub { overflow-wrap: anywhere; word-break: break-word; }
-      .client-row-actions { width: 100% !important; justify-content: stretch; }
-      .client-row-actions button { flex: 1 1 calc(50% - 3px); }
-    }
-
-    @media (max-width: 640px) {
-      .title h1 { font-size: 24px; }
-      .title p { font-size: 12.5px; }
-      .actions button, .actions .btn { flex: 1 1 100%; font-size: 13px; }
-      .tab { padding: 10px 12px; font-size: 12.5px; min-height: 40px; }
-      .form-actions button { flex: 1 1 100%; }
-      .toolbar-left { gap: 8px; }
-      .search { max-width: 100%; }
-      .pagination-bar .page-info { order: -1; width: 100%; text-align: center; }
-      .card-title, .card-title h2 { font-size: 17px; }
-      .list-item { flex-wrap: wrap; }
-      .cost-item, .assinatura-item { grid-template-columns: 1fr; text-align: left; }
-    }
+    @media (max-width: 1100px) { .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 720px) { .modal-content .form-grid { grid-template-columns: 1fr !important; } .modal-content .form-grid .field[style*="span 2"], .modal-content .form-grid .field[style*="span 3"] { grid-column: auto !important; } .taxa-row { grid-template-columns: 1fr; } }
+    @media (max-width: 820px) { .container { width: calc(100% - 16px); margin: 16px auto 40px; } .topbar { align-items: stretch; } .actions { width: 100%; } .actions button, .actions .btn { flex: 1 1 calc(50% - 5px); } .tab { padding: 10px 14px; font-size: 13px; } .form-grid { grid-template-columns: 1fr; } .form-grid .field[style*="span 2"], .form-grid .field[style*="span 3"] { grid-column: auto !important; } .input-group-2 { grid-template-columns: 1fr; } .list-box, .form-card, .table-card, .card { padding: 16px; } .radio-group { grid-template-columns: 1fr; } .chart-container { height: 320px; padding: 10px; } .list-item { flex-wrap: wrap; } .list-item-content { min-width: 0; flex: 1 1 100%; } .list-item-text, .list-item-sub { overflow-wrap: anywhere; word-break: break-word; } .client-row-actions { width: 100% !important; justify-content: stretch; } .client-row-actions button { flex: 1 1 calc(50% - 3px); } }
+    @media (max-width: 640px) { .title h1 { font-size: 24px; } .title p { font-size: 12.5px; } .actions button, .actions .btn { flex: 1 1 100%; font-size: 13px; } .tab { padding: 10px 12px; font-size: 12.5px; min-height: 40px; } .form-actions button { flex: 1 1 100%; } .toolbar-left { gap: 8px; } .search { max-width: 100%; } .pagination-bar .page-info { order: -1; width: 100%; text-align: center; } .card-title, .card-title h2 { font-size: 17px; } .list-item { flex-wrap: wrap; } .cost-item, .assinatura-item { grid-template-columns: 1fr; text-align: left; } }
   </style>
 </head>
 <body>
@@ -811,7 +279,6 @@
       <button class="tab" data-tab="config" data-testid="tab-config">Configuração</button>
     </nav>
 
-    <!-- VENCIMENTO -->
     <section id="dashboard" class="panel">
       <div class="table-card" style="margin-bottom:18px;">
         <div class="card-header">
@@ -822,7 +289,6 @@
         <div id="listExpired" data-testid="list-expired"></div>
         <div class="pagination-bar" id="paginationExpired"></div>
       </div>
-
       <div class="table-card" style="margin-bottom:18px;">
         <div class="card-header">
           <div class="card-title"><h2>Vencendo hoje</h2><span class="tag">D-Day</span></div>
@@ -832,7 +298,6 @@
         <div id="listToday" data-testid="list-today"></div>
         <div class="pagination-bar" id="paginationToday"></div>
       </div>
-
       <div class="table-card" style="margin-bottom:18px;">
         <div class="card-header">
           <div class="card-title"><h2>Vence amanhã</h2><span class="tag">D-1</span></div>
@@ -842,7 +307,6 @@
         <div id="listTomorrow" data-testid="list-tomorrow"></div>
         <div class="pagination-bar" id="paginationTomorrow"></div>
       </div>
-
       <div class="table-card">
         <div class="card-header">
           <div class="card-title"><h2>Vence em até 7 dias</h2><span class="tag">D-7</span></div>
@@ -854,7 +318,6 @@
       </div>
     </section>
 
-    <!-- CADASTROS (TESTE IPTV) -->
     <section id="cadastros" class="panel active">
       <div class="form-card">
         <div class="card-header">
@@ -880,7 +343,6 @@
           </div>
         </form>
       </div>
-
       <div class="table-card" style="margin-top:18px;">
         <div class="card-header">
           <div class="card-title"><h2>Testes em andamento</h2><span class="tag">Aguardando ativação</span></div>
@@ -892,7 +354,6 @@
       </div>
     </section>
 
-    <!-- CLIENTES -->
     <section id="clientes" class="panel">
       <div class="table-card">
         <div class="toolbar">
@@ -910,20 +371,15 @@
       </div>
     </section>
 
-    <!-- CALCULADORA -->
     <section id="calculadora" class="panel">
       <div class="card">
         <div class="card-header">
           <div class="card-title"><i class="fas fa-calculator"></i><h2>Calculadora de Lucros</h2></div>
         </div>
-
         <div class="form-group">
           <label class="form-label"><i class="fas fa-box"></i> Pacote de Créditos</label>
-          <select id="pacoteSelecionado" class="form-select">
-            <option value="">Selecione um pacote</option>
-          </select>
+          <select id="pacoteSelecionado" class="form-select"><option value="">Selecione um pacote</option></select>
         </div>
-
         <div class="form-group">
           <label class="form-label"><i class="fas fa-users"></i> Assinaturas</label>
           <div id="listaAssinaturas"></div>
@@ -933,7 +389,6 @@
             <button class="btn-secondary" onclick="adicionarAssinatura()"><i class="fas fa-plus"></i> Adicionar</button>
           </div>
         </div>
-
         <div class="form-group">
           <label class="form-label"><i class="fas fa-wallet"></i> Custos Operacionais</label>
           <div id="listaCustos"></div>
@@ -943,25 +398,17 @@
             <button class="btn-secondary" onclick="adicionarCusto()"><i class="fas fa-plus"></i> Adicionar</button>
           </div>
         </div>
-
-        <button class="btn-success btn-block" onclick="calcular()">
-          <i class="fas fa-calculator"></i> Calcular Resultados
-        </button>
-
+        <button class="btn-success btn-block" onclick="calcular()"><i class="fas fa-calculator"></i> Calcular Resultados</button>
         <div id="resultado"></div>
       </div>
     </section>
 
-    <!-- GESTÃO -->
     <section id="gestao" class="panel">
       <div class="month-filter-bar" data-testid="month-filter-bar">
         <label><i class="fas fa-filter"></i> Filtrar por mês</label>
-        <select id="filtroMesGestao" class="form-select" data-testid="filtro-mes-gestao">
-          <option value="all">Todos os meses</option>
-        </select>
+        <select id="filtroMesGestao" class="form-select" data-testid="filtro-mes-gestao"><option value="all">Todos os meses</option></select>
         <span class="month-filter-hint" id="filtroMesHint">Aplicado aos cards, gráfico e resumo.</span>
       </div>
-
       <div class="credit-stats" style="margin-bottom: 18px;">
         <div class="credit-stat-card">
           <div class="credit-stat-value" id="totalLucro" style="color: var(--primary);" data-testid="total-lucro">R$ 0,00</div>
@@ -972,32 +419,33 @@
           <div class="credit-stat-label">Custo Total</div>
         </div>
         <div class="credit-stat-card">
+          <div class="credit-stat-value" id="totalTaxas" style="color: var(--warning);" data-testid="total-taxas">R$ 0,00</div>
+          <div class="credit-stat-label">Taxas Bancárias</div>
+        </div>
+        <div class="credit-stat-card">
           <div class="credit-stat-value" id="totalLiquido" style="color: var(--info);" data-testid="total-liquido">R$ 0,00</div>
           <div class="credit-stat-label">Lucro Líquido</div>
         </div>
       </div>
-
       <div class="card">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-users"></i><h2>Movimentação de Clientes</h2></div>
-        </div>
+        <div class="card-header"><div class="card-title"><i class="fas fa-users"></i><h2>Movimentação de Clientes</h2></div></div>
         <div class="chart-container"><canvas id="graficoClientes"></canvas></div>
       </div>
-
-      <div class="card">
+      <div class="card" id="cardDetalheTaxas">
         <div class="card-header">
-          <div class="card-title"><i class="fab fa-whatsapp"></i><h2>Resumo Completo — WhatsApp</h2></div>
+          <div class="card-title"><i class="fas fa-percent"></i><h2>Detalhamento de Taxas Bancárias</h2></div>
+          <span class="count-badge warning" id="countTaxas" data-testid="count-taxas">0</span>
         </div>
-        <div class="form-group">
-          <textarea id="textoWhatsAppGestao" class="form-textarea" rows="16" readonly></textarea>
-        </div>
-        <button class="btn-success btn-block" onclick="copiarTextoGestao()">
-          <i class="fas fa-copy"></i> Copiar Resumo Completo
-        </button>
+        <p class="card-hint">Taxas cobradas por banco/gateway a cada venda ou renovação, agrupadas por plano. Considera o filtro de mês acima.</p>
+        <div id="detalheTaxas" data-testid="detalhe-taxas"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fab fa-whatsapp"></i><h2>Resumo Completo — WhatsApp</h2></div></div>
+        <div class="form-group"><textarea id="textoWhatsAppGestao" class="form-textarea" rows="16" readonly></textarea></div>
+        <button class="btn-success btn-block" onclick="copiarTextoGestao()"><i class="fas fa-copy"></i> Copiar Resumo Completo</button>
       </div>
     </section>
 
-    <!-- CONFIGURAÇÃO -->
     <section id="config" class="panel">
       <div class="card" id="cardGestaoCreditos">
         <div class="card-header collapsible" id="headerGestaoCreditos" data-testid="header-gestao-creditos">
@@ -1019,28 +467,48 @@
               <div class="credit-stat-label">Custo Total Créditos</div>
             </div>
           </div>
-
           <div class="form-group">
             <label class="form-label"><i class="fas fa-box"></i> Adicionar Crédito pelo Pacote</label>
             <div class="input-group-2" style="grid-template-columns: 1fr auto;">
-              <select id="pacoteAddCredito" class="form-select" data-testid="pacote-add-credito">
-                <option value="">Selecione um pacote cadastrado</option>
-              </select>
+              <select id="pacoteAddCredito" class="form-select" data-testid="pacote-add-credito"><option value="">Selecione um pacote cadastrado</option></select>
               <button class="btn-primary" onclick="adicionarCreditoPacote()" data-testid="btn-adicionar-credito-pacote"><i class="fas fa-plus"></i> Adicionar</button>
             </div>
             <p class="card-hint" style="margin: 8px 0 0;">Os créditos e o custo são calculados automaticamente a partir do pacote selecionado.</p>
           </div>
+        </div>
+      </div>
 
-          <div style="margin-top: 28px; padding-top: 24px; border-top: 1px dashed var(--border-faint);">
-            <h3 style="margin: 0 0 14px; font-family: var(--font-display); font-size: 18px; color: #fff;">
-              <i class="fas fa-chart-pie" style="color: var(--primary); margin-right:8px;"></i>
-              Lucros e Custos Personalizados
-            </h3>
-            <div id="listaLucrosCustos"></div>
-            <div class="input-group-2" style="margin-top: 12px;">
-              <input type="number" id="valorLucroCusto" class="form-input" placeholder="Valor (R$) — use negativo p/ custo" step="0.01">
-              <input type="text" id="infoLucroCusto" class="form-input" placeholder="Informação (ex: Venda equipamento)">
-              <button class="btn-secondary" onclick="adicionarLucroCusto()"><i class="fas fa-plus"></i> Adicionar</button>
+      <div class="card collapsed" id="cardLucrosCustos">
+        <div class="card-header collapsible" id="headerLucrosCustos" data-testid="header-lucros-custos">
+          <div class="card-title"><i class="fas fa-chart-pie"></i><h2>Lucros e Custos Personalizados</h2></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count-badge" id="countLucrosCustos" data-testid="count-lucros-custos">0</span>
+            <span class="chev"><i class="fas fa-chevron-down"></i></span>
+          </div>
+        </div>
+        <div class="card-body" id="bodyLucrosCustos">
+          <p class="card-hint">Adicione lucros ou custos avulsos. Marque como <b style="color:var(--warning);">fixo do mês</b> para entradas recorrentes (assinaturas, aluguel, internet) — elas serão replicadas automaticamente em todos os meses a partir da data de cadastro.</p>
+          <div id="listaLucrosCustos"></div>
+          <div class="form-group" style="margin-top: 18px;">
+            <label class="form-label"><i class="fas fa-plus-circle"></i> Adicionar Lucro / Custo</label>
+            <div class="input-group-2">
+              <input type="number" id="valorLucroCusto" class="form-input" placeholder="Valor (R$) — negativo p/ custo" step="0.01" data-testid="lc-valor">
+              <input type="text" id="infoLucroCusto" class="form-input" placeholder="Informação (ex: Venda equipamento)" data-testid="lc-info">
+              <button class="btn-secondary" onclick="adicionarLucroCusto()" data-testid="btn-adicionar-lc"><i class="fas fa-plus"></i> Adicionar</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-redo"></i> É fixo do mês?</label>
+            <p class="card-hint" style="margin: 0 0 10px;">Sim: entrada se repete automaticamente em todos os meses (recorrente). Não: lança apenas no mês de cadastro.</p>
+            <div class="radio-group" role="radiogroup" aria-label="Lucro/Custo fixo">
+              <label class="radio-option active" id="lc_fixo_nao" data-testid="lc-fixo-nao">
+                <input type="radio" name="lc_fixo" value="nao" checked>
+                <i class="fas fa-calendar-day"></i> Não, apenas neste mês
+              </label>
+              <label class="radio-option" id="lc_fixo_sim" data-testid="lc-fixo-sim">
+                <input type="radio" name="lc_fixo" value="sim">
+                <i class="fas fa-sync-alt"></i> Sim, fixo do mês
+              </label>
             </div>
           </div>
         </div>
@@ -1071,7 +539,7 @@
           </div>
         </div>
         <div class="card-body" id="bodyPlanos">
-          <p class="card-hint">Cadastre os planos disponíveis. Eles aparecerão como lista nos formulários de cadastro de Teste e Cliente, preenchendo automaticamente valor, link de pagamento, quantidade de dias e <b style="color:var(--primary);">créditos descontados</b>.</p>
+          <p class="card-hint">Cadastre os planos disponíveis. Eles aparecerão como lista nos formulários de cadastro de Teste e Cliente, preenchendo automaticamente valor, link de pagamento, quantidade de dias, <b style="color:var(--primary);">créditos descontados</b> e <b style="color:var(--warning);">taxa bancária</b> por transação.</p>
           <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
             <button class="btn-primary" onclick="abrirModalPlano()" data-testid="btn-novo-plano"><i class="fas fa-plus"></i> Novo Plano</button>
           </div>
@@ -1095,7 +563,6 @@
     </section>
   </div>
 
-  <!-- MODAL PACOTE -->
   <div id="modalPacote" class="modal">
     <div class="modal-content sm">
       <div class="modal-header">
@@ -1110,13 +577,10 @@
         <label class="form-label"><i class="fas fa-money-bill-wave"></i> Preço por Crédito (R$)</label>
         <input type="number" id="precoCredito" class="form-input" placeholder="Ex: 8.00" step="0.01">
       </div>
-      <button class="btn-primary btn-block" onclick="salvarPacote()">
-        <i class="fas fa-check"></i> Salvar Pacote
-      </button>
+      <button class="btn-primary btn-block" onclick="salvarPacote()"><i class="fas fa-check"></i> Salvar Pacote</button>
     </div>
   </div>
 
-  <!-- MODAL PLANO -->
   <div id="modalPlano" class="modal">
     <div class="modal-content sm">
       <div class="modal-header">
@@ -1144,13 +608,22 @@
         <input type="number" id="planoCreditos" class="form-input" placeholder="Ex: 1" min="0" step="1" value="1" data-testid="plano-creditos">
         <p class="card-hint" style="margin: 6px 0 0;">Quantos créditos serão consumidos do seu saldo a cada venda ou renovação deste plano.</p>
       </div>
-      <button class="btn-primary btn-block" onclick="salvarPlano()" data-testid="save-plano">
-        <i class="fas fa-check"></i> Salvar Plano
-      </button>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-percent"></i> Taxa Bancária / Gateway por Transação</label>
+        <div class="taxa-row">
+          <select id="planoTaxaTipo" class="form-select" data-testid="plano-taxa-tipo">
+            <option value="none">Sem taxa</option>
+            <option value="pct">Porcentagem (%)</option>
+            <option value="fixed">Valor fixo (R$)</option>
+          </select>
+          <input type="number" id="planoTaxaValor" class="form-input" placeholder="Ex.: 2.5 (% ou R$)" step="0.01" min="0" data-testid="plano-taxa-valor">
+        </div>
+        <p class="card-hint" style="margin: 6px 0 0;">Taxa cobrada pelo banco ou gateway de pagamento a cada transação. Será automaticamente subtraída do lucro no painel de gestão.</p>
+      </div>
+      <button class="btn-primary btn-block" onclick="salvarPlano()" data-testid="save-plano"><i class="fas fa-check"></i> Salvar Plano</button>
     </div>
   </div>
 
-  <!-- MODAL EDITAR MOVIMENTAÇÃO -->
   <div id="modalEditarMov" class="modal">
     <div class="modal-content sm">
       <div class="modal-header">
@@ -1158,13 +631,10 @@
         <button class="modal-close" onclick="fecharModalEditarMov()"><i class="fas fa-times"></i></button>
       </div>
       <div id="formEditarMov"></div>
-      <button class="btn-primary btn-block" onclick="salvarEdicaoMov()">
-        <i class="fas fa-check"></i> Salvar Alterações
-      </button>
+      <button class="btn-primary btn-block" onclick="salvarEdicaoMov()"><i class="fas fa-check"></i> Salvar Alterações</button>
     </div>
   </div>
 
-  <!-- MODAL EDITAR CLIENTE -->
   <div id="modalEditarCliente" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1195,16 +665,13 @@
           <div class="field" style="grid-column: span 3;"><label for="ec_observacoes">Observações</label><input id="ec_observacoes" data-testid="ec-observacoes" /></div>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn-primary" data-testid="save-editar-cliente">
-            <i class="fas fa-check"></i> Salvar alterações
-          </button>
+          <button type="submit" class="btn-primary" data-testid="save-editar-cliente"><i class="fas fa-check"></i> Salvar alterações</button>
           <button type="button" class="btn-secondary" onclick="fecharModalEditarCliente()">Cancelar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL NOVO CLIENTE -->
   <div id="modalNovoCliente" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1232,7 +699,6 @@
           <div class="field" style="grid-column: span 2;"><label for="nc_linkRenovacao">Link de ativação / renovação</label><input id="nc_linkRenovacao" placeholder="https://..." data-testid="nc-link" /></div>
           <div class="field" style="grid-column: span 3;"><label for="nc_observacoes">Observações</label><input id="nc_observacoes" placeholder="Opcional" data-testid="nc-observacoes" /></div>
         </div>
-
         <div class="form-group" style="margin-top: 18px;">
           <label class="form-label"><i class="fas fa-coins"></i> Contabilizar crédito na criação?</label>
           <p class="card-hint" style="margin: 0 0 10px;">Sim: desconta os créditos definidos acima, soma no faturamento e aparece no gráfico. Não: apenas cadastra o cliente sem impactar créditos/gráfico.</p>
@@ -1247,11 +713,8 @@
             </label>
           </div>
         </div>
-
         <div class="form-actions">
-          <button type="submit" class="btn-primary" data-testid="save-novo-cliente">
-            <i class="fas fa-user-plus"></i> Cadastrar cliente
-          </button>
+          <button type="submit" class="btn-primary" data-testid="save-novo-cliente"><i class="fas fa-user-plus"></i> Cadastrar cliente</button>
           <button type="button" class="btn-secondary" onclick="fecharModalNovoCliente()">Cancelar</button>
         </div>
       </form>
@@ -1262,7 +725,7 @@
 
   <script>
     /* =========================================================
-       PARTE 1 — GESTÃO DE CLIENTES (Cadastros / Vencimento / Clientes)
+       PARTE 1 — GESTÃO DE CLIENTES
        ========================================================= */
     const STORAGE_KEY = 'iptv_clientes_v1';
     const STORAGE_KEY_TESTES = 'iptv_testes_v1';
@@ -1324,32 +787,37 @@
       toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2400);
     }
 
-    function saveClients() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); }
-      catch (e) { showToast('Falha ao salvar localmente.', true); }
+    /* Substitui o confirm() nativo (bloqueado em iframes pelo Chrome).
+       Padrão "clicar 2x em até 2.5s na mesma ação para confirmar". */
+    const _pendingConfirms = new Map();
+    function confirmar(message) {
+      const key = String(message || '');
+      const now = Date.now();
+      const last = _pendingConfirms.get(key) || 0;
+      if (now - last < 2500) {
+        _pendingConfirms.delete(key);
+        return true;
+      }
+      _pendingConfirms.set(key, now);
+      showToast(`${message} Clique novamente para confirmar.`);
+      return false;
     }
+
+    function saveClients() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); } catch (e) { showToast('Falha ao salvar localmente.', true); } }
     function loadClients() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) { clients = []; return; }
-      try { const p = JSON.parse(raw); clients = Array.isArray(p) ? p : []; }
-      catch (e) { clients = []; }
+      try { const p = JSON.parse(raw); clients = Array.isArray(p) ? p : []; } catch (e) { clients = []; }
     }
-    function salvarTestes() {
-      try { localStorage.setItem(STORAGE_KEY_TESTES, JSON.stringify(testes)); }
-      catch (e) {}
-    }
+    function salvarTestes() { try { localStorage.setItem(STORAGE_KEY_TESTES, JSON.stringify(testes)); } catch (e) {} }
     function carregarTestes() {
       const raw = localStorage.getItem(STORAGE_KEY_TESTES);
       if (!raw) { testes = []; return; }
-      try { const p = JSON.parse(raw); testes = Array.isArray(p) ? p : []; }
-      catch (e) { testes = []; }
+      try { const p = JSON.parse(raw); testes = Array.isArray(p) ? p : []; } catch (e) { testes = []; }
     }
 
     function pad(n) { return String(n).padStart(2, '0'); }
-    function todayLocalDate() {
-      const now = new Date();
-      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    }
+    function todayLocalDate() { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
     function parseDate(value) {
       if (!value) return null;
       const parts = String(value).split('-').map(Number);
@@ -1357,29 +825,21 @@
       const [y, m, d] = parts;
       return new Date(y, m - 1, d);
     }
-    function toInputDate(date) {
-      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-    }
+    function toInputDate(date) { return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`; }
     function formatDate(value) {
       if (!value) return '—';
       const d = parseDate(value);
       if (!d || isNaN(d.getTime())) return '—';
       return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
     }
-    function addDays(date, days) {
-      const d = new Date(date); d.setDate(d.getDate() + days); return d;
-    }
+    function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate() + days); return d; }
     function diffInDays(a, b) {
       const ms = 86400000;
       const x = new Date(a.getFullYear(), a.getMonth(), a.getDate());
       const y = new Date(b.getFullYear(), b.getMonth(), b.getDate());
       return Math.round((x - y) / ms);
     }
-    function getDaysUntil(client) {
-      const due = parseDate(client.dataRenovacao);
-      if (!due) return null;
-      return diffInDays(due, todayLocalDate());
-    }
+    function getDaysUntil(client) { const due = parseDate(client.dataRenovacao); if (!due) return null; return diffInDays(due, todayLocalDate()); }
     function getStatus(client) {
       const diff = getDaysUntil(client);
       if (diff === null) return { label: 'Sem data', cls: 'pill-week' };
@@ -1389,27 +849,39 @@
       if (diff <= 7) return { label: `Vence em ${diff}d`, cls: 'pill-week' };
       return { label: `${diff}d restantes`, cls: 'pill-ok' };
     }
-    function escapeHtml(text) {
-      return String(text ?? '')
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-    }
+    function escapeHtml(text) { return String(text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
     function generateId() {
       if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
       return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
     }
 
-    // Helper: resolve quantidade de créditos a descontar para um cliente/teste
     function resolverCreditosCliente(target) {
       if (target && Number.isFinite(parseInt(target.creditos))) {
         const v = parseInt(target.creditos);
         if (v >= 0) return v;
       }
       const planoCad = encontrarPlanoPorNome(target ? target.plano : '');
-      if (planoCad && Number.isFinite(parseInt(planoCad.creditos))) {
-        return parseInt(planoCad.creditos);
-      }
+      if (planoCad && Number.isFinite(parseInt(planoCad.creditos))) return parseInt(planoCad.creditos);
       return 1;
+    }
+
+    /* === NOVO: cálculo de taxa bancária === */
+    function calcularTaxaPlano(plano, valorVenda) {
+      if (!plano || !plano.taxaTipo || plano.taxaTipo === 'none') return 0;
+      const v = parseFloat(plano.taxaValor);
+      if (!Number.isFinite(v) || v <= 0) return 0;
+      const valorNum = parseFloat(valorVenda) || 0;
+      if (plano.taxaTipo === 'pct') return (valorNum * v) / 100;
+      if (plano.taxaTipo === 'fixed') return v;
+      return 0;
+    }
+    function descricaoTaxaPlano(plano) {
+      if (!plano || !plano.taxaTipo || plano.taxaTipo === 'none') return 'Sem taxa';
+      const v = parseFloat(plano.taxaValor);
+      if (!Number.isFinite(v) || v <= 0) return 'Sem taxa';
+      if (plano.taxaTipo === 'pct') return `${v.toFixed(2).replace('.', ',')}%`;
+      if (plano.taxaTipo === 'fixed') return `R$ ${v.toFixed(2).replace('.', ',')} fixo`;
+      return 'Sem taxa';
     }
 
     function buildMessage(client) {
@@ -1421,22 +893,16 @@
       else if (diff === 0) statusTag = `Vence hoje`;
       else if (diff === -1) statusTag = `Venceu há 1 dia`;
       else statusTag = `Venceu há ${Math.abs(diff)} dias`;
-
       const valor = (client.valor || '').toString().trim();
       const valorLinha = valor ? `R$ ${valor}` : '';
-
       return [
-        `👋 Olá *${client.nome || ''}* Seu plano *${statusTag}*`,
-        ``,
-        `Para evitar cortes, acesse o link abaixo e realize o pagamento e fique sem preocupações!`,
-        ``,
+        `👋 Olá *${client.nome || ''}* Seu plano *${statusTag}*`, ``,
+        `Para evitar cortes, acesse o link abaixo e realize o pagamento e fique sem preocupações!`, ``,
         `👤 *Usuário*: ${client.usuario || ''}`,
         `🔑 *Senha*: ${client.senha || ''}`,
         `📦 *Plano*: ${client.plano || ''}`,
-        `💰 *Valor*: ${valorLinha}`,
-        ``,
-        `🔗 *Link de renovação*: ${client.linkRenovacao || ''}`,
-        ``,
+        `💰 *Valor*: ${valorLinha}`, ``,
+        `🔗 *Link de renovação*: ${client.linkRenovacao || ''}`, ``,
         `🙏 Obrigado pela preferência!`
       ].join('\n');
     }
@@ -1446,11 +912,8 @@
       if (!client) return;
       const msg = buildMessage(client);
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${client.nome}`))
-          .catch(() => fallbackCopy(msg, client.nome));
-      } else {
-        fallbackCopy(msg, client.nome);
-      }
+        navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${client.nome}`)).catch(() => fallbackCopy(msg, client.nome));
+      } else fallbackCopy(msg, client.nome);
     }
     function fallbackCopy(text, name) {
       try {
@@ -1464,20 +927,13 @@
     function openWhatsApp(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
-      if (getDaysUntil(client) === 0) {
-        client.msgSentAt = new Date().toISOString();
-        saveClients();
-      }
+      if (getDaysUntil(client) === 0) { client.msgSentAt = new Date().toISOString(); saveClients(); }
       const phone = String(client.telefone || '').replace(/\D/g, '');
       const text = encodeURIComponent(buildMessage(client));
-      const url = phone
-        ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}`
-        : `https://api.whatsapp.com/send?text=${text}`;
-      const a = document.createElement('a');
-      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      renderDashboard();
-      renderClientes();
+      renderDashboard(); renderClientes();
     }
     function parseValor(v) {
       if (!v) return 0;
@@ -1499,25 +955,21 @@
       client.dataRenovacao = toInputDate(nd);
       client.msgSentAt = null;
       client.updatedAt = new Date().toISOString();
+      const valorVenda = parseValor(client.valor);
+      const taxa = calcularTaxaPlano(planoCadastrado, valorVenda);
       movimentacoes.push({
-        data: new Date().toISOString(),
-        tipo: 'use',
-        tipoCliente: 'renovacao',
-        valor: parseValor(client.valor),
-        quantidade: creditosUsar,
-        clientId: client.id,
-        clientNome: client.nome
+        data: new Date().toISOString(), tipo: 'use', tipoCliente: 'renovacao',
+        valor: valorVenda, quantidade: creditosUsar, taxa: taxa,
+        planoNome: client.plano || '', clientId: client.id, clientNome: client.nome
       });
       salvarMovimentacoes();
       renderAll();
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
-      showToast(`Renovado • Novo vencimento: ${formatDate(client.dataRenovacao)} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'}`);
+      showToast(`Renovado • Novo vencimento: ${formatDate(client.dataRenovacao)} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'}${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}`);
     }
-    window.openWhatsApp = openWhatsApp;
-    window.copyMessage = copyMessage;
-    window.renewClient = renewClient;
+    window.openWhatsApp = openWhatsApp; window.copyMessage = copyMessage; window.renewClient = renewClient;
 
     function switchTab(tabName) {
       els.tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
@@ -1544,15 +996,12 @@
       targetEl.innerHTML = `
         <button class="btn-secondary" onclick="${onChangeName}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Anterior</button>
         <span class="page-info">Página ${currentPage} de ${totalPages}</span>
-        <button class="btn-secondary" onclick="${onChangeName}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Próxima →</button>
-      `;
+        <button class="btn-secondary" onclick="${onChangeName}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Próxima →</button>`;
     }
 
     function whatsBtnHtml(client) {
       const isToday = getDaysUntil(client) === 0;
-      if (!isToday) {
-        return `<button class="btn-whatsapp" onclick="openWhatsApp('${client.id}')" data-testid="whats-default-${client.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>`;
-      }
+      if (!isToday) return `<button class="btn-whatsapp" onclick="openWhatsApp('${client.id}')" data-testid="whats-default-${client.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>`;
       const sent = !!client.msgSentAt;
       const cls = sent ? 'btn-whatsapp-sent' : 'btn-whatsapp-unsent';
       const icon = sent ? 'fa-check' : 'fa-paper-plane';
@@ -1561,10 +1010,7 @@
     }
 
     function renderVencimentoList(targetEl, list, isExpired = false) {
-      if (!list.length) {
-        targetEl.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Nenhum cliente nesta faixa.</p></div>`;
-        return;
-      }
+      if (!list.length) { targetEl.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Nenhum cliente nesta faixa.</p></div>`; return; }
       targetEl.innerHTML = list.map(c => {
         const st = getStatus(c);
         const metaLabel = isExpired ? 'Vencimento' : 'Renovação';
@@ -1597,8 +1043,7 @@
       const today = todayLocalDate();
       const dueToday = [], dueTomorrow = [], dueWeek = [], expired = [];
       clients.forEach(c => {
-        const due = parseDate(c.dataRenovacao);
-        if (!due) return;
+        const due = parseDate(c.dataRenovacao); if (!due) return;
         const d = diffInDays(due, today);
         if (d < 0) expired.push(c);
         else if (d === 0) dueToday.push(c);
@@ -1606,31 +1051,22 @@
         else if (d >= 2 && d <= 7) dueWeek.push(c);
       });
       const sortByRenewal = (a, b) => {
-        const da = parseDate(a.dataRenovacao);
-        const db = parseDate(b.dataRenovacao);
+        const da = parseDate(a.dataRenovacao); const db = parseDate(b.dataRenovacao);
         if (da && db && da - db !== 0) return da - db;
         return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
       };
-      dueToday.sort(sortByRenewal);
-      dueTomorrow.sort(sortByRenewal);
-      dueWeek.sort(sortByRenewal);
+      dueToday.sort(sortByRenewal); dueTomorrow.sort(sortByRenewal); dueWeek.sort(sortByRenewal);
       expired.sort((a, b) => parseDate(b.dataRenovacao) - parseDate(a.dataRenovacao));
-
-      els.countToday.textContent = dueToday.length;
-      els.countTomorrow.textContent = dueTomorrow.length;
-      els.countWeek.textContent = dueWeek.length;
-      els.countExpired.textContent = expired.length;
-
+      els.countToday.textContent = dueToday.length; els.countTomorrow.textContent = dueTomorrow.length;
+      els.countWeek.textContent = dueWeek.length; els.countExpired.textContent = expired.length;
       const pToday = paginate(dueToday, state.todayPage); state.todayPage = pToday.safePage;
       const pTomorrow = paginate(dueTomorrow, state.tomorrowPage); state.tomorrowPage = pTomorrow.safePage;
       const pWeek = paginate(dueWeek, state.weekPage); state.weekPage = pWeek.safePage;
       const pExpired = paginate(expired, state.expiredPage); state.expiredPage = pExpired.safePage;
-
       renderVencimentoList(els.listToday, pToday.items, false);
       renderVencimentoList(els.listTomorrow, pTomorrow.items, false);
       renderVencimentoList(els.listWeek, pWeek.items, false);
       renderVencimentoList(els.listExpired, pExpired.items, true);
-
       renderPagination(els.paginationToday, pToday.safePage, pToday.totalPages, 'changeTodayPage');
       renderPagination(els.paginationTomorrow, pTomorrow.safePage, pTomorrow.totalPages, 'changeTomorrowPage');
       renderPagination(els.paginationWeek, pWeek.safePage, pWeek.totalPages, 'changeWeekPage');
@@ -1641,13 +1077,10 @@
       const term = (els.searchClientesInput.value || '').trim().toLowerCase();
       const filtered = clients.filter(c => {
         if (!term) return true;
-        return [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano]
-          .some(v => String(v || '').toLowerCase().includes(term));
+        return [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano].some(v => String(v || '').toLowerCase().includes(term));
       });
       els.countClientes.textContent = filtered.length;
-      const pag = paginate(filtered, state.clientesPage);
-      state.clientesPage = pag.safePage;
-
+      const pag = paginate(filtered, state.clientesPage); state.clientesPage = pag.safePage;
       if (!pag.items.length) {
         els.clientesList.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Use o botão "Cadastrar Cliente" acima.' : 'Nenhum resultado para a busca.'}</p></div>`;
       } else {
@@ -1697,8 +1130,7 @@
         `Olá! 😊`,
         `Vimos que você realizou o teste, mas ainda não ativou sua assinatura.`,
         `Para continuar aproveitando tudo, basta acessar o link abaixo e concluir a ativação 👇`,
-        ``,
-        link || '[informe o link de ativação no cadastro]'
+        ``, link || '[informe o link de ativação no cadastro]'
       ].join('\n');
     }
 
@@ -1708,15 +1140,9 @@
       const pagEl = document.getElementById('paginationTestes');
       if (cnt) cnt.textContent = testes.length;
       if (!cont) return;
-      if (testes.length === 0) {
-        cont.innerHTML = `<div class="empty-state"><i class="fas fa-flask"></i><p>Nenhum teste cadastrado ainda.</p></div>`;
-        if (pagEl) pagEl.innerHTML = '';
-        return;
-      }
+      if (testes.length === 0) { cont.innerHTML = `<div class="empty-state"><i class="fas fa-flask"></i><p>Nenhum teste cadastrado ainda.</p></div>`; if (pagEl) pagEl.innerHTML = ''; return; }
       const ordenados = testes.slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-      const pag = paginate(ordenados, state.testesPage);
-      state.testesPage = pag.safePage;
-
+      const pag = paginate(ordenados, state.testesPage); state.testesPage = pag.safePage;
       cont.innerHTML = pag.items.map(t => {
         const data = t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : '—';
         const linhaInfo = [
@@ -1746,103 +1172,66 @@
     }
 
     function whatsAppTeste(id) {
-      const t = testes.find(x => x.id === id);
-      if (!t) return;
+      const t = testes.find(x => x.id === id); if (!t) return;
       const phone = String(t.telefone || '').replace(/\D/g, '');
       const text = encodeURIComponent(buildTesteMessage(t));
-      const url = phone
-        ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}`
-        : `https://api.whatsapp.com/send?text=${text}`;
-      const a = document.createElement('a');
-      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
     function ativarTeste(id) {
-      const idx = testes.findIndex(x => x.id === id);
-      if (idx < 0) return;
+      const idx = testes.findIndex(x => x.id === id); if (idx < 0) return;
       const t = testes[idx];
       const planoCad = encontrarPlanoPorNome(t.plano);
       const dias = planoCad ? planoCad.dias : 30;
       const creditosUsar = resolverCreditosCliente(t);
       const hoje = todayLocalDate();
       const novoCliente = {
-        id: generateId(),
-        nome: t.nome,
-        telefone: t.telefone,
-        aplicativo: t.aplicativo,
-        usuario: t.usuario,
-        senha: t.senha,
-        plano: t.plano,
-        valor: t.valor,
+        id: generateId(), nome: t.nome, telefone: t.telefone, aplicativo: t.aplicativo,
+        usuario: t.usuario, senha: t.senha, plano: t.plano, valor: t.valor,
         creditos: creditosUsar,
-        dataInicio: toInputDate(hoje),
-        dataPagamento: toInputDate(hoje),
+        dataInicio: toInputDate(hoje), dataPagamento: toInputDate(hoje),
         dataRenovacao: toInputDate(addDays(hoje, dias)),
-        linkRenovacao: t.linkRenovacao,
-        observacoes: t.observacoes,
-        msgSentAt: null,
-        updatedAt: new Date().toISOString()
+        linkRenovacao: t.linkRenovacao, observacoes: t.observacoes,
+        msgSentAt: null, updatedAt: new Date().toISOString()
       };
       clients.push(novoCliente);
+      const valorVenda = parseValor(t.valor);
+      const taxa = calcularTaxaPlano(planoCad, valorVenda);
       movimentacoes.push({
-        data: new Date().toISOString(),
-        tipo: 'use',
-        tipoCliente: 'novo',
-        valor: parseValor(t.valor),
-        quantidade: creditosUsar,
-        clientId: novoCliente.id,
-        clientNome: novoCliente.nome
+        data: new Date().toISOString(), tipo: 'use', tipoCliente: 'novo',
+        valor: valorVenda, quantidade: creditosUsar, taxa: taxa,
+        planoNome: t.plano || '', clientId: novoCliente.id, clientNome: novoCliente.nome
       });
       testes.splice(idx, 1);
-      salvarTestes();
-      salvarMovimentacoes();
-      renderAll();
-      renderTestes();
+      salvarTestes(); salvarMovimentacoes();
+      renderAll(); renderTestes();
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
       switchTab('clientes');
-      showToast(`${novoCliente.nome} ativado • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} • Vence em ${formatDate(novoCliente.dataRenovacao)}`);
+      showToast(`${novoCliente.nome} ativado • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} • Vence em ${formatDate(novoCliente.dataRenovacao)}${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}`);
     }
 
     function excluirTeste(id) {
-      const idx = testes.findIndex(x => x.id === id);
-      if (idx < 0) return;
+      const idx = testes.findIndex(x => x.id === id); if (idx < 0) return;
       const t = testes[idx];
-      if (!confirm(`Excluir teste de ${t.nome}?`)) return;
-      testes.splice(idx, 1);
-      salvarTestes();
-      movimentacoes.push({
-        data: new Date().toISOString(),
-        tipo: 'teste_excluido',
-        tipoCliente: 'teste_excluido',
-        quantidade: 1,
-        nome: t.nome
-      });
+      if (!confirmar(`Excluir teste de ${t.nome}?`)) return;
+      testes.splice(idx, 1); salvarTestes();
+      movimentacoes.push({ data: new Date().toISOString(), tipo: 'teste_excluido', tipoCliente: 'teste_excluido', quantidade: 1, nome: t.nome });
       salvarMovimentacoes();
-      renderTestes();
-      atualizarHistorico();
+      renderTestes(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
       showToast('Teste excluído.');
     }
 
-    window.whatsAppTeste = whatsAppTeste;
-    window.ativarTeste = ativarTeste;
-    window.excluirTeste = excluirTeste;
+    window.whatsAppTeste = whatsAppTeste; window.ativarTeste = ativarTeste; window.excluirTeste = excluirTeste;
 
-    function renderAll() {
-      saveClients();
-      renderDashboard();
-      renderClientes();
-    }
+    function renderAll() { saveClients(); renderDashboard(); renderClientes(); }
 
-    function resetForm() {
-      els.clientForm.reset();
-      els.clientId.value = '';
-      els.formTitle.textContent = 'Cadastrar Teste IPTV';
-    }
+    function resetForm() { els.clientForm.reset(); els.clientId.value = ''; els.formTitle.textContent = 'Cadastrar Teste IPTV'; }
     function getFormData() {
       const sel = els.plano;
       const planoNome = sel && sel.tagName === 'SELECT' ? getPlanoNomeDoSelect(sel) : (sel ? sel.value.trim() : '');
@@ -1852,14 +1241,10 @@
         : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
       return {
         id: els.clientId.value || generateId(),
-        nome: els.nome.value.trim(),
-        telefone: els.telefone.value.trim(),
-        aplicativo: els.aplicativo.value.trim(),
-        usuario: els.usuario.value.trim(),
-        senha: els.senha.value.trim(),
-        plano: planoNome,
-        valor: els.valor.value.trim(),
-        creditos: creditosVal,
+        nome: els.nome.value.trim(), telefone: els.telefone.value.trim(),
+        aplicativo: els.aplicativo.value.trim(), usuario: els.usuario.value.trim(),
+        senha: els.senha.value.trim(), plano: planoNome,
+        valor: els.valor.value.trim(), creditos: creditosVal,
         linkRenovacao: els.linkRenovacao.value.trim(),
         observacoes: els.observacoes.value.trim(),
         createdAt: new Date().toISOString()
@@ -1868,20 +1253,13 @@
 
     /* ---------- EDIT CLIENT ---------- */
     let editKind = null;
-    function abrirModalEditarCliente() {
-      document.getElementById('modalEditarCliente').classList.add('active');
-    }
-    function fecharModalEditarCliente() {
-      document.getElementById('modalEditarCliente').classList.remove('active');
-      editKind = null;
-    }
+    function abrirModalEditarCliente() { document.getElementById('modalEditarCliente').classList.add('active'); }
+    function fecharModalEditarCliente() { document.getElementById('modalEditarCliente').classList.remove('active'); editKind = null; }
     window.fecharModalEditarCliente = fecharModalEditarCliente;
 
     function editClient(id) {
-      const c = clients.find(x => x.id === id);
-      const t = testes.find(x => x.id === id);
-      const target = c || t;
-      if (!target) return;
+      const c = clients.find(x => x.id === id); const t = testes.find(x => x.id === id);
+      const target = c || t; if (!target) return;
       editKind = c ? 'client' : 'teste';
       document.getElementById('ec_kind').value = editKind;
       document.getElementById('ec_id').value = target.id;
@@ -1894,25 +1272,19 @@
       selecionarPlanoPorNome(ecPlanoSel, target.plano);
       document.getElementById('ec_valor').value = target.valor || '';
       const creditosFallback = (encontrarPlanoPorNome(target.plano) || {}).creditos;
-      document.getElementById('ec_creditos').value =
-        Number.isFinite(parseInt(target.creditos)) ? target.creditos
-        : (Number.isFinite(parseInt(creditosFallback)) ? creditosFallback : 1);
+      document.getElementById('ec_creditos').value = Number.isFinite(parseInt(target.creditos)) ? target.creditos : (Number.isFinite(parseInt(creditosFallback)) ? creditosFallback : 1);
       document.getElementById('ec_linkRenovacao').value = target.linkRenovacao || '';
       document.getElementById('ec_observacoes').value = target.observacoes || '';
-
       const inicioWrap = document.getElementById('ec_inicio_wrap');
       const renovWrap = document.getElementById('ec_renovacao_wrap');
       if (editKind === 'client') {
-        inicioWrap.style.display = '';
-        renovWrap.style.display = '';
+        inicioWrap.style.display = ''; renovWrap.style.display = '';
         document.getElementById('ec_dataInicio').value = target.dataInicio || target.dataPagamento || '';
         document.getElementById('ec_dataRenovacao').value = target.dataRenovacao || '';
         document.getElementById('modalEditarClienteTitle').textContent = `Editar Cliente • ${target.nome || ''}`;
       } else {
-        inicioWrap.style.display = 'none';
-        renovWrap.style.display = 'none';
-        document.getElementById('ec_dataInicio').value = '';
-        document.getElementById('ec_dataRenovacao').value = '';
+        inicioWrap.style.display = 'none'; renovWrap.style.display = 'none';
+        document.getElementById('ec_dataInicio').value = ''; document.getElementById('ec_dataRenovacao').value = '';
         document.getElementById('modalEditarClienteTitle').textContent = `Editar Teste • ${target.nome || ''}`;
       }
       abrirModalEditarCliente();
@@ -1926,8 +1298,7 @@
       const planoSel = document.getElementById('ec_plano');
       if (!inicio || !renov) return;
       const recalc = () => {
-        const d = parseDate(inicio.value);
-        if (!d) return;
+        const d = parseDate(inicio.value); if (!d) return;
         const planoCad = planoPorIdSelect(planoSel);
         const dias = planoCad ? planoCad.dias : 30;
         renov.value = toInputDate(addDays(d, dias));
@@ -1944,17 +1315,14 @@
       const planoNome = ecPlanoSel && ecPlanoSel.tagName === 'SELECT' ? getPlanoNomeDoSelect(ecPlanoSel) : (ecPlanoSel ? ecPlanoSel.value.trim() : '');
       const ecCredVal = document.getElementById('ec_creditos').value;
       const planoCad = encontrarPlanoPorNome(planoNome);
-      const creditosFinal = ecCredVal !== ''
-        ? Math.max(0, parseInt(ecCredVal) || 0)
-        : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
+      const creditosFinal = ecCredVal !== '' ? Math.max(0, parseInt(ecCredVal) || 0) : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
       const base = {
         nome: document.getElementById('ec_nome').value.trim(),
         telefone: document.getElementById('ec_telefone').value.trim(),
         aplicativo: document.getElementById('ec_aplicativo').value.trim(),
         usuario: document.getElementById('ec_usuario').value.trim(),
         senha: document.getElementById('ec_senha').value.trim(),
-        plano: planoNome,
-        valor: document.getElementById('ec_valor').value.trim(),
+        plano: planoNome, valor: document.getElementById('ec_valor').value.trim(),
         creditos: creditosFinal,
         linkRenovacao: document.getElementById('ec_linkRenovacao').value.trim(),
         observacoes: document.getElementById('ec_observacoes').value.trim()
@@ -1966,25 +1334,15 @@
         const dataInicio = document.getElementById('ec_dataInicio').value || prev.dataInicio || prev.dataPagamento || '';
         const dataRenovacao = document.getElementById('ec_dataRenovacao').value || prev.dataRenovacao || '';
         const renovacaoChanged = dataRenovacao !== (prev.dataRenovacao || '');
-        clients[idx] = {
-          ...prev, ...base,
-          dataInicio,
-          dataPagamento: dataInicio || prev.dataPagamento || '',
-          dataRenovacao,
-          msgSentAt: renovacaoChanged ? null : prev.msgSentAt,
-          updatedAt: new Date().toISOString()
-        };
+        clients[idx] = { ...prev, ...base, dataInicio, dataPagamento: dataInicio || prev.dataPagamento || '', dataRenovacao, msgSentAt: renovacaoChanged ? null : prev.msgSentAt, updatedAt: new Date().toISOString() };
         renderAll();
-        atualizarSelectMesGestao();
-        atualizarGraficoClientes();
-        atualizarStatsFinanceiras();
-        gerarTextoWhatsAppGestao();
+        atualizarSelectMesGestao(); atualizarGraficoClientes();
+        atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       } else {
         const idx = testes.findIndex(x => x.id === id);
         if (idx < 0) { showToast('Teste não encontrado.', true); return; }
         testes[idx] = { ...testes[idx], ...base, updatedAt: new Date().toISOString() };
-        salvarTestes();
-        renderTestes();
+        salvarTestes(); renderTestes();
       }
       fecharModalEditarCliente();
       showToast('Alterações salvas.');
@@ -1992,8 +1350,7 @@
 
     /* ---------- NOVO CLIENTE ---------- */
     function abrirModalNovoCliente() {
-      const form = document.getElementById('formNovoCliente');
-      form.reset();
+      const form = document.getElementById('formNovoCliente'); form.reset();
       atualizarSelectPlanos();
       const hoje = todayLocalDate();
       document.getElementById('nc_dataInicio').value = toInputDate(hoje);
@@ -2005,11 +1362,8 @@
       document.getElementById('nc_contab_nao').classList.remove('danger');
       document.getElementById('modalNovoCliente').classList.add('active');
     }
-    function fecharModalNovoCliente() {
-      document.getElementById('modalNovoCliente').classList.remove('active');
-    }
-    window.abrirModalNovoCliente = abrirModalNovoCliente;
-    window.fecharModalNovoCliente = fecharModalNovoCliente;
+    function fecharModalNovoCliente() { document.getElementById('modalNovoCliente').classList.remove('active'); }
+    window.abrirModalNovoCliente = abrirModalNovoCliente; window.fecharModalNovoCliente = fecharModalNovoCliente;
 
     (function wireNcDateSync() {
       const inicio = document.getElementById('nc_dataInicio');
@@ -2018,8 +1372,7 @@
       const planoSel = document.getElementById('nc_plano');
       if (!inicio || !renov) return;
       const recalc = () => {
-        const d = parseDate(inicio.value);
-        if (!d) return;
+        const d = parseDate(inicio.value); if (!d) return;
         const planoCad = planoPorIdSelect(planoSel);
         const dias = planoCad ? planoCad.dias : 30;
         renov.value = toInputDate(addDays(d, dias));
@@ -2033,13 +1386,8 @@
       const nao = document.getElementById('nc_contab_nao');
       function update() {
         const v = document.querySelector('input[name="nc_contabilizar"]:checked').value;
-        if (v === 'sim') {
-          sim.classList.add('active'); sim.classList.remove('danger');
-          nao.classList.remove('active'); nao.classList.remove('danger');
-        } else {
-          nao.classList.add('active'); nao.classList.add('danger');
-          sim.classList.remove('active'); sim.classList.remove('danger');
-        }
+        if (v === 'sim') { sim.classList.add('active'); sim.classList.remove('danger'); nao.classList.remove('active'); nao.classList.remove('danger'); }
+        else { nao.classList.add('active'); nao.classList.add('danger'); sim.classList.remove('active'); sim.classList.remove('danger'); }
       }
       sim.addEventListener('click', () => { sim.querySelector('input').checked = true; update(); });
       nao.addEventListener('click', () => { nao.querySelector('input').checked = true; update(); });
@@ -2051,7 +1399,6 @@
       const usuario = document.getElementById('nc_usuario').value.trim();
       const senha = document.getElementById('nc_senha').value.trim();
       if (!nome || !usuario || !senha) { showToast('Preencha Nome, Usuário e Senha.', true); return; }
-
       const hoje = todayLocalDate();
       const dataInicio = document.getElementById('nc_dataInicio').value || toInputDate(hoje);
       const ncPlanoSel = document.getElementById('nc_plano');
@@ -2061,45 +1408,29 @@
       const valor = document.getElementById('nc_valor').value.trim();
       const planoNome = ncPlanoSel && ncPlanoSel.tagName === 'SELECT' ? getPlanoNomeDoSelect(ncPlanoSel) : '';
       const ncCredVal = document.getElementById('nc_creditos').value;
-      const creditosFinal = ncCredVal !== ''
-        ? Math.max(0, parseInt(ncCredVal) || 0)
-        : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
-
+      const creditosFinal = ncCredVal !== '' ? Math.max(0, parseInt(ncCredVal) || 0) : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
       const novo = {
-        id: generateId(),
-        nome,
+        id: generateId(), nome,
         telefone: document.getElementById('nc_telefone').value.trim(),
         aplicativo: document.getElementById('nc_aplicativo').value.trim(),
-        usuario,
-        senha,
-        plano: planoNome,
-        valor,
-        creditos: creditosFinal,
-        dataInicio,
-        dataPagamento: dataInicio,
-        dataRenovacao,
+        usuario, senha, plano: planoNome, valor, creditos: creditosFinal,
+        dataInicio, dataPagamento: dataInicio, dataRenovacao,
         linkRenovacao: document.getElementById('nc_linkRenovacao').value.trim(),
         observacoes: document.getElementById('nc_observacoes').value.trim(),
-        msgSentAt: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        msgSentAt: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
       };
       clients.push(novo);
-
       const contabilizar = document.querySelector('input[name="nc_contabilizar"]:checked').value === 'sim';
       if (contabilizar) {
+        const valorVenda = parseValor(valor);
+        const taxa = calcularTaxaPlano(planoCad, valorVenda);
         movimentacoes.push({
-          data: new Date().toISOString(),
-          tipo: 'use',
-          tipoCliente: 'novo',
-          valor: parseValor(valor),
-          quantidade: creditosFinal,
-          clientId: novo.id,
-          clientNome: novo.nome
+          data: new Date().toISOString(), tipo: 'use', tipoCliente: 'novo',
+          valor: valorVenda, quantidade: creditosFinal, taxa: taxa,
+          planoNome: planoNome, clientId: novo.id, clientNome: novo.nome
         });
         salvarMovimentacoes();
       }
-
       state.clientesPage = 1;
       renderAll();
       atualizarCreditos(); atualizarHistorico();
@@ -2113,10 +1444,9 @@
 
     window.deleteClient = id => {
       const c = clients.find(x => x.id === id); if (!c) return;
-      if (!confirm(`Excluir ${c.nome}?`)) return;
+      if (!confirmar(`Excluir ${c.nome}?`)) return;
       clients = clients.filter(x => x.id !== id);
-      renderAll();
-      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      renderAll(); atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
       showToast('Cliente excluído.');
     };
@@ -2124,19 +1454,11 @@
     els.clientForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const d = getFormData();
-      testes.push(d);
-      salvarTestes();
-      movimentacoes.push({
-        data: new Date().toISOString(),
-        tipo: 'teste',
-        tipoCliente: 'teste',
-        quantidade: 1,
-        nome: d.nome
-      });
+      testes.push(d); salvarTestes();
+      movimentacoes.push({ data: new Date().toISOString(), tipo: 'teste', tipoCliente: 'teste', quantidade: 1, nome: d.nome });
       salvarMovimentacoes();
       state.testesPage = 1;
-      renderTestes();
-      atualizarHistorico();
+      renderTestes(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
       resetForm();
@@ -2152,8 +1474,7 @@
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `backup_iptv_${toInputDate(todayLocalDate())}.json`;
+      a.href = url; a.download = `backup_iptv_${toInputDate(todayLocalDate())}.json`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showToast('Backup exportado.');
@@ -2163,29 +1484,24 @@
       try {
         const text = await file.text();
         const data = JSON.parse(text);
-        if (Array.isArray(data)) {
-          clients = data;
-        } else if (data && typeof data === 'object') {
+        if (Array.isArray(data)) { clients = data; }
+        else if (data && typeof data === 'object') {
           if (Array.isArray(data.clients)) clients = data.clients;
           if (Array.isArray(data.testes)) { testes = data.testes; salvarTestes(); }
           if (Array.isArray(data.pacotes)) { pacotes = data.pacotes; salvarPacotes(); }
           if (Array.isArray(data.planos)) { planos = data.planos; salvarPlanos(); }
           if (Array.isArray(data.movimentacoes)) { movimentacoes = data.movimentacoes; salvarMovimentacoes(); }
           if (Array.isArray(data.lucrosCustos)) { lucrosCustos = data.lucrosCustos; salvarLucrosCustos(); }
-        } else {
-          throw new Error('Formato inválido');
-        }
-        renderAll();
-        renderTestes();
+        } else throw new Error('Formato inválido');
+        renderAll(); renderTestes();
         atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
         atualizarListaPlanos(); atualizarSelectPlanos();
         atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
         atualizarSelectMesGestao();
         atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
         showToast('Backup importado com sucesso.');
-      } catch (err) {
-        showToast('Arquivo inválido.', true);
-      } finally { e.target.value = ''; }
+      } catch (err) { showToast('Arquivo inválido.', true); }
+      finally { e.target.value = ''; }
     });
 
     /* =========================================================
@@ -2210,26 +1526,21 @@
       if (p) pacotes = JSON.parse(p);
       else {
         pacotes = [
-          { id: 1, quantidade: 10, preco: 11 },
-          { id: 2, quantidade: 30, preco: 10 },
-          { id: 3, quantidade: 50, preco: 8 },
-          { id: 4, quantidade: 100, preco: 7 },
-          { id: 5, quantidade: 500, preco: 6.5 },
-          { id: 6, quantidade: 1000, preco: 6 }
+          { id: 1, quantidade: 10, preco: 11 }, { id: 2, quantidade: 30, preco: 10 },
+          { id: 3, quantidade: 50, preco: 8 }, { id: 4, quantidade: 100, preco: 7 },
+          { id: 5, quantidade: 500, preco: 6.5 }, { id: 6, quantidade: 1000, preco: 6 }
         ];
         salvarPacotes();
       }
       const pl = localStorage.getItem('iptv_planos');
-      if (pl) {
-        try { planos = JSON.parse(pl) || []; } catch (e) { planos = []; }
-      }
-      // Backfill: planos antigos sem o campo creditos -> default 1
+      if (pl) { try { planos = JSON.parse(pl) || []; } catch (e) { planos = []; } }
       let mutated = false;
-      planos.forEach(pl => {
-        if (!Number.isFinite(parseInt(pl.creditos))) { pl.creditos = 1; mutated = true; }
+      planos.forEach(plObj => {
+        if (!Number.isFinite(parseInt(plObj.creditos))) { plObj.creditos = 1; mutated = true; }
+        if (!plObj.taxaTipo) { plObj.taxaTipo = 'none'; mutated = true; }
+        if (plObj.taxaValor === undefined || plObj.taxaValor === null) { plObj.taxaValor = 0; mutated = true; }
       });
       if (mutated) salvarPlanos();
-
       const m = localStorage.getItem('iptv_movimentacoes');
       if (m) movimentacoes = JSON.parse(m);
       const lc = localStorage.getItem('iptv_lucros_custos');
@@ -2244,14 +1555,10 @@
     }
     function planoPorIdSelect(selectEl) {
       if (!selectEl) return null;
-      const id = parseInt(selectEl.value);
-      if (!id) return null;
+      const id = parseInt(selectEl.value); if (!id) return null;
       return planos.find(p => p.id === id) || null;
     }
-    function getPlanoNomeDoSelect(selectEl) {
-      const p = planoPorIdSelect(selectEl);
-      return p ? p.nome : '';
-    }
+    function getPlanoNomeDoSelect(selectEl) { const p = planoPorIdSelect(selectEl); return p ? p.nome : ''; }
     function selecionarPlanoPorNome(selectEl, nome) {
       if (!selectEl) return;
       atualizarSelectPlanos();
@@ -2268,6 +1575,8 @@
       document.getElementById('planoLink').value = '';
       document.getElementById('planoDias').value = '30';
       document.getElementById('planoCreditos').value = '1';
+      document.getElementById('planoTaxaTipo').value = 'none';
+      document.getElementById('planoTaxaValor').value = '';
       document.getElementById('modalPlano').classList.add('active');
     }
     function fecharModalPlano() {
@@ -2275,8 +1584,7 @@
       planoEditandoId = null;
     }
     function editarPlano(id) {
-      const p = planos.find(x => x.id === id);
-      if (!p) return;
+      const p = planos.find(x => x.id === id); if (!p) return;
       planoEditandoId = id;
       document.getElementById('modalPlanoTitle').textContent = 'Editar Plano';
       document.getElementById('planoNome').value = p.nome;
@@ -2284,6 +1592,8 @@
       document.getElementById('planoLink').value = p.link || '';
       document.getElementById('planoDias').value = p.dias;
       document.getElementById('planoCreditos').value = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
+      document.getElementById('planoTaxaTipo').value = p.taxaTipo || 'none';
+      document.getElementById('planoTaxaValor').value = (p.taxaValor !== undefined && p.taxaValor !== null && p.taxaValor !== 0) ? p.taxaValor : '';
       document.getElementById('modalPlano').classList.add('active');
     }
     function salvarPlano() {
@@ -2293,47 +1603,46 @@
       const dias = parseInt(document.getElementById('planoDias').value);
       const creditosRaw = document.getElementById('planoCreditos').value;
       const creditos = creditosRaw === '' ? 1 : Math.max(0, parseInt(creditosRaw) || 0);
-      if (!nome || isNaN(valor) || !dias || dias < 1) {
-        showToast('Preencha nome, valor e dias (>=1).', true); return;
-      }
+      const taxaTipo = document.getElementById('planoTaxaTipo').value || 'none';
+      const taxaValorRaw = document.getElementById('planoTaxaValor').value;
+      const taxaValor = taxaTipo === 'none' ? 0 : Math.max(0, parseFloat(taxaValorRaw) || 0);
+      if (!nome || isNaN(valor) || !dias || dias < 1) { showToast('Preencha nome, valor e dias (>=1).', true); return; }
+      if (taxaTipo !== 'none' && taxaValor <= 0) { showToast('Informe o valor da taxa (maior que zero) ou escolha "Sem taxa".', true); return; }
       if (planoEditandoId) {
         const idx = planos.findIndex(p => p.id === planoEditandoId);
-        if (idx >= 0) planos[idx] = { id: planoEditandoId, nome, valor, link, dias, creditos };
+        if (idx >= 0) planos[idx] = { id: planoEditandoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor };
       } else {
         const novoId = planos.length > 0 ? Math.max(...planos.map(p => p.id)) + 1 : 1;
-        planos.push({ id: novoId, nome, valor, link, dias, creditos });
+        planos.push({ id: novoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor });
       }
       salvarPlanos();
-      atualizarListaPlanos();
-      atualizarSelectPlanos();
+      atualizarListaPlanos(); atualizarSelectPlanos();
+      atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       fecharModalPlano();
       showToast(planoEditandoId ? 'Plano atualizado.' : 'Plano adicionado.');
     }
     function removerPlano(id) {
-      if (!confirm('Remover este plano?')) return;
+      if (!confirmar('Remover este plano?')) return;
       planos = planos.filter(p => p.id !== id);
-      salvarPlanos();
-      atualizarListaPlanos();
-      atualizarSelectPlanos();
+      salvarPlanos(); atualizarListaPlanos(); atualizarSelectPlanos();
     }
     function atualizarListaPlanos() {
       const lista = document.getElementById('listaPlanos');
       const cnt = document.getElementById('countPlanos');
       if (cnt) cnt.textContent = planos.length;
       if (!lista) return;
-      if (planos.length === 0) {
-        lista.innerHTML = '<div class="empty-state"><i class="fas fa-list-ul"></i><p>Nenhum plano cadastrado</p></div>';
-        return;
-      }
+      if (planos.length === 0) { lista.innerHTML = '<div class="empty-state"><i class="fas fa-list-ul"></i><p>Nenhum plano cadastrado</p></div>'; return; }
       lista.innerHTML = planos.map(p => {
         const cred = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
+        const taxaInfo = descricaoTaxaPlano(p);
+        const taxaColor = (p.taxaTipo && p.taxaTipo !== 'none' && parseFloat(p.taxaValor) > 0) ? 'var(--warning)' : 'var(--muted)';
         return `
         <div class="list-item" data-testid="plano-item-${p.id}">
           <div class="list-item-content">
             <div class="list-item-icon"><i class="fas fa-list-ul"></i></div>
             <div style="flex:1; min-width:0;">
               <div class="list-item-text">${escapeHtml(p.nome)}</div>
-              <div class="list-item-sub">${p.dias} dias • <span style="color:var(--primary);"><i class="fas fa-coins"></i> ${cred} créd.</span>${p.link ? ` • <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--info); text-decoration:none;">link</a>` : ''}</div>
+              <div class="list-item-sub">${p.dias} dias • <span style="color:var(--primary);"><i class="fas fa-coins"></i> ${cred} créd.</span> • <span style="color:${taxaColor};"><i class="fas fa-percent"></i> Taxa: ${escapeHtml(taxaInfo)}</span>${p.link ? ` • <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--info); text-decoration:none;">link</a>` : ''}</div>
             </div>
           </div>
           <div class="list-item-badge">R$ ${Number(p.valor).toFixed(2)}</div>
@@ -2353,31 +1662,19 @@
           return `<option value="${p.id}">${escapeHtml(p.nome)} • R$ ${Number(p.valor).toFixed(2)} • ${p.dias}d • ${cred} créd.</option>`;
         }).join('');
         el.innerHTML = '<option value="">Selecione um plano</option>' + opcoes;
-        if (currentVal && planos.some(p => String(p.id) === String(currentVal))) {
-          el.value = currentVal;
-        }
+        if (currentVal && planos.some(p => String(p.id) === String(currentVal))) el.value = currentVal;
       });
     }
     function aplicarPlanoSelecionado(selectEl, valorElId, linkElId, dataInicioElId, dataRenovacaoElId, creditosElId) {
-      const p = planoPorIdSelect(selectEl);
-      if (!p) return;
-      if (valorElId) {
-        const elV = document.getElementById(valorElId);
-        if (elV) elV.value = Number(p.valor).toFixed(2).replace('.', ',');
-      }
-      if (linkElId) {
-        const elL = document.getElementById(linkElId);
-        if (elL) elL.value = p.link || '';
-      }
+      const p = planoPorIdSelect(selectEl); if (!p) return;
+      if (valorElId) { const elV = document.getElementById(valorElId); if (elV) elV.value = Number(p.valor).toFixed(2).replace('.', ','); }
+      if (linkElId) { const elL = document.getElementById(linkElId); if (elL) elL.value = p.link || ''; }
       if (dataInicioElId && dataRenovacaoElId) {
         const inicioStr = document.getElementById(dataInicioElId).value;
         const baseDate = parseDate(inicioStr) || todayLocalDate();
         document.getElementById(dataRenovacaoElId).value = toInputDate(addDays(baseDate, p.dias));
       }
-      if (creditosElId) {
-        const elC = document.getElementById(creditosElId);
-        if (elC) elC.value = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
-      }
+      if (creditosElId) { const elC = document.getElementById(creditosElId); if (elC) elC.value = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1; }
     }
     (function wirePlanSelects() {
       const sel1 = document.getElementById('plano');
@@ -2388,11 +1685,8 @@
       if (sel3) sel3.addEventListener('change', () => aplicarPlanoSelecionado(sel3, 'ec_valor', 'ec_linkRenovacao', 'ec_dataInicio', 'ec_dataRenovacao', 'ec_creditos'));
     })();
 
-    window.abrirModalPlano = abrirModalPlano;
-    window.fecharModalPlano = fecharModalPlano;
-    window.salvarPlano = salvarPlano;
-    window.editarPlano = editarPlano;
-    window.removerPlano = removerPlano;
+    window.abrirModalPlano = abrirModalPlano; window.fecharModalPlano = fecharModalPlano;
+    window.salvarPlano = salvarPlano; window.editarPlano = editarPlano; window.removerPlano = removerPlano;
 
     /* ---------- CRÉDITOS / PACOTES ---------- */
     function adicionarCreditoPacote() {
@@ -2402,13 +1696,7 @@
       const pacote = pacotes.find(p => p.id === id);
       if (!pacote) { showToast('Pacote não encontrado.', true); return; }
       const custoTotal = pacote.quantidade * pacote.preco;
-      movimentacoes.push({
-        data: new Date().toISOString(),
-        tipo: 'add',
-        quantidade: pacote.quantidade,
-        custo: custoTotal,
-        pacoteId: pacote.id
-      });
+      movimentacoes.push({ data: new Date().toISOString(), tipo: 'add', quantidade: pacote.quantidade, custo: custoTotal, pacoteId: pacote.id });
       salvarMovimentacoes();
       atualizarCreditos(); atualizarHistorico();
       atualizarSelectMesGestao();
@@ -2419,8 +1707,7 @@
     window.adicionarCreditoPacote = adicionarCreditoPacote;
 
     function atualizarSelectPacotesAddCredito() {
-      const sel = document.getElementById('pacoteAddCredito');
-      if (!sel) return;
+      const sel = document.getElementById('pacoteAddCredito'); if (!sel) return;
       sel.innerHTML = '<option value="">Selecione um pacote cadastrado</option>' +
         pacotes.map(p => `<option value="${p.id}">${p.quantidade} créditos • R$ ${p.preco.toFixed(2)}/un • Total R$ ${(p.quantidade * p.preco).toFixed(2)}</option>`).join('');
     }
@@ -2473,7 +1760,7 @@
             <div class="list-item-content">
               <div class="list-item-icon" style="color: var(--info);"><i class="fas fa-flask"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">Teste criado${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
+                <div class="list-item-text">${m.nome ? `<i class="fas fa-user" style="font-size:11px; color:var(--primary); margin-right:6px;"></i>${escapeHtml(m.nome)} <span style="opacity:.6; font-weight:500;">• Teste criado</span>` : 'Teste criado'}</div>
                 <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
               </div>
             </div>
@@ -2485,7 +1772,7 @@
             <div class="list-item-content">
               <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-vial-circle-check"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">Teste excluído${m.nome ? ` • ${escapeHtml(m.nome)}` : ''}</div>
+                <div class="list-item-text">${m.nome ? `<i class="fas fa-user" style="font-size:11px; color:#ff9b9b; margin-right:6px;"></i>${escapeHtml(m.nome)} <span style="opacity:.6; font-weight:500;">• Teste excluído</span>` : 'Teste excluído'}</div>
                 <div class="list-item-sub">${data} • Sem impacto nos créditos</div>
               </div>
             </div>
@@ -2493,13 +1780,18 @@
           </div>`;
       } else {
         const qtdInfo = (m.quantidade && m.quantidade > 1) ? ` • -${m.quantidade} créd.` : '';
+        const taxaInfo = (m.taxa && m.taxa > 0) ? ` • <span style="color:var(--warning);">Taxa R$ ${m.taxa.toFixed(2)}</span>` : '';
+        const planoInfo = m.planoNome ? ` • ${escapeHtml(m.planoNome)}` : '';
+        const tipoLabel = tipos[m.tipoCliente] || m.tipoCliente;
+        const cliente = m.clientNome ? escapeHtml(m.clientNome) : '';
+        const corTipo = m.tipoCliente === 'novo' ? 'var(--primary)' : (m.tipoCliente === 'renovacao' ? 'var(--info)' : '#ff9b9b');
         return `
           <div class="list-item">
             <div class="list-item-content">
-              <div class="list-item-icon" style="color: #ff9b9b;"><i class="fas fa-minus-circle"></i></div>
+              <div class="list-item-icon" style="color: ${corTipo};"><i class="fas fa-${m.tipoCliente === 'novo' ? 'user-plus' : (m.tipoCliente === 'renovacao' ? 'rotate-right' : 'minus-circle')}"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">${tipos[m.tipoCliente] || m.tipoCliente} • R$ ${(m.valor || 0).toFixed(2)}${qtdInfo}</div>
-                <div class="list-item-sub">${data}</div>
+                <div class="list-item-text">${cliente ? `<i class="fas fa-user" style="font-size:11px; color:${corTipo}; margin-right:6px;"></i>${cliente} <span style="opacity:.6; font-weight:500;">• ${tipoLabel}</span>` : tipoLabel}</div>
+                <div class="list-item-sub">${data} • R$ ${(m.valor || 0).toFixed(2)}${qtdInfo}${planoInfo}${taxaInfo}</div>
               </div>
             </div>
             <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
@@ -2519,13 +1811,8 @@
         if (pagEl) pagEl.innerHTML = '';
         return;
       }
-      const listaComIdx = movimentacoes
-        .map((m, i) => ({ m, i }))
-        .sort((a, b) => (new Date(b.m.data)) - (new Date(a.m.data)));
-
-      const pag = paginate(listaComIdx, state.historicoPage);
-      state.historicoPage = pag.safePage;
-
+      const listaComIdx = movimentacoes.map((m, i) => ({ m, i })).sort((a, b) => (new Date(b.m.data)) - (new Date(a.m.data)));
+      const pag = paginate(listaComIdx, state.historicoPage); state.historicoPage = pag.safePage;
       container.innerHTML = pag.items.map(({ m, i }) => renderMovimentacaoHtml(m, i)).join('');
       renderPagination(pagEl, pag.safePage, pag.totalPages, 'changeHistoricoPage');
     }
@@ -2560,15 +1847,17 @@
           <div class="form-group">
             <label class="form-label"><i class="fas fa-coins"></i> Créditos descontados</label>
             <input type="number" id="editQtdUse" class="form-input" value="${m.quantidade || 1}" min="0" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-percent"></i> Taxa Bancária (R$)</label>
+            <input type="number" id="editTaxa" class="form-input" value="${m.taxa || 0}" min="0" step="0.01">
+            <p class="card-hint" style="margin: 4px 0 0;">Valor da taxa cobrada nesta transação. Edite se necessário.</p>
           </div>`;
       }
       document.getElementById('formEditarMov').innerHTML = html;
       document.getElementById('modalEditarMov').classList.add('active');
     }
-    function fecharModalEditarMov() {
-      document.getElementById('modalEditarMov').classList.remove('active');
-      movimentacaoEditando = null;
-    }
+    function fecharModalEditarMov() { document.getElementById('modalEditarMov').classList.remove('active'); movimentacaoEditando = null; }
     function salvarEdicaoMov() {
       if (movimentacaoEditando === null) return;
       const m = movimentacoes[movimentacaoEditando];
@@ -2581,9 +1870,11 @@
         const tipo = document.getElementById('editTipo').value;
         const valor = parseFloat(document.getElementById('editValor').value);
         const qtdUse = parseInt(document.getElementById('editQtdUse').value);
+        const taxa = parseFloat(document.getElementById('editTaxa').value);
         if (!tipo || isNaN(valor)) { showToast('Preencha todos os campos.', true); return; }
         m.tipoCliente = tipo; m.valor = valor;
         if (Number.isFinite(qtdUse) && qtdUse >= 0) m.quantidade = qtdUse;
+        if (Number.isFinite(taxa) && taxa >= 0) m.taxa = taxa;
       }
       salvarMovimentacoes();
       atualizarCreditos(); atualizarHistorico();
@@ -2592,66 +1883,82 @@
       showToast('Movimentação atualizada.');
     }
     function removerMovimentacao(idx) {
-      if (!confirm('Remover esta movimentação?')) return;
+      if (!confirmar('Remover esta movimentação?')) return;
       movimentacoes.splice(idx, 1);
       salvarMovimentacoes();
       atualizarCreditos(); atualizarHistorico();
       atualizarSelectMesGestao();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
     }
-    window.editarMovimentacao = editarMovimentacao;
-    window.removerMovimentacao = removerMovimentacao;
-    window.fecharModalEditarMov = fecharModalEditarMov;
-    window.salvarEdicaoMov = salvarEdicaoMov;
+    window.editarMovimentacao = editarMovimentacao; window.removerMovimentacao = removerMovimentacao;
+    window.fecharModalEditarMov = fecharModalEditarMov; window.salvarEdicaoMov = salvarEdicaoMov;
 
     function adicionarLucroCusto() {
       const valor = parseFloat(document.getElementById('valorLucroCusto').value);
       const info = document.getElementById('infoLucroCusto').value;
       if (isNaN(valor) || !info) { showToast('Preencha valor e informação.', true); return; }
-      lucrosCustos.push({ data: new Date().toISOString(), valor, info });
+      const fixoEl = document.querySelector('input[name="lc_fixo"]:checked');
+      const fixo = !!(fixoEl && fixoEl.value === 'sim');
+      lucrosCustos.push({ data: new Date().toISOString(), valor, info, fixo });
       salvarLucrosCustos();
       atualizarListaLucrosCustos();
       atualizarSelectMesGestao();
       atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       document.getElementById('valorLucroCusto').value = '';
       document.getElementById('infoLucroCusto').value = '';
-      showToast('Lucro/Custo adicionado.');
+      // reset radio para "Não"
+      const naoR = document.querySelector('input[name="lc_fixo"][value="nao"]');
+      if (naoR) naoR.checked = true;
+      const lcNao = document.getElementById('lc_fixo_nao');
+      const lcSim = document.getElementById('lc_fixo_sim');
+      if (lcNao && lcSim) { lcNao.classList.add('active'); lcSim.classList.remove('active'); }
+      showToast(fixo ? 'Lucro/Custo fixo adicionado (recorrente).' : 'Lucro/Custo adicionado.');
     }
     function atualizarListaLucrosCustos() {
       const lista = document.getElementById('listaLucrosCustos');
-      if (lucrosCustos.length === 0) {
-        lista.innerHTML = '<div class="empty-state" style="padding:24px;"><i class="fas fa-chart-pie"></i><p>Nenhum lucro ou custo personalizado</p></div>';
-        return;
-      }
+      const cnt = document.getElementById('countLucrosCustos');
+      if (cnt) cnt.textContent = lucrosCustos.length;
+      if (!lista) return;
+      if (lucrosCustos.length === 0) { lista.innerHTML = '<div class="empty-state" style="padding:24px;"><i class="fas fa-chart-pie"></i><p>Nenhum lucro ou custo personalizado</p></div>'; return; }
       lista.innerHTML = lucrosCustos.map((lc, idx) => {
         const cor = lc.valor >= 0 ? 'var(--primary)' : '#ff9b9b';
         const tipo = lc.valor >= 0 ? 'Lucro' : 'Custo';
+        const fixoBadge = lc.fixo
+          ? `<span class="pill" style="background:rgba(255,228,92,.10); color:var(--warning); border-color:rgba(255,228,92,.35); font-size:11px;"><i class="fas fa-sync-alt" style="margin-right:4px;"></i>Fixo do mês</span>`
+          : '';
+        const dataStr = lc.data ? new Date(lc.data).toLocaleDateString('pt-BR') : '';
         return `
-          <div class="cost-item">
-            <span class="cost-value" style="color:${cor};">R$ ${Math.abs(lc.valor).toFixed(2)}</span>
-            <span class="cost-name"><i class="fas fa-tag"></i>${escapeHtml(lc.info)} (${tipo})</span>
-            <button class="btn-danger" onclick="removerLucroCusto(${idx})"><i class="fas fa-trash"></i></button>
+          <div class="list-item" data-testid="lc-item-${idx}">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="color:${cor};"><i class="fas fa-${lc.valor >= 0 ? 'arrow-up' : 'arrow-down'}"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="list-item-text" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  ${escapeHtml(lc.info)} ${fixoBadge}
+                </div>
+                <div class="list-item-sub">${tipo} • Cadastrado em ${dataStr}${lc.fixo ? ' • Replicado mensalmente' : ''}</div>
+              </div>
+            </div>
+            <div class="list-item-badge" style="color:${cor}; background:${lc.valor >= 0 ? 'rgba(57,255,20,.08)' : 'rgba(255,92,92,.08)'}; border-color:${lc.valor >= 0 ? 'rgba(57,255,20,.25)' : 'rgba(255,92,92,.25)'};">R$ ${Math.abs(lc.valor).toFixed(2)}</div>
+            <button class="btn-danger" onclick="removerLucroCusto(${idx})" data-testid="btn-remover-lc-${idx}"><i class="fas fa-trash"></i></button>
           </div>`;
       }).join('');
     }
     function removerLucroCusto(idx) {
-      if (!confirm('Remover?')) return;
+      const lc = lucrosCustos[idx];
+      if (!lc) return;
       lucrosCustos.splice(idx, 1);
       salvarLucrosCustos();
       atualizarListaLucrosCustos(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
+      showToast(`"${lc.info}" removido.`);
     }
-    window.adicionarLucroCusto = adicionarLucroCusto;
-    window.removerLucroCusto = removerLucroCusto;
+    window.adicionarLucroCusto = adicionarLucroCusto; window.removerLucroCusto = removerLucroCusto;
 
     function atualizarListaPacotes() {
       const lista = document.getElementById('listaPacotes');
       const cnt = document.getElementById('countPacotes');
       if (cnt) cnt.textContent = pacotes.length;
-      if (pacotes.length === 0) {
-        lista.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>Nenhum pacote cadastrado</p></div>';
-        return;
-      }
+      if (pacotes.length === 0) { lista.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>Nenhum pacote cadastrado</p></div>'; return; }
       lista.innerHTML = pacotes.map(p => `
         <div class="list-item" data-testid="pacote-item-${p.id}">
           <div class="list-item-content">
@@ -2676,29 +1983,24 @@
       pacoteEditandoId = null;
       document.querySelector('#modalPacote .modal-title').textContent = 'Adicionar Pacote';
       document.getElementById('modalPacote').classList.add('active');
-      document.getElementById('qtdCreditos').value = '';
-      document.getElementById('precoCredito').value = '';
+      document.getElementById('qtdCreditos').value = ''; document.getElementById('precoCredito').value = '';
     }
     function editarPacote(id) {
-      const p = pacotes.find(x => x.id === id);
-      if (!p) return;
+      const p = pacotes.find(x => x.id === id); if (!p) return;
       pacoteEditandoId = id;
       document.querySelector('#modalPacote .modal-title').textContent = 'Editar Pacote';
       document.getElementById('qtdCreditos').value = p.quantidade;
       document.getElementById('precoCredito').value = p.preco;
       document.getElementById('modalPacote').classList.add('active');
     }
-    function fecharModalPacote() {
-      document.getElementById('modalPacote').classList.remove('active');
-      pacoteEditandoId = null;
-    }
+    function fecharModalPacote() { document.getElementById('modalPacote').classList.remove('active'); pacoteEditandoId = null; }
     function salvarPacote() {
       const quantidade = parseInt(document.getElementById('qtdCreditos').value);
       const preco = parseFloat(document.getElementById('precoCredito').value);
       if (!quantidade || !preco) { showToast('Preencha todos os campos.', true); return; }
       if (pacoteEditandoId) {
         const idx = pacotes.findIndex(p => p.id === pacoteEditandoId);
-        if (idx >= 0) { pacotes[idx] = { id: pacoteEditandoId, quantidade, preco }; }
+        if (idx >= 0) pacotes[idx] = { id: pacoteEditandoId, quantidade, preco };
       } else {
         const novoId = pacotes.length > 0 ? Math.max(...pacotes.map(p => p.id)) + 1 : 1;
         pacotes.push({ id: novoId, quantidade, preco });
@@ -2709,46 +2011,42 @@
       showToast(pacoteEditandoId ? 'Pacote atualizado.' : 'Pacote adicionado.');
     }
     function removerPacote(id) {
-      if (!confirm('Remover este pacote?')) return;
+      if (!confirmar('Remover este pacote?')) return;
       pacotes = pacotes.filter(p => p.id !== id);
-      salvarPacotes();
-      atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
+      salvarPacotes(); atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
     }
-    window.abrirModalPacote = abrirModalPacote;
-    window.fecharModalPacote = fecharModalPacote;
-    window.salvarPacote = salvarPacote;
-    window.removerPacote = removerPacote;
-    window.editarPacote = editarPacote;
+    window.abrirModalPacote = abrirModalPacote; window.fecharModalPacote = fecharModalPacote;
+    window.salvarPacote = salvarPacote; window.removerPacote = removerPacote; window.editarPacote = editarPacote;
 
-    /* ---------- Toggles colapsáveis ---------- */
-    document.getElementById('headerPacotes').addEventListener('click', () => {
-      document.getElementById('cardPacotes').classList.toggle('collapsed');
-    });
-    document.getElementById('headerPlanos').addEventListener('click', () => {
-      document.getElementById('cardPlanos').classList.toggle('collapsed');
-    });
-    document.getElementById('headerGestaoCreditos').addEventListener('click', () => {
-      document.getElementById('cardGestaoCreditos').classList.toggle('collapsed');
-    });
-    document.getElementById('headerHistorico').addEventListener('click', () => {
-      document.getElementById('cardHistorico').classList.toggle('collapsed');
-    });
+    document.getElementById('headerPacotes').addEventListener('click', () => { document.getElementById('cardPacotes').classList.toggle('collapsed'); });
+    document.getElementById('headerPlanos').addEventListener('click', () => { document.getElementById('cardPlanos').classList.toggle('collapsed'); });
+    document.getElementById('headerGestaoCreditos').addEventListener('click', () => { document.getElementById('cardGestaoCreditos').classList.toggle('collapsed'); });
+    document.getElementById('headerHistorico').addEventListener('click', () => { document.getElementById('cardHistorico').classList.toggle('collapsed'); });
+    document.getElementById('headerLucrosCustos').addEventListener('click', () => { document.getElementById('cardLucrosCustos').classList.toggle('collapsed'); });
+
+    (function wireLcRadio() {
+      const sim = document.getElementById('lc_fixo_sim');
+      const nao = document.getElementById('lc_fixo_nao');
+      if (!sim || !nao) return;
+      function update() {
+        const v = document.querySelector('input[name="lc_fixo"]:checked').value;
+        if (v === 'sim') { sim.classList.add('active'); nao.classList.remove('active'); }
+        else { nao.classList.add('active'); sim.classList.remove('active'); }
+      }
+      sim.addEventListener('click', () => { sim.querySelector('input').checked = true; update(); });
+      nao.addEventListener('click', () => { nao.querySelector('input').checked = true; update(); });
+    })();
 
     function adicionarAssinatura() {
       const quantidade = parseInt(document.getElementById('qtdAssinatura').value);
       const valor = parseFloat(document.getElementById('valorAssinatura').value);
       if (!quantidade || !valor) { showToast('Preencha quantidade e valor.', true); return; }
-      assinaturas.push({ quantidade, valor });
-      atualizarListaAssinaturas();
-      document.getElementById('qtdAssinatura').value = '';
-      document.getElementById('valorAssinatura').value = '';
+      assinaturas.push({ quantidade, valor }); atualizarListaAssinaturas();
+      document.getElementById('qtdAssinatura').value = ''; document.getElementById('valorAssinatura').value = '';
     }
     function atualizarListaAssinaturas() {
       const lista = document.getElementById('listaAssinaturas');
-      if (assinaturas.length === 0) {
-        lista.innerHTML = '<div class="empty-state" style="padding:24px;"><i class="fas fa-users"></i><p>Nenhuma assinatura adicionada</p></div>';
-        return;
-      }
+      if (assinaturas.length === 0) { lista.innerHTML = '<div class="empty-state" style="padding:24px;"><i class="fas fa-users"></i><p>Nenhuma assinatura adicionada</p></div>'; return; }
       lista.innerHTML = assinaturas.map((a, idx) => `
         <div class="assinatura-item">
           <span class="cost-name"><i class="fas fa-users"></i>${a.quantidade} clientes</span>
@@ -2757,24 +2055,18 @@
         </div>`).join('');
     }
     function removerAssinatura(i) { assinaturas.splice(i, 1); atualizarListaAssinaturas(); }
-    window.adicionarAssinatura = adicionarAssinatura;
-    window.removerAssinatura = removerAssinatura;
+    window.adicionarAssinatura = adicionarAssinatura; window.removerAssinatura = removerAssinatura;
 
     function adicionarCusto() {
       const valor = parseFloat(document.getElementById('valorCusto').value);
       const descricao = document.getElementById('descricaoCusto').value;
       if (!valor || !descricao) { showToast('Preencha valor e descrição.', true); return; }
-      custos.push({ valor, descricao });
-      atualizarListaCustos();
-      document.getElementById('valorCusto').value = '';
-      document.getElementById('descricaoCusto').value = '';
+      custos.push({ valor, descricao }); atualizarListaCustos();
+      document.getElementById('valorCusto').value = ''; document.getElementById('descricaoCusto').value = '';
     }
     function atualizarListaCustos() {
       const lista = document.getElementById('listaCustos');
-      if (custos.length === 0) {
-        lista.innerHTML = '<div class="empty-state" style="padding:24px;"><i class="fas fa-wallet"></i><p>Nenhum custo adicionado</p></div>';
-        return;
-      }
+      if (custos.length === 0) { lista.innerHTML = '<div class="empty-state" style="padding:24px;"><i class="fas fa-wallet"></i><p>Nenhum custo adicionado</p></div>'; return; }
       lista.innerHTML = custos.map((c, idx) => `
         <div class="cost-item">
           <span class="cost-value">R$ ${c.valor.toFixed(2)}</span>
@@ -2783,14 +2075,11 @@
         </div>`).join('');
     }
     function removerCusto(i) { custos.splice(i, 1); atualizarListaCustos(); }
-    window.adicionarCusto = adicionarCusto;
-    window.removerCusto = removerCusto;
+    window.adicionarCusto = adicionarCusto; window.removerCusto = removerCusto;
 
     function calcular() {
       const pacoteId = parseInt(document.getElementById('pacoteSelecionado').value);
-      if (!pacoteId || assinaturas.length === 0) {
-        showToast('Selecione um pacote e adicione assinaturas.', true); return;
-      }
+      if (!pacoteId || assinaturas.length === 0) { showToast('Selecione um pacote e adicione assinaturas.', true); return; }
       const pacote = pacotes.find(p => p.id === pacoteId);
       const totalClientes = assinaturas.reduce((t, a) => t + a.quantidade, 0);
       const faturamento = assinaturas.reduce((t, a) => t + (a.quantidade * a.valor), 0);
@@ -2798,7 +2087,6 @@
       const custoExtra = custos.reduce((t, c) => t + c.valor, 0);
       const custoTotal = custoCredito + custoExtra;
       const lucro = faturamento - custoTotal;
-
       document.getElementById('resultado').innerHTML = `
         <div class="result-box">
           <div class="result-section">
@@ -2864,7 +2152,19 @@
     function coletarMesesDisponiveis() {
       const set = new Set();
       movimentacoes.forEach(m => { const k = monthKey(m.data); if (k) set.add(k); });
-      lucrosCustos.forEach(lc => { const k = monthKey(lc.data); if (k) set.add(k); });
+      lucrosCustos.forEach(lc => {
+        const k = monthKey(lc.data); if (!k) return;
+        set.add(k);
+        if (lc.fixo) {
+          const now = new Date();
+          const cy = now.getFullYear(), cm = now.getMonth() + 1;
+          const [sy, sm] = k.split('-').map(Number);
+          for (let y = sy, mo = sm; (y < cy) || (y === cy && mo <= cm); ) {
+            set.add(`${y}-${String(mo).padStart(2, '0')}`);
+            mo += 1; if (mo > 12) { mo = 1; y += 1; }
+          }
+        }
+      });
       clients.forEach(c => {
         const due = parseDate(c.dataRenovacao);
         if (due) set.add(`${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`);
@@ -2874,8 +2174,7 @@
       return Array.from(set).sort((a, b) => b.localeCompare(a));
     }
     function atualizarSelectMesGestao() {
-      const sel = document.getElementById('filtroMesGestao');
-      if (!sel) return;
+      const sel = document.getElementById('filtroMesGestao'); if (!sel) return;
       const meses = coletarMesesDisponiveis();
       const prev = state.filtroMes;
       sel.innerHTML = '<option value="all">Todos os meses</option>' +
@@ -2886,9 +2185,7 @@
     document.addEventListener('change', (e) => {
       if (e.target && e.target.id === 'filtroMesGestao') {
         state.filtroMes = e.target.value;
-        atualizarGraficoClientes();
-        atualizarStatsFinanceiras();
-        gerarTextoWhatsAppGestao();
+        atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       }
     });
 
@@ -2897,42 +2194,105 @@
       return monthKey(dateLike) === state.filtroMes;
     }
 
+    /* Quantas vezes uma entrada de lucro/custo deve ser contabilizada
+       no filtro atual. Se for fixo, replica de cada mês desde a criação. */
+    function ocorrenciasLucroCusto(lc) {
+      if (!lc || !lc.fixo) return passaFiltroMes(lc ? lc.data : null) ? 1 : 0;
+      const startKey = monthKey(lc.data);
+      if (!startKey) return 0;
+      const now = new Date();
+      const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      if (state.filtroMes === 'all') {
+        const [sy, sm] = startKey.split('-').map(Number);
+        const [cy, cm] = currentKey.split('-').map(Number);
+        const months = (cy - sy) * 12 + (cm - sm) + 1;
+        return Math.max(0, months);
+      }
+      // mês específico: aplica se o mês de cadastro <= mês filtrado
+      return startKey <= state.filtroMes ? 1 : 0;
+    }
+
     function computeTotaisFinanceiros() {
-      let custo = 0, lucro = 0;
+      let custo = 0, lucro = 0, taxas = 0;
       movimentacoes.forEach(m => {
         if (!passaFiltroMes(m.data)) return;
         if (m.tipo === 'add') custo += (m.custo || 0);
-        else if (m.tipo === 'use') lucro += (m.valor || 0);
+        else if (m.tipo === 'use') {
+          lucro += (m.valor || 0);
+          taxas += (m.taxa || 0);
+        }
       });
       lucrosCustos.forEach(lc => {
-        if (!passaFiltroMes(lc.data)) return;
-        if (lc.valor >= 0) lucro += lc.valor;
-        else custo += Math.abs(lc.valor);
+        const ocorr = ocorrenciasLucroCusto(lc);
+        if (ocorr === 0) return;
+        if (lc.valor >= 0) lucro += lc.valor * ocorr;
+        else custo += Math.abs(lc.valor) * ocorr;
       });
-      return { custo, lucro, liquido: lucro - custo };
+      return { custo, lucro, taxas, liquido: lucro - custo - taxas };
     }
 
     function atualizarStatsFinanceiras() {
-      const { custo, lucro, liquido } = computeTotaisFinanceiros();
+      const { custo, lucro, taxas, liquido } = computeTotaisFinanceiros();
       const fmt = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
       const elL = document.getElementById('totalLucro');
       const elC = document.getElementById('totalCusto');
+      const elT = document.getElementById('totalTaxas');
       const elN = document.getElementById('totalLiquido');
       if (elL) elL.textContent = fmt(lucro);
       if (elC) elC.textContent = fmt(custo);
-      if (elN) {
-        elN.textContent = fmt(liquido);
-        elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b';
-      }
+      if (elT) elT.textContent = fmt(taxas);
+      if (elN) { elN.textContent = fmt(liquido); elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b'; }
+      atualizarDetalheTaxas();
     }
     window.atualizarStatsFinanceiras = atualizarStatsFinanceiras;
 
+    function atualizarDetalheTaxas() {
+      const cont = document.getElementById('detalheTaxas');
+      const cnt = document.getElementById('countTaxas');
+      if (!cont) return;
+      const porPlano = {};
+      let totalTransacoes = 0;
+      movimentacoes.forEach(m => {
+        if (!passaFiltroMes(m.data)) return;
+        if (m.tipo !== 'use') return;
+        if (!m.taxa || m.taxa <= 0) return;
+        const nome = m.planoNome || 'Sem plano';
+        if (!porPlano[nome]) porPlano[nome] = { total: 0, qtd: 0, valor: 0 };
+        porPlano[nome].total += m.taxa;
+        porPlano[nome].qtd += 1;
+        porPlano[nome].valor += (m.valor || 0);
+        totalTransacoes += 1;
+      });
+      if (cnt) cnt.textContent = totalTransacoes;
+      const nomes = Object.keys(porPlano);
+      if (nomes.length === 0) {
+        cont.innerHTML = '<div class="empty-state"><i class="fas fa-percent"></i><p>Nenhuma taxa registrada no período. Cadastre uma taxa nos planos disponíveis em Configuração → Planos.</p></div>';
+        return;
+      }
+      nomes.sort((a, b) => porPlano[b].total - porPlano[a].total);
+      cont.innerHTML = nomes.map(n => {
+        const d = porPlano[n];
+        const planoCad = encontrarPlanoPorNome(n);
+        const taxaInfo = planoCad ? descricaoTaxaPlano(planoCad) : '—';
+        const pctSobreFat = d.valor > 0 ? ((d.total / d.valor) * 100).toFixed(2) : '0.00';
+        return `
+          <div class="list-item" data-testid="detalhe-taxa-${escapeHtml(n).replace(/\s+/g, '-')}">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-percent"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="list-item-text">${escapeHtml(n)}</div>
+                <div class="list-item-sub">${d.qtd} transação${d.qtd === 1 ? '' : 'ões'} • Faturamento: R$ ${d.valor.toFixed(2)} • Taxa configurada: ${escapeHtml(taxaInfo)} • ${pctSobreFat}% do faturamento</div>
+              </div>
+            </div>
+            <div class="list-item-badge" style="background: rgba(255,228,92,.08); color: var(--warning); border-color: rgba(255,228,92,.25);">R$ ${d.total.toFixed(2)}</div>
+          </div>`;
+      }).join('');
+    }
+
     function atualizarGraficoClientes() {
-      const parent = document.querySelector('#gestao .chart-container');
-      if (!parent) return;
+      const parent = document.querySelector('#gestao .chart-container'); if (!parent) return;
       const porMes = {};
       const ensure = k => { if (!porMes[k]) porMes[k] = { novos: 0, renovacoes: 0, naoRenovou: 0, vencidos: 0, testes: 0 }; };
-
       movimentacoes.forEach(m => {
         if (!passaFiltroMes(m.data)) return;
         const k = monthKey(m.data); if (!k) return;
@@ -2942,58 +2302,44 @@
         else if (m.tipo === 'churn') porMes[k].naoRenovou += (m.quantidade || 1);
         else if (m.tipo === 'teste') porMes[k].testes += (m.quantidade || 1);
       });
-
       const today = todayLocalDate();
       clients.forEach(c => {
-        const due = parseDate(c.dataRenovacao);
-        if (!due) return;
+        const due = parseDate(c.dataRenovacao); if (!due) return;
         const overdue = diffInDays(today, due);
         if (overdue <= 0) return;
         if (overdue >= 20) {
           const churnDate = addDays(due, 20);
           const k = `${churnDate.getFullYear()}-${String(churnDate.getMonth() + 1).padStart(2, '0')}`;
           if (state.filtroMes !== 'all' && k !== state.filtroMes) return;
-          ensure(k);
-          porMes[k].naoRenovou += 1;
+          ensure(k); porMes[k].naoRenovou += 1;
         } else {
           const k = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`;
           if (state.filtroMes !== 'all' && k !== state.filtroMes) return;
-          ensure(k);
-          porMes[k].vencidos += 1;
+          ensure(k); porMes[k].vencidos += 1;
         }
       });
-
       if (Object.keys(porMes).length === 0) {
         parent.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>Sem dados para o filtro selecionado</p></div>';
         return;
       }
-      if (!document.getElementById('graficoClientes')) {
-        parent.innerHTML = '<canvas id="graficoClientes"></canvas>';
-      }
+      if (!document.getElementById('graficoClientes')) parent.innerHTML = '<canvas id="graficoClientes"></canvas>';
       const canvas = document.getElementById('graficoClientes');
-
       const meses = Object.keys(porMes).sort();
       const labels = meses.map(m => {
         const [y, mo] = m.split('-');
         return new Date(y, mo - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
       });
-
       if (graficoClientes) graficoClientes.destroy();
       graficoClientes = new Chart(canvas, {
         type: 'line',
         data: {
           labels,
           datasets: [
-            { label: 'Testes', data: meses.map(m => porMes[m].testes),
-              borderColor: '#ffe45c', backgroundColor: 'rgba(255,228,92,.15)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'Novos Clientes', data: meses.map(m => porMes[m].novos),
-              borderColor: '#39ff14', backgroundColor: 'rgba(57,255,20,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'Renovações', data: meses.map(m => porMes[m].renovacoes),
-              borderColor: '#5cf0ff', backgroundColor: 'rgba(92,240,255,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'Não Renovaram (20+ dias)', data: meses.map(m => porMes[m].naoRenovou),
-              borderColor: '#ff9b5c', backgroundColor: 'rgba(255,155,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6, borderDash: [6,4] },
-            { label: 'Vencidos (1-19 dias)', data: meses.map(m => porMes[m].vencidos),
-              borderColor: '#ff5c5c', backgroundColor: 'rgba(255,92,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 }
+            { label: 'Testes', data: meses.map(m => porMes[m].testes), borderColor: '#ffe45c', backgroundColor: 'rgba(255,228,92,.15)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Novos Clientes', data: meses.map(m => porMes[m].novos), borderColor: '#39ff14', backgroundColor: 'rgba(57,255,20,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Renovações', data: meses.map(m => porMes[m].renovacoes), borderColor: '#5cf0ff', backgroundColor: 'rgba(92,240,255,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Não Renovaram (20+ dias)', data: meses.map(m => porMes[m].naoRenovou), borderColor: '#ff9b5c', backgroundColor: 'rgba(255,155,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6, borderDash: [6,4] },
+            { label: 'Vencidos (1-19 dias)', data: meses.map(m => porMes[m].vencidos), borderColor: '#ff5c5c', backgroundColor: 'rgba(255,92,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 }
           ]
         },
         options: {
@@ -3020,12 +2366,10 @@
         else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') renov += 1;
         else if (m.tipo === 'teste') testes_criados += (m.quantidade || 1);
       });
-
       const today = todayLocalDate();
       let nren = 0, vencidosAtuais = 0;
       clients.forEach(c => {
-        const due = parseDate(c.dataRenovacao);
-        if (!due) return;
+        const due = parseDate(c.dataRenovacao); if (!due) return;
         const overdue = diffInDays(today, due);
         if (overdue <= 0) return;
         if (overdue >= 20) {
@@ -3043,46 +2387,66 @@
           vencidosAtuais += 1;
         }
       });
-
-      const { custo, lucro, liquido } = computeTotaisFinanceiros();
+      const { custo, lucro, taxas, liquido } = computeTotaisFinanceiros();
       const rotuloMes = state.filtroMes === 'all' ? 'GERAL' : monthLabel(state.filtroMes).toUpperCase();
-
       let t = `📊 *RESUMO COMPLETO - GESTÃO IPTV (${rotuloMes})*\n\n`;
       t += `👥 *CLIENTES*\n`;
       t += `• Novos: ${novos}\n• Renovações: ${renov}\n• Não Renovaram (20+ dias): ${nren}\n• Vencidos (1-19 dias): ${vencidosAtuais}\n• Testes criados: ${testes_criados}\n• Total Ativos: ${clients.length}\n\n`;
       t += `💰 *FINANCEIRO*\n`;
-      t += `• Custo Total: R$ ${custo.toFixed(2)}\n• Lucro Total: R$ ${lucro.toFixed(2)}\n• Lucro Líquido: R$ ${liquido.toFixed(2)}\n\n`;
+      t += `• Lucro Total: R$ ${lucro.toFixed(2)}\n• Custo Total: R$ ${custo.toFixed(2)}\n• Taxas Bancárias: R$ ${taxas.toFixed(2)}\n• Lucro Líquido: R$ ${liquido.toFixed(2)}\n\n`;
 
-      const lcFiltrados = lucrosCustos.filter(lc => passaFiltroMes(lc.data));
+      // Detalhamento de taxas por plano
+      const porPlano = {};
+      movimentacoes.forEach(m => {
+        if (!passaFiltroMes(m.data)) return;
+        if (m.tipo !== 'use' || !m.taxa || m.taxa <= 0) return;
+        const nome = m.planoNome || 'Sem plano';
+        if (!porPlano[nome]) porPlano[nome] = { total: 0, qtd: 0 };
+        porPlano[nome].total += m.taxa;
+        porPlano[nome].qtd += 1;
+      });
+      const planosTaxa = Object.keys(porPlano);
+      if (planosTaxa.length > 0) {
+        t += `🏦 *TAXAS POR PLANO*\n`;
+        planosTaxa.sort((a, b) => porPlano[b].total - porPlano[a].total);
+        planosTaxa.forEach(n => {
+          const d = porPlano[n];
+          t += `• ${n}: R$ ${d.total.toFixed(2)} (${d.qtd} trans.)\n`;
+        });
+        t += '\n';
+      }
+
+      const lcFiltrados = lucrosCustos.filter(lc => ocorrenciasLucroCusto(lc) > 0);
       if (lcFiltrados.length > 0) {
         t += `📝 *LUCROS/CUSTOS PERSONALIZADOS*\n`;
         lcFiltrados.forEach(lc => {
           const sig = lc.valor >= 0 ? '➕' : '➖';
-          t += `${sig} ${lc.info}: R$ ${Math.abs(lc.valor).toFixed(2)}\n`;
+          const ocorr = ocorrenciasLucroCusto(lc);
+          const total = Math.abs(lc.valor) * ocorr;
+          const fixoTag = lc.fixo ? ` 🔁` : '';
+          const detalhe = (lc.fixo && ocorr > 1) ? ` (${ocorr}× R$ ${Math.abs(lc.valor).toFixed(2)})` : '';
+          t += `${sig} ${lc.info}${fixoTag}: R$ ${total.toFixed(2)}${detalhe}\n`;
         });
         t += '\n';
       }
       t += `📈 *RESUMO*\n`;
       const base = renov + nren + vencidosAtuais;
       t += `• Taxa Renovação: ${base > 0 ? ((renov / base) * 100).toFixed(1) : 0}%\n`;
-      t += `• Margem Lucro: ${lucro > 0 ? ((liquido / lucro) * 100).toFixed(1) : 0}%`;
+      t += `• Margem Lucro: ${lucro > 0 ? ((liquido / lucro) * 100).toFixed(1) : 0}%\n`;
+      t += `• Impacto Taxas: ${lucro > 0 ? ((taxas / lucro) * 100).toFixed(1) : 0}% do lucro`;
 
       const ta = document.getElementById('textoWhatsAppGestao');
       if (ta) ta.value = t;
     }
     function copiarTextoGestao() {
-      const ta = document.getElementById('textoWhatsAppGestao');
-      ta.select();
+      const ta = document.getElementById('textoWhatsAppGestao'); ta.select();
       try { document.execCommand('copy'); showToast('Resumo copiado.'); }
       catch (e) { showToast('Não foi possível copiar.', true); }
     }
     window.copiarTextoGestao = copiarTextoGestao;
 
-    /* =========================================================
-       INIT
-       ========================================================= */
-    loadClients();
-    carregarTestes();
+    /* ===== INIT ===== */
+    loadClients(); carregarTestes();
     const alreadyInitialized = localStorage.getItem(INIT_FLAG_KEY) === '1';
     if (!alreadyInitialized && clients.length === 0) {
       const d0 = toInputDate(todayLocalDate());
@@ -3096,23 +2460,13 @@
       saveClients();
     }
     localStorage.setItem(INIT_FLAG_KEY, '1');
-
     carregarDadosCalc();
-
-    renderAll();
-    renderTestes();
-    atualizarListaPacotes();
-    atualizarSelectPacotes();
-    atualizarSelectPacotesAddCredito();
-    atualizarListaPlanos();
-    atualizarSelectPlanos();
-    atualizarCreditos();
-    atualizarHistorico();
-    atualizarListaLucrosCustos();
-    atualizarListaAssinaturas();
-    atualizarListaCustos();
-    atualizarSelectMesGestao();
-    atualizarStatsFinanceiras();
+    renderAll(); renderTestes();
+    atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
+    atualizarListaPlanos(); atualizarSelectPlanos();
+    atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
+    atualizarListaAssinaturas(); atualizarListaCustos();
+    atualizarSelectMesGestao(); atualizarStatsFinanceiras();
   </script>
 </body>
 </html>
