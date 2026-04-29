@@ -475,6 +475,28 @@
             </div>
             <p class="card-hint" style="margin: 8px 0 0;">Os créditos e o custo são calculados automaticamente a partir do pacote selecionado.</p>
           </div>
+
+          <div class="form-group" style="margin-top: 22px; padding-top: 22px; border-top: 1px dashed var(--border-faint);">
+            <label class="form-label"><i class="fas fa-coins"></i> Crédito Personalizado (avulso)</label>
+            <p class="card-hint" style="margin: 0 0 10px;">Use valor <b style="color:var(--primary);">positivo</b> para adicionar créditos, <b style="color:#ff9b9b;">negativo</b> para descontar. Custo é opcional (em R$).</p>
+            <div class="input-group-2" style="grid-template-columns: 1fr 1fr 1fr auto;">
+              <input type="number" id="creditoAvulsoQtd" class="form-input" placeholder="Qtd (negativo desconta)" step="0.001" data-testid="credito-avulso-qtd">
+              <input type="number" id="creditoAvulsoCusto" class="form-input" placeholder="Custo R$ (opcional)" step="0.01" data-testid="credito-avulso-custo">
+              <input type="text" id="creditoAvulsoInfo" class="form-input" placeholder="Informação" data-testid="credito-avulso-info">
+              <button class="btn-primary" onclick="adicionarCreditoAvulso()" data-testid="btn-credito-avulso"><i class="fas fa-plus-minus"></i> Aplicar</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 22px; padding-top: 22px; border-top: 1px dashed var(--border-faint);">
+            <label class="form-label"><i class="fas fa-calendar-plus"></i> Dias Extras de Cliente</label>
+            <p class="card-hint" style="margin: 0 0 10px;">Cada dia extra consome <b style="color:var(--warning);">0,033 crédito</b> do seu saldo e cobra do cliente <b style="color:var(--primary);">(valor da assinatura / 30) por dia</b>. A data de renovação do cliente é estendida automaticamente.</p>
+            <div class="input-group-2" style="grid-template-columns: 2fr 1fr auto;">
+              <select id="diasExtrasCliente" class="form-select" data-testid="dias-extras-cliente"><option value="">Selecione o cliente</option></select>
+              <input type="number" id="diasExtrasQtd" class="form-input" placeholder="Dias extras" min="1" step="1" data-testid="dias-extras-qtd">
+              <button class="btn-primary" onclick="adicionarDiasExtras()" data-testid="btn-dias-extras"><i class="fas fa-bolt"></i> Registrar</button>
+            </div>
+            <div id="diasExtrasPreview" data-testid="dias-extras-preview" style="margin-top: 10px; font-size: 12.5px; color: var(--muted); font-family: var(--font-mono); padding: 10px 12px; background: #060606; border: 1px dashed var(--border-faint); border-radius: 10px; min-height: 18px;">Selecione um cliente e digite os dias para visualizar o cálculo.</div>
+          </div>
         </div>
       </div>
 
@@ -1229,7 +1251,7 @@
 
     window.whatsAppTeste = whatsAppTeste; window.ativarTeste = ativarTeste; window.excluirTeste = excluirTeste;
 
-    function renderAll() { saveClients(); renderDashboard(); renderClientes(); }
+    function renderAll() { saveClients(); renderDashboard(); renderClientes(); if (typeof popularSelectClientesDiasExtras === 'function') popularSelectClientesDiasExtras(); }
 
     function resetForm() { els.clientForm.reset(); els.clientId.value = ''; els.formTitle.textContent = 'Cadastrar Teste IPTV'; }
     function getFormData() {
@@ -1706,6 +1728,134 @@
     }
     window.adicionarCreditoPacote = adicionarCreditoPacote;
 
+    /* ---------- CRÉDITO AVULSO + DIAS EXTRAS ---------- */
+    const CREDITO_POR_DIA_EXTRA = 0.033;
+
+    function popularSelectClientesDiasExtras() {
+      const sel = document.getElementById('diasExtrasCliente');
+      if (!sel) return;
+      const cur = sel.value;
+      const ord = clients.slice().sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+      sel.innerHTML = '<option value="">Selecione o cliente</option>' +
+        ord.map(c => {
+          const v = c.valor || '0';
+          const plano = c.plano || '—';
+          return `<option value="${c.id}">${escapeHtml(c.nome || '—')} • ${escapeHtml(plano)} • R$ ${escapeHtml(v)}</option>`;
+        }).join('');
+      if (cur && clients.some(c => c.id === cur)) sel.value = cur;
+    }
+
+    function calcularDiasExtrasPreview() {
+      const sel = document.getElementById('diasExtrasCliente');
+      const qtdInput = document.getElementById('diasExtrasQtd');
+      const preview = document.getElementById('diasExtrasPreview');
+      if (!sel || !qtdInput || !preview) return;
+      const cli = clients.find(c => c.id === sel.value);
+      const dias = parseInt(qtdInput.value) || 0;
+      if (!cli || dias <= 0) {
+        preview.textContent = 'Selecione um cliente e digite os dias para visualizar o cálculo.';
+        return;
+      }
+      const valorAssin = parseValor(cli.valor);
+      const creditosUsar = dias * CREDITO_POR_DIA_EXTRA;
+      const valorPorDia = valorAssin / 30;
+      const valorCobrar = valorPorDia * dias;
+      const due = parseDate(cli.dataRenovacao);
+      const novaData = due ? toInputDate(addDays(due, dias)) : '—';
+      preview.innerHTML =
+        `<i class="fas fa-coins" style="color:var(--warning); margin-right:4px;"></i>Consumo: <b style="color:var(--warning);">${creditosUsar.toFixed(3)}</b> créditos &nbsp;•&nbsp; ` +
+        `<i class="fas fa-dollar-sign" style="color:var(--primary); margin-right:4px;"></i>Cobrança: <b style="color:var(--primary);">R$ ${valorCobrar.toFixed(2)}</b> ` +
+        `<span style="opacity:.7;">(${dias}× R$ ${valorPorDia.toFixed(2)}/dia)</span>` +
+        ` &nbsp;•&nbsp; <i class="fas fa-calendar-check" style="color:var(--info); margin-right:4px;"></i>Nova renovação: <b style="color:var(--info);">${formatDate(novaData)}</b>`;
+    }
+
+    function adicionarCreditoAvulso() {
+      const qtdEl = document.getElementById('creditoAvulsoQtd');
+      const custoEl = document.getElementById('creditoAvulsoCusto');
+      const infoEl = document.getElementById('creditoAvulsoInfo');
+      const qtd = parseFloat(qtdEl.value);
+      if (!Number.isFinite(qtd) || qtd === 0) { showToast('Informe uma quantidade (positiva ou negativa).', true); return; }
+      const custo = parseFloat(custoEl.value) || 0;
+      const info = (infoEl.value || '').trim();
+      if (qtd > 0) {
+        movimentacoes.push({
+          data: new Date().toISOString(),
+          tipo: 'add',
+          quantidade: qtd,
+          custo: custo,
+          info: info || 'Crédito personalizado',
+          avulso: true
+        });
+      } else {
+        movimentacoes.push({
+          data: new Date().toISOString(),
+          tipo: 'use',
+          tipoCliente: 'avulso',
+          valor: 0,
+          quantidade: Math.abs(qtd),
+          taxa: 0,
+          info: info || 'Desconto avulso',
+          clientNome: info || ''
+        });
+      }
+      salvarMovimentacoes();
+      qtdEl.value = ''; custoEl.value = ''; infoEl.value = '';
+      atualizarCreditos(); atualizarHistorico();
+      atualizarSelectMesGestao();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      showToast(qtd > 0 ? `+${qtd} créditos adicionados` : `-${Math.abs(qtd)} créditos descontados`);
+    }
+
+    function adicionarDiasExtras() {
+      const sel = document.getElementById('diasExtrasCliente');
+      const qtdInput = document.getElementById('diasExtrasQtd');
+      const cli = clients.find(c => c.id === sel.value);
+      const dias = parseInt(qtdInput.value) || 0;
+      if (!cli) { showToast('Selecione o cliente.', true); return; }
+      if (dias <= 0) { showToast('Informe a quantidade de dias (>=1).', true); return; }
+      const valorAssin = parseValor(cli.valor);
+      const creditosUsar = dias * CREDITO_POR_DIA_EXTRA;
+      const valorCobrar = (valorAssin / 30) * dias;
+      const dueDate = parseDate(cli.dataRenovacao) || todayLocalDate();
+      cli.dataRenovacao = toInputDate(addDays(dueDate, dias));
+      cli.updatedAt = new Date().toISOString();
+      saveClients();
+      const planoCad = encontrarPlanoPorNome(cli.plano);
+      const taxa = calcularTaxaPlano(planoCad, valorCobrar);
+      movimentacoes.push({
+        data: new Date().toISOString(),
+        tipo: 'use',
+        tipoCliente: 'dias_extras',
+        valor: valorCobrar,
+        quantidade: creditosUsar,
+        taxa: taxa,
+        planoNome: cli.plano || '',
+        clientId: cli.id,
+        clientNome: cli.nome,
+        diasExtras: dias
+      });
+      salvarMovimentacoes();
+      qtdInput.value = '';
+      calcularDiasExtrasPreview();
+      renderAll();
+      atualizarCreditos(); atualizarHistorico();
+      atualizarSelectMesGestao();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      showToast(`+${dias} dia${dias === 1 ? '' : 's'} para ${cli.nome} • -${creditosUsar.toFixed(3)} créd. • +R$ ${valorCobrar.toFixed(2)}`);
+    }
+
+    window.adicionarCreditoAvulso = adicionarCreditoAvulso;
+    window.adicionarDiasExtras = adicionarDiasExtras;
+
+    document.addEventListener('input', (e) => {
+      if (e.target && (e.target.id === 'diasExtrasQtd' || e.target.id === 'diasExtrasCliente')) {
+        calcularDiasExtrasPreview();
+      }
+    });
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.id === 'diasExtrasCliente') calcularDiasExtrasPreview();
+    });
+
     function atualizarSelectPacotesAddCredito() {
       const sel = document.getElementById('pacoteAddCredito'); if (!sel) return;
       sel.innerHTML = '<option value="">Selecione um pacote cadastrado</option>' +
@@ -1728,15 +1878,17 @@
 
     function renderMovimentacaoHtml(m, realIdx) {
       const data = new Date(m.data).toLocaleString('pt-BR');
-      const tipos = { novo: 'Cliente Novo', renovacao: 'Renovação', nao_renovou: 'Não Renovou' };
+      const tipos = { novo: 'Cliente Novo', renovacao: 'Renovação', nao_renovou: 'Não Renovou', avulso: 'Desconto avulso', dias_extras: 'Dias extras' };
       if (m.tipo === 'add') {
+        const labelInfo = m.info ? `${escapeHtml(m.info)}: ` : '';
+        const avulsoTag = m.avulso ? ' <span class="pill pill-ok" style="font-size:10.5px;">avulso</span>' : '';
         return `
           <div class="list-item">
             <div class="list-item-content">
               <div class="list-item-icon" style="color: var(--primary);"><i class="fas fa-plus-circle"></i></div>
               <div style="flex:1; min-width:0;">
-                <div class="list-item-text">Adicionado: ${m.quantidade} créditos</div>
-                <div class="list-item-sub">${data} • Custo: R$ ${m.custo.toFixed(2)}</div>
+                <div class="list-item-text">${labelInfo}${m.quantidade} créditos${avulsoTag}</div>
+                <div class="list-item-sub">${data} • Custo: R$ ${(m.custo || 0).toFixed(2)}</div>
               </div>
             </div>
             <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
@@ -1779,19 +1931,30 @@
             <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
           </div>`;
       } else {
-        const qtdInfo = (m.quantidade && m.quantidade > 1) ? ` • -${m.quantidade} créd.` : '';
+        const qtdDec = Number(m.quantidade) || 0;
+        const qtdInfo = qtdDec > 0
+          ? ` • -${qtdDec === Math.floor(qtdDec) ? qtdDec : qtdDec.toFixed(3)} créd.`
+          : '';
         const taxaInfo = (m.taxa && m.taxa > 0) ? ` • <span style="color:var(--warning);">Taxa R$ ${m.taxa.toFixed(2)}</span>` : '';
         const planoInfo = m.planoNome ? ` • ${escapeHtml(m.planoNome)}` : '';
+        const diasInfo = (m.tipoCliente === 'dias_extras' && m.diasExtras) ? ` • <span style="color:var(--info);">${m.diasExtras} dia${m.diasExtras === 1 ? '' : 's'}</span>` : '';
         const tipoLabel = tipos[m.tipoCliente] || m.tipoCliente;
         const cliente = m.clientNome ? escapeHtml(m.clientNome) : '';
-        const corTipo = m.tipoCliente === 'novo' ? 'var(--primary)' : (m.tipoCliente === 'renovacao' ? 'var(--info)' : '#ff9b9b');
+        const corTipo = m.tipoCliente === 'novo' ? 'var(--primary)'
+          : (m.tipoCliente === 'renovacao' ? 'var(--info)'
+          : (m.tipoCliente === 'dias_extras' ? 'var(--warning)'
+          : (m.tipoCliente === 'avulso' ? '#ff9b9b' : '#ff9b9b')));
+        const icone = m.tipoCliente === 'novo' ? 'user-plus'
+          : (m.tipoCliente === 'renovacao' ? 'rotate-right'
+          : (m.tipoCliente === 'dias_extras' ? 'calendar-plus'
+          : (m.tipoCliente === 'avulso' ? 'minus-circle' : 'minus-circle')));
         return `
           <div class="list-item">
             <div class="list-item-content">
-              <div class="list-item-icon" style="color: ${corTipo};"><i class="fas fa-${m.tipoCliente === 'novo' ? 'user-plus' : (m.tipoCliente === 'renovacao' ? 'rotate-right' : 'minus-circle')}"></i></div>
+              <div class="list-item-icon" style="color: ${corTipo};"><i class="fas fa-${icone}"></i></div>
               <div style="flex:1; min-width:0;">
                 <div class="list-item-text">${cliente ? `<i class="fas fa-user" style="font-size:11px; color:${corTipo}; margin-right:6px;"></i>${cliente} <span style="opacity:.6; font-weight:500;">• ${tipoLabel}</span>` : tipoLabel}</div>
-                <div class="list-item-sub">${data} • R$ ${(m.valor || 0).toFixed(2)}${qtdInfo}${planoInfo}${taxaInfo}</div>
+                <div class="list-item-sub">${data} • R$ ${(m.valor || 0).toFixed(2)}${qtdInfo}${diasInfo}${planoInfo}${taxaInfo}</div>
               </div>
             </div>
             <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
@@ -2467,6 +2630,7 @@
     atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
     atualizarListaAssinaturas(); atualizarListaCustos();
     atualizarSelectMesGestao(); atualizarStatsFinanceiras();
+    popularSelectClientesDiasExtras();
   </script>
 </body>
 </html>
