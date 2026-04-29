@@ -361,11 +361,21 @@
             <h2>Clientes cadastrados</h2>
             <span class="count-badge" id="countClientes" data-testid="count-clientes">0</span>
             <input id="searchClientesInput" class="search" placeholder="Buscar por nome, telefone, usuário, app ou plano" data-testid="search-clientes-input" />
+            <select id="filtroClientesStatus" class="form-select" style="max-width: 220px; min-width: 180px; flex: 0 0 auto;" data-testid="filtro-clientes-status">
+              <option value="all">Todos os status</option>
+              <option value="vencidos">Vencidos</option>
+              <option value="hoje">Vence hoje</option>
+              <option value="amanha">Vence amanhã</option>
+              <option value="semana">Vence em até 7 dias</option>
+              <option value="mais-7">Mais de 7 dias</option>
+              <option value="sem-data">Sem data</option>
+            </select>
             <button class="btn-primary" id="btnAbrirNovoCliente" onclick="abrirModalNovoCliente()" data-testid="btn-abrir-novo-cliente" style="margin-left:auto;">
               <i class="fas fa-user-plus"></i> Cadastrar Cliente
             </button>
           </div>
         </div>
+        <p class="card-hint" style="margin: -4px 0 12px;">Ordenados automaticamente por <b style="color:var(--primary);">vencimento mais próximo</b> primeiro (vencidos no topo, sem data ao final).</p>
         <div id="clientesList" data-testid="clientes-list"></div>
         <div class="pagination-bar" id="paginationClientes"></div>
       </div>
@@ -1103,14 +1113,42 @@
 
     function renderClientes() {
       const term = (els.searchClientesInput.value || '').trim().toLowerCase();
+      const filtroEl = document.getElementById('filtroClientesStatus');
+      const filtro = filtroEl ? (filtroEl.value || 'all') : 'all';
+      const today = todayLocalDate();
       const filtered = clients.filter(c => {
-        if (!term) return true;
-        return [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano].some(v => String(v || '').toLowerCase().includes(term));
+        if (term) {
+          const matches = [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano]
+            .some(v => String(v || '').toLowerCase().includes(term));
+          if (!matches) return false;
+        }
+        if (filtro === 'all') return true;
+        const due = parseDate(c.dataRenovacao);
+        if (!due) return filtro === 'sem-data';
+        const d = diffInDays(due, today);
+        if (filtro === 'vencidos') return d < 0;
+        if (filtro === 'hoje') return d === 0;
+        if (filtro === 'amanha') return d === 1;
+        if (filtro === 'semana') return d >= 2 && d <= 7;
+        if (filtro === 'mais-7') return d > 7;
+        if (filtro === 'sem-data') return false;
+        return true;
+      });
+      // Ordena: vencimento mais próximo primeiro (vencidos no topo, sem data por último)
+      filtered.sort((a, b) => {
+        const da = parseDate(a.dataRenovacao);
+        const db = parseDate(b.dataRenovacao);
+        if (!da && !db) return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+        if (!da) return 1;
+        if (!db) return -1;
+        if (da - db !== 0) return da - db;
+        return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
       });
       els.countClientes.textContent = filtered.length;
       const pag = paginate(filtered, state.clientesPage); state.clientesPage = pag.safePage;
       if (!pag.items.length) {
-        els.clientesList.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Use o botão "Cadastrar Cliente" acima.' : 'Nenhum resultado para a busca.'}</p></div>`;
+        const semFiltro = !term && filtro === 'all';
+        els.clientesList.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>${clients.length === 0 ? 'Nenhum cliente cadastrado ainda. Use o botão "Cadastrar Cliente" acima.' : (semFiltro ? 'Nenhum cliente cadastrado.' : 'Nenhum resultado para os filtros aplicados.')}</p></div>`;
       } else {
         els.clientesList.innerHTML = pag.items.map(c => {
           const st = getStatus(c);
@@ -1494,6 +1532,10 @@
     });
     els.clearFormBtn.addEventListener('click', resetForm);
     els.searchClientesInput.addEventListener('input', () => { state.clientesPage = 1; renderClientes(); });
+    (function wireFiltroClientes() {
+      const f = document.getElementById('filtroClientesStatus');
+      if (f) f.addEventListener('change', () => { state.clientesPage = 1; renderClientes(); });
+    })();
     els.tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
 
     els.exportBtn.addEventListener('click', () => {
