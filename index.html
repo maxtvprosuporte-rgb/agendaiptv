@@ -505,17 +505,6 @@
               <button class="btn-primary" onclick="adicionarCreditoAvulso()" data-testid="btn-credito-avulso"><i class="fas fa-plus-minus"></i> Aplicar</button>
             </div>
           </div>
-
-          <div class="form-group" style="margin-top: 22px; padding-top: 22px; border-top: 1px dashed var(--border-faint);">
-            <label class="form-label"><i class="fas fa-calendar-plus"></i> Dias Extras de Cliente</label>
-            <p class="card-hint" style="margin: 0 0 10px;">Cada dia extra consome <b style="color:var(--warning);">0,033 crédito</b> do seu saldo e cobra do cliente <b style="color:var(--primary);">(valor da assinatura / 30) por dia</b>. A data de renovação do cliente é estendida automaticamente.</p>
-            <div class="input-group-2" style="grid-template-columns: 2fr 1fr auto;">
-              <select id="diasExtrasCliente" class="form-select" data-testid="dias-extras-cliente"><option value="">Selecione o cliente</option></select>
-              <input type="number" id="diasExtrasQtd" class="form-input" placeholder="Dias extras" min="1" step="1" data-testid="dias-extras-qtd">
-              <button class="btn-primary" onclick="adicionarDiasExtras()" data-testid="btn-dias-extras"><i class="fas fa-bolt"></i> Registrar</button>
-            </div>
-            <div id="diasExtrasPreview" data-testid="dias-extras-preview" style="margin-top: 10px; font-size: 12.5px; color: var(--muted); font-family: var(--font-mono); padding: 10px 12px; background: #060606; border: 1px dashed var(--border-faint); border-radius: 10px; min-height: 18px;">Selecione um cliente e digite os dias para visualizar o cálculo.</div>
-          </div>
         </div>
       </div>
 
@@ -550,6 +539,22 @@
                 <input type="radio" name="lc_fixo" value="sim">
                 <i class="fas fa-sync-alt"></i> Sim, fixo do mês
               </label>
+            </div>
+          </div>
+
+          <!-- NOVO: Dias Extras (por plano) -->
+          <div class="form-group" style="margin-top: 22px; padding-top: 22px; border-top: 1px dashed var(--border-faint);">
+            <label class="form-label"><i class="fas fa-calendar-plus"></i> Dias Extras (por plano)</label>
+            <p class="card-hint" style="margin: 0 0 12px;">Selecione o <b>painel</b>, depois o <b>plano</b> base e a <b>quantidade de dias extras</b>. O sistema calcula o valor a cobrar do cliente <b style="color:var(--primary);">(valor do plano / dias do plano) por dia</b> e o consumo de créditos <b style="color:var(--warning);">(créditos do plano / 30) por dia</b>. Depois selecione o cliente e gere a mensagem.</p>
+            <div class="input-group-2" style="grid-template-columns: 1fr 2fr 1fr; gap: 10px;">
+              <select id="dxPainel" class="form-select" data-testid="dx-painel"></select>
+              <select id="dxPlano" class="form-select" data-testid="dx-plano"><option value="">Selecione um plano cadastrado</option></select>
+              <input type="number" id="dxDias" class="form-input" placeholder="Dias extras" min="1" step="1" data-testid="dx-dias">
+            </div>
+            <div id="dxPreview" data-testid="dx-preview" style="margin-top: 12px; font-size: 13px; color: var(--muted); font-family: var(--font-mono); padding: 12px 14px; background: #060606; border: 1px dashed var(--border-faint); border-radius: 12px; min-height: 18px; line-height: 1.7;">Selecione painel, plano e dias para visualizar o cálculo.</div>
+            <div class="input-group-2" style="margin-top: 12px; grid-template-columns: 2fr auto; gap: 10px;">
+              <select id="dxCliente" class="form-select" data-testid="dx-cliente"><option value="">Selecione o cliente</option></select>
+              <button class="btn-primary" onclick="aplicarDiasExtras()" data-testid="btn-dx-aplicar"><i class="fas fa-bolt"></i> Aplicar e gerar mensagem</button>
             </div>
           </div>
         </div>
@@ -815,6 +820,23 @@
         <button type="button" class="btn-success" onclick="copiarMensagemRenovacao()" data-testid="btn-copiar-msg-renovacao"><i class="fas fa-copy"></i> Copiar mensagem</button>
         <button type="button" class="btn-whatsapp" onclick="enviarMensagemRenovacaoWhatsApp()" data-testid="btn-whats-renovacao"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
         <button type="button" class="btn-secondary" onclick="fecharModalMensagemRenovacao()" style="margin-left:auto;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mensagem de Dias Extras -->
+  <div id="modalMensagemDiasExtras" class="modal">
+    <div class="modal-content sm">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-calendar-plus" style="color: var(--info); margin-right: 6px;"></i> Mensagem de Dias Extras</h3>
+        <button class="modal-close" onclick="fecharModalMensagemDiasExtras()" data-testid="close-msg-dx"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="card-hint" style="margin: 0 0 6px;">Dias extras aplicados! Use os botões abaixo para enviar a mensagem ao cliente.</p>
+      <div class="renew-msg-box" id="dxMsgBox" data-testid="dx-msg-box"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="button" class="btn-success" onclick="copiarMensagemDiasExtras()" data-testid="btn-copiar-msg-dx"><i class="fas fa-copy"></i> Copiar mensagem</button>
+        <button type="button" class="btn-whatsapp" onclick="enviarMensagemDiasExtrasWhatsApp()" data-testid="btn-whats-dx"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
+        <button type="button" class="btn-secondary" onclick="fecharModalMensagemDiasExtras()" style="margin-left:auto;">Fechar</button>
       </div>
     </div>
   </div>
@@ -2032,6 +2054,8 @@
         el.innerHTML = '<option value="">Selecione um plano</option>' + opcoes;
         if (currentVal && planos.some(p => String(p.id) === String(currentVal))) el.value = currentVal;
       });
+      // Atualiza também o select de dias extras (filtrado por painel)
+      if (typeof atualizarSelectDxPlanos === 'function') atualizarSelectDxPlanos();
     }
     function aplicarPlanoSelecionado(selectEl, valorElId, linkElId, dataInicioElId, dataRenovacaoElId, creditosElId) {
       const p = planoPorIdSelect(selectEl); if (!p) return;
@@ -2075,46 +2099,191 @@
     }
     window.adicionarCreditoPacote = adicionarCreditoPacote;
 
-    /* ---------- CRÉDITO AVULSO + DIAS EXTRAS ---------- */
-    const CREDITO_POR_DIA_EXTRA = 0.033;
-
+    /* ---------- DIAS EXTRAS (POR PLANO) — novo fluxo ---------- */
     function popularSelectClientesDiasExtras() {
-      const sel = document.getElementById('diasExtrasCliente');
+      const sel = document.getElementById('dxCliente');
       if (!sel) return;
       const cur = sel.value;
       const ord = clients.slice().sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
       sel.innerHTML = '<option value="">Selecione o cliente</option>' +
         ord.map(c => {
-          const v = c.valor || '0';
-          const plano = c.plano || '—';
-          return `<option value="${c.id}">${escapeHtml(c.nome || '—')} • ${escapeHtml(plano)} • R$ ${escapeHtml(v)}</option>`;
+          const venc = c.dataRenovacao ? formatDate(c.dataRenovacao) : 'sem data';
+          return `<option value="${c.id}">${escapeHtml(c.nome || '—')} • ${escapeHtml(c.usuario || '—')} • Venc.: ${venc}</option>`;
         }).join('');
       if (cur && clients.some(c => c.id === cur)) sel.value = cur;
     }
 
+    function atualizarSelectDxPaineis() {
+      const sel = document.getElementById('dxPainel');
+      if (!sel) return;
+      const cur = sel.value;
+      sel.innerHTML = paineis.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
+      if (cur && paineis.some(p => p.id === cur)) sel.value = cur;
+      atualizarSelectDxPlanos();
+    }
+
+    function atualizarSelectDxPlanos() {
+      const selPlano = document.getElementById('dxPlano');
+      const selPainel = document.getElementById('dxPainel');
+      if (!selPlano || !selPainel) return;
+      const painelId = selPainel.value || (paineis[0] && paineis[0].id);
+      const cur = selPlano.value;
+      const planosFiltrados = planos.filter(p => (p.painelId || paineis[0].id) === painelId);
+      selPlano.innerHTML = '<option value="">Selecione um plano cadastrado</option>' +
+        planosFiltrados.map(p => {
+          const cred = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
+          return `<option value="${p.id}">${escapeHtml(p.nome)} • R$ ${Number(p.valor).toFixed(2)} • ${p.dias}d • ${cred} créd.</option>`;
+        }).join('');
+      if (cur && planosFiltrados.some(p => String(p.id) === String(cur))) selPlano.value = cur;
+      calcularDiasExtrasPreview();
+    }
+
     function calcularDiasExtrasPreview() {
-      const sel = document.getElementById('diasExtrasCliente');
-      const qtdInput = document.getElementById('diasExtrasQtd');
-      const preview = document.getElementById('diasExtrasPreview');
-      if (!sel || !qtdInput || !preview) return;
-      const cli = clients.find(c => c.id === sel.value);
-      const dias = parseInt(qtdInput.value) || 0;
-      if (!cli || dias <= 0) {
-        preview.textContent = 'Selecione um cliente e digite os dias para visualizar o cálculo.';
+      const selPlano = document.getElementById('dxPlano');
+      const diasInput = document.getElementById('dxDias');
+      const selCliente = document.getElementById('dxCliente');
+      const preview = document.getElementById('dxPreview');
+      if (!preview) return;
+      const planoId = selPlano ? parseInt(selPlano.value) : 0;
+      const plano = planos.find(p => p.id === planoId);
+      const dias = parseInt(diasInput && diasInput.value) || 0;
+      if (!plano || dias <= 0) {
+        preview.innerHTML = 'Selecione painel, plano e dias para visualizar o cálculo.';
         return;
       }
-      const valorAssin = parseValor(cli.valor);
-      const creditosUsar = dias * CREDITO_POR_DIA_EXTRA;
-      const valorPorDia = valorAssin / 30;
+      const planoValor = parseFloat(plano.valor) || 0;
+      const planoDias = parseInt(plano.dias) || 30;
+      const planoCreditos = Number.isFinite(parseInt(plano.creditos)) ? parseInt(plano.creditos) : 1;
+      const valorPorDia = planoValor / planoDias;
       const valorCobrar = valorPorDia * dias;
-      const due = parseDate(cli.dataRenovacao);
-      const novaData = due ? toInputDate(addDays(due, dias)) : '—';
+      const credPorDia = planoCreditos / 30;
+      const creditosUsar = credPorDia * dias;
+      // Nova data: baseada no cliente (se selecionado), somando os dias extras
+      const cli = selCliente ? clients.find(c => c.id === selCliente.value) : null;
+      let novaDataHtml = '—';
+      if (cli) {
+        const due = parseDate(cli.dataRenovacao) || todayLocalDate();
+        const nd = addDays(due, dias);
+        novaDataHtml = formatDate(toInputDate(nd));
+      }
+      const painelNome = getPainelNome(plano.painelId || paineis[0].id);
       preview.innerHTML =
-        `<i class="fas fa-coins" style="color:var(--warning); margin-right:4px;"></i>Consumo: <b style="color:var(--warning);">${creditosUsar.toFixed(3)}</b> créditos &nbsp;•&nbsp; ` +
-        `<i class="fas fa-dollar-sign" style="color:var(--primary); margin-right:4px;"></i>Cobrança: <b style="color:var(--primary);">R$ ${valorCobrar.toFixed(2)}</b> ` +
-        `<span style="opacity:.7;">(${dias}× R$ ${valorPorDia.toFixed(2)}/dia)</span>` +
-        ` &nbsp;•&nbsp; <i class="fas fa-calendar-check" style="color:var(--info); margin-right:4px;"></i>Nova renovação: <b style="color:var(--info);">${formatDate(novaData)}</b>`;
+        `<div><i class="fas fa-layer-group" style="color:var(--primary); margin-right:4px;"></i><b>Painel:</b> ${escapeHtml(painelNome)} &nbsp;•&nbsp; <i class="fas fa-list-ul" style="color:var(--primary); margin-right:4px;"></i><b>Plano:</b> ${escapeHtml(plano.nome)} <span style="opacity:.7;">(R$ ${planoValor.toFixed(2)} / ${planoDias}d / ${planoCreditos} créd.)</span></div>` +
+        `<div><i class="fas fa-dollar-sign" style="color:var(--primary); margin-right:4px;"></i><b>Cobrança:</b> <b style="color:var(--primary);">R$ ${valorCobrar.toFixed(2)}</b> <span style="opacity:.7;">(${dias}× R$ ${valorPorDia.toFixed(2)}/dia)</span></div>` +
+        `<div><i class="fas fa-coins" style="color:var(--warning); margin-right:4px;"></i><b>Consumo:</b> <b style="color:var(--warning);">${creditosUsar.toFixed(3)}</b> créditos <span style="opacity:.7;">(${dias}× ${credPorDia.toFixed(4)} créd./dia)</span></div>` +
+        `<div><i class="fas fa-calendar-check" style="color:var(--info); margin-right:4px;"></i><b>Nova renovação:</b> <b style="color:var(--info);">${novaDataHtml}</b>${!cli ? ' <span style="opacity:.7;">(selecione o cliente)</span>' : ''}</div>`;
     }
+
+    let dxClienteAtual = null;
+    let dxMensagemAtual = '';
+
+    function buildDxMessage(client, dias, valorCobrar, novaDataStr) {
+      return [
+        `📅 *Ajuste no seu vencimento*`, ``,
+        `Olá! Adicionamos *${dias} dia${dias === 1 ? '' : 's'}* ao seu plano.`, ``,
+        `👤 *Usuário*: ${client.usuario || ''}`,
+        `🔑 *Senha*: ${client.senha || ''}`,
+        `💰 *Valor adicional a pagar*: R$ ${valorCobrar.toFixed(2).replace('.', ',')}`,
+        `🗓️ *Nova data de vencimento*: ${formatDate(novaDataStr)}`, ``,
+        `🙏🏻 *Obrigado pela preferência!*`
+      ].join('\n');
+    }
+
+    function aplicarDiasExtras() {
+      const selPainel = document.getElementById('dxPainel');
+      const selPlano = document.getElementById('dxPlano');
+      const diasInput = document.getElementById('dxDias');
+      const selCliente = document.getElementById('dxCliente');
+
+      const painelId = selPainel ? selPainel.value : '';
+      const planoId = selPlano ? parseInt(selPlano.value) : 0;
+      const plano = planos.find(p => p.id === planoId);
+      const dias = parseInt(diasInput && diasInput.value) || 0;
+      const cli = selCliente ? clients.find(c => c.id === selCliente.value) : null;
+
+      if (!painelId) { showToast('Selecione o painel.', true); return; }
+      if (!plano) { showToast('Selecione um plano cadastrado.', true); return; }
+      if (dias <= 0) { showToast('Informe a quantidade de dias (>=1).', true); return; }
+      if (!cli) { showToast('Selecione o cliente.', true); return; }
+
+      const planoValor = parseFloat(plano.valor) || 0;
+      const planoDias = parseInt(plano.dias) || 30;
+      const planoCreditos = Number.isFinite(parseInt(plano.creditos)) ? parseInt(plano.creditos) : 1;
+      const valorCobrar = (planoValor / planoDias) * dias;
+      const creditosUsar = (planoCreditos / 30) * dias;
+      const dueDate = parseDate(cli.dataRenovacao) || todayLocalDate();
+      const novaData = addDays(dueDate, dias);
+      const novaDataStr = toInputDate(novaData);
+
+      cli.dataRenovacao = novaDataStr;
+      cli.updatedAt = new Date().toISOString();
+      saveClients();
+
+      const taxa = calcularTaxaPlano(plano, valorCobrar);
+      movimentacoes.push({
+        data: new Date().toISOString(),
+        tipo: 'use',
+        tipoCliente: 'dias_extras',
+        valor: valorCobrar,
+        quantidade: creditosUsar,
+        taxa: taxa,
+        planoNome: plano.nome || '',
+        clientId: cli.id,
+        clientNome: cli.nome,
+        diasExtras: dias,
+        painelId: plano.painelId || painelId || paineis[0].id
+      });
+      salvarMovimentacoes();
+      diasInput.value = '';
+      calcularDiasExtrasPreview();
+      renderAll();
+      atualizarCreditos(); atualizarHistorico();
+      atualizarSelectMesGestao();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      showToast(`+${dias} dia${dias === 1 ? '' : 's'} para ${cli.nome} • -${creditosUsar.toFixed(3)} créd. (${getPainelNome(plano.painelId || painelId)}) • +R$ ${valorCobrar.toFixed(2)}`);
+
+      // Abre modal de mensagem
+      dxClienteAtual = cli;
+      dxMensagemAtual = buildDxMessage(cli, dias, valorCobrar, novaDataStr);
+      const box = document.getElementById('dxMsgBox');
+      if (box) box.textContent = dxMensagemAtual;
+      document.getElementById('modalMensagemDiasExtras').classList.add('active');
+    }
+
+    function fecharModalMensagemDiasExtras() {
+      document.getElementById('modalMensagemDiasExtras').classList.remove('active');
+      dxClienteAtual = null;
+      dxMensagemAtual = '';
+    }
+    function copiarMensagemDiasExtras() {
+      if (!dxMensagemAtual) return;
+      const name = (dxClienteAtual && dxClienteAtual.nome) || '';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(dxMensagemAtual).then(() => showToast(`Mensagem copiada para ${name}`)).catch(() => fallbackCopy(dxMensagemAtual, name));
+      } else fallbackCopy(dxMensagemAtual, name);
+    }
+    function enviarMensagemDiasExtrasWhatsApp() {
+      if (!dxClienteAtual || !dxMensagemAtual) return;
+      const phone = String(dxClienteAtual.telefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(dxMensagemAtual);
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    window.adicionarCreditoAvulso = adicionarCreditoAvulso;
+    window.aplicarDiasExtras = aplicarDiasExtras;
+    window.fecharModalMensagemDiasExtras = fecharModalMensagemDiasExtras;
+    window.copiarMensagemDiasExtras = copiarMensagemDiasExtras;
+    window.enviarMensagemDiasExtrasWhatsApp = enviarMensagemDiasExtrasWhatsApp;
+
+    document.addEventListener('input', (e) => {
+      if (e.target && (e.target.id === 'dxDias')) calcularDiasExtrasPreview();
+    });
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.id === 'dxPainel') atualizarSelectDxPlanos();
+      else if (e.target && (e.target.id === 'dxPlano' || e.target.id === 'dxCliente')) calcularDiasExtrasPreview();
+    });
 
     function adicionarCreditoAvulso() {
       const qtdEl = document.getElementById('creditoAvulsoQtd');
@@ -2156,58 +2325,6 @@
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       showToast(qtd > 0 ? `+${qtd} créditos em ${getPainelNome(painelId)}` : `-${Math.abs(qtd)} créditos em ${getPainelNome(painelId)}`);
     }
-
-    function adicionarDiasExtras() {
-      const sel = document.getElementById('diasExtrasCliente');
-      const qtdInput = document.getElementById('diasExtrasQtd');
-      const cli = clients.find(c => c.id === sel.value);
-      const dias = parseInt(qtdInput.value) || 0;
-      if (!cli) { showToast('Selecione o cliente.', true); return; }
-      if (dias <= 0) { showToast('Informe a quantidade de dias (>=1).', true); return; }
-      const valorAssin = parseValor(cli.valor);
-      const creditosUsar = dias * CREDITO_POR_DIA_EXTRA;
-      const valorCobrar = (valorAssin / 30) * dias;
-      const dueDate = parseDate(cli.dataRenovacao) || todayLocalDate();
-      cli.dataRenovacao = toInputDate(addDays(dueDate, dias));
-      cli.updatedAt = new Date().toISOString();
-      saveClients();
-      const planoCad = encontrarPlanoPorNome(cli.plano);
-      const taxa = calcularTaxaPlano(planoCad, valorCobrar);
-      const painelId = (planoCad && planoCad.painelId) ? planoCad.painelId : paineis[0].id;
-      movimentacoes.push({
-        data: new Date().toISOString(),
-        tipo: 'use',
-        tipoCliente: 'dias_extras',
-        valor: valorCobrar,
-        quantidade: creditosUsar,
-        taxa: taxa,
-        planoNome: cli.plano || '',
-        clientId: cli.id,
-        clientNome: cli.nome,
-        diasExtras: dias,
-        painelId
-      });
-      salvarMovimentacoes();
-      qtdInput.value = '';
-      calcularDiasExtrasPreview();
-      renderAll();
-      atualizarCreditos(); atualizarHistorico();
-      atualizarSelectMesGestao();
-      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
-      showToast(`+${dias} dia${dias === 1 ? '' : 's'} para ${cli.nome} • -${creditosUsar.toFixed(3)} créd. (${getPainelNome(painelId)}) • +R$ ${valorCobrar.toFixed(2)}`);
-    }
-
-    window.adicionarCreditoAvulso = adicionarCreditoAvulso;
-    window.adicionarDiasExtras = adicionarDiasExtras;
-
-    document.addEventListener('input', (e) => {
-      if (e.target && (e.target.id === 'diasExtrasQtd' || e.target.id === 'diasExtrasCliente')) {
-        calcularDiasExtrasPreview();
-      }
-    });
-    document.addEventListener('change', (e) => {
-      if (e.target && e.target.id === 'diasExtrasCliente') calcularDiasExtrasPreview();
-    });
 
     function atualizarSelectPacotesAddCredito() {
       const sel = document.getElementById('pacoteAddCredito'); if (!sel) return;
@@ -2269,6 +2386,7 @@
               target.nome = novo;
               salvarPaineis();
               atualizarSelectsPaineis();
+              if (typeof atualizarSelectDxPaineis === 'function') atualizarSelectDxPaineis();
               atualizarListaPacotes();
               atualizarListaPlanos();
               renderDashboard(); renderClientes();
@@ -3057,6 +3175,7 @@
     atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
     atualizarListaAssinaturas(); atualizarListaCustos();
     atualizarSelectMesGestao(); atualizarStatsFinanceiras();
+    atualizarSelectDxPaineis();
     popularSelectClientesDiasExtras();
   </script>
 </body>
