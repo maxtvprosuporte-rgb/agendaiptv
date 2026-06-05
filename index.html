@@ -203,21 +203,34 @@
     .credit-stat-label { margin-top: 6px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
     /* Painéis (2 painéis lado a lado) */
     .paineis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
-    .painel-box { background: linear-gradient(180deg, #0c0c0c, #0a0a0a); border: 1px solid var(--border-strong); border-radius: 16px; padding: 16px; position: relative; overflow: hidden; }
-    .painel-box::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); box-shadow: 0 0 14px rgba(57,255,20,.45); }
-    .painel-box.painel-2::before { background: var(--info); box-shadow: 0 0 14px rgba(92,240,255,.45); }
+    .painel-box { --painel-color: var(--primary); background: linear-gradient(180deg, #0c0c0c, #0a0a0a); border: 1px solid var(--border-strong); border-radius: 16px; padding: 16px; position: relative; overflow: hidden; }
+    .painel-box::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--painel-color); box-shadow: 0 0 14px var(--painel-color); opacity: .85; }
+    .painel-box.painel-2 { --painel-color: var(--info); }
     .painel-box-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .painel-box-tag { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); padding: 3px 8px; border: 1px solid var(--border-strong); border-radius: 999px; background: rgba(57,255,20,.06); }
-    .painel-box.painel-2 .painel-box-tag { color: var(--info); border-color: rgba(92,240,255,.32); background: rgba(92,240,255,.06); }
+    .painel-box-tag { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--painel-color); padding: 3px 8px; border: 1px solid var(--border-strong); border-radius: 999px; background: color-mix(in srgb, var(--painel-color) 8%, transparent); }
     .painel-name-input { flex: 1; background: transparent; border: 1px dashed var(--border-faint); border-radius: 10px; color: var(--text); font-family: var(--font-display); font-weight: 700; font-size: 18px; padding: 8px 12px; outline: none; transition: border-color .2s, background .2s; min-width: 0; }
-    .painel-name-input:hover { border-color: var(--border-strong); background: rgba(57,255,20,.04); }
-    .painel-name-input:focus { border-style: solid; border-color: var(--primary); background: rgba(57,255,20,.06); }
+    .painel-name-input:hover { border-color: var(--border-strong); background: color-mix(in srgb, var(--painel-color) 4%, transparent); }
+    .painel-name-input:focus { border-style: solid; border-color: var(--painel-color); background: color-mix(in srgb, var(--painel-color) 6%, transparent); }
     .painel-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .painel-stat { background: #060606; border: 1px solid var(--border-faint); border-radius: 12px; padding: 12px 10px; text-align: center; }
-    .painel-stat-value { font-family: var(--font-mono); font-size: 22px; font-weight: 700; line-height: 1.1; color: var(--primary); }
+    .painel-stat-value { font-family: var(--font-mono); font-size: 22px; font-weight: 700; line-height: 1.1; color: var(--painel-color); }
     .painel-stat-label { margin-top: 4px; font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
-    .painel-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--primary); background: rgba(57,255,20,.06); }
-    .painel-badge.painel-2 { color: var(--info); border-color: rgba(92,240,255,.32); background: rgba(92,240,255,.06); }
+    .painel-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--painel-color, var(--primary)); background: color-mix(in srgb, var(--painel-color, var(--primary)) 8%, transparent); }
+    .painel-badge.painel-2 { --painel-color: var(--info); }
+    /* Logo + color picker */
+    .painel-brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .painel-logo { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border-strong); background: #060606; flex-shrink: 0; }
+    .painel-logo-empty { width: 48px; height: 48px; border-radius: 12px; border: 1px dashed var(--border-faint); background: #060606; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 18px; flex-shrink: 0; }
+    .painel-brand-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .painel-brand-btn { font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-strong); background: #0a0a0a; color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: border-color .15s, background .15s; }
+    .painel-brand-btn:hover { border-color: var(--painel-color); background: color-mix(in srgb, var(--painel-color) 6%, #0a0a0a); }
+    .painel-brand-btn.danger:hover { border-color: #ff6b6b; background: rgba(255,107,107,.06); color: #ff9b9b; }
+    .painel-color-wrap { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px 4px 4px; border: 1px solid var(--border-strong); border-radius: 8px; background: #0a0a0a; }
+    .painel-color-swatch { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border-faint); padding: 0; cursor: pointer; background: var(--painel-color); }
+    .painel-color-swatch::-webkit-color-swatch-wrapper { padding: 0; }
+    .painel-color-swatch::-webkit-color-swatch { border: none; border-radius: 5px; }
+    .painel-color-label { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+    .painel-file-hidden { display: none; }
     /* Modal de Renovação */
     .renew-confirm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 8px 0 14px; }
     .renew-confirm-grid .full { grid-column: span 2; }
@@ -277,12 +290,88 @@
     @media (max-width: 720px) { .modal-content .form-grid { grid-template-columns: 1fr !important; } .modal-content .form-grid .field[style*="span 2"], .modal-content .form-grid .field[style*="span 3"] { grid-column: auto !important; } .taxa-row { grid-template-columns: 1fr; } }
     @media (max-width: 820px) { .container { width: calc(100% - 16px); margin: 16px auto 40px; } .topbar { align-items: stretch; } .actions { width: 100%; } .actions button, .actions .btn { flex: 1 1 calc(50% - 5px); } .tab { padding: 10px 14px; font-size: 13px; } .form-grid { grid-template-columns: 1fr; } .form-grid .field[style*="span 2"], .form-grid .field[style*="span 3"] { grid-column: auto !important; } .input-group-2 { display: flex !important; flex-direction: column; gap: 10px; grid-template-columns: 1fr !important; } .input-group-2 > * { width: 100%; } .list-box, .form-card, .table-card, .card { padding: 16px; } .radio-group { grid-template-columns: 1fr; } .chart-container { height: 320px; padding: 10px; } .list-item { flex-wrap: wrap; } .list-item-content { min-width: 0; flex: 1 1 100%; } .list-item-text, .list-item-sub { overflow-wrap: anywhere; word-break: break-word; } .client-row-actions { width: 100% !important; justify-content: stretch; } .client-row-actions button { flex: 1 1 calc(50% - 3px); } }
     @media (max-width: 640px) { .title h1 { font-size: 24px; } .title p { font-size: 12.5px; } .actions button, .actions .btn { flex: 1 1 100%; font-size: 13px; } .tab { padding: 10px 12px; font-size: 12.5px; min-height: 40px; } .form-actions button { flex: 1 1 100%; } .toolbar-left { gap: 8px; } .search { max-width: 100%; } .pagination-bar .page-info { order: -1; width: 100%; text-align: center; } .card-title, .card-title h2 { font-size: 17px; } .list-item { flex-wrap: wrap; } .cost-item, .assinatura-item { grid-template-columns: 1fr; text-align: left; } }
+
+    /* ===== INDICAÇÕES + ROLETA ===== */
+    .lucky-code { font-family: var(--font-mono); font-weight: 700; letter-spacing: .12em; color: var(--primary); background: rgba(57,255,20,.08); border: 1px solid rgba(57,255,20,.32); padding: 4px 10px; border-radius: 8px; font-size: 13px; display: inline-block; }
+    .lucky-code.lg { font-size: 22px; padding: 8px 18px; letter-spacing: .18em; }
+    .lucky-code.xl { font-size: 36px; padding: 12px 24px; letter-spacing: .22em; }
+    .pill-tested { background: rgba(92,240,255,.08); color: var(--info); border: 1px solid rgba(92,240,255,.32); padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .pill-subscribed { background: rgba(57,255,20,.1); color: var(--primary); border: 1px solid rgba(57,255,20,.4); padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .pill-won { background: rgba(255,228,92,.1); color: var(--warning); border: 1px solid rgba(255,228,92,.4); padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+
+    /* Roleta wheel */
+    .roleta-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 12px 0 8px; }
+    .roleta-stage { position: relative; width: min(420px, 92vw); aspect-ratio: 1/1; }
+    .roleta-pointer { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 16px solid transparent; border-right: 16px solid transparent; border-top: 28px solid var(--primary); filter: drop-shadow(0 0 10px rgba(57,255,20,.6)); z-index: 3; }
+    .roleta-pointer::after { content: ""; position: absolute; top: -34px; left: -6px; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 14px var(--primary); }
+    .roleta-wheel { position: relative; width: 100%; height: 100%; border-radius: 50%; border: 4px solid rgba(57,255,20,.5); box-shadow: 0 0 40px rgba(57,255,20,.25), inset 0 0 30px rgba(0,0,0,.5); background: #050505; transition: transform 5.5s cubic-bezier(.18,.85,.22,1); overflow: hidden; }
+    .roleta-wheel.spinning { transition: transform 5.5s cubic-bezier(.18,.85,.22,1); }
+    .roleta-slice { position: absolute; top: 0; left: 50%; width: 50%; height: 50%; transform-origin: 0% 100%; display: flex; align-items: flex-start; justify-content: center; padding-top: 14px; box-sizing: border-box; }
+    .roleta-slice span { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: #fff; letter-spacing: .08em; transform: rotate(0deg); white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+    .roleta-hub { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #1a2a14, #050505); border: 2px solid rgba(57,255,20,.55); box-shadow: 0 0 18px rgba(57,255,20,.45), inset 0 0 12px rgba(0,0,0,.6); display: grid; place-items: center; z-index: 2; color: var(--primary); font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+    .roleta-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 13px; text-align: center; padding: 20px; }
+    .roleta-result { width: 100%; max-width: 560px; padding: 18px; border: 1px solid rgba(57,255,20,.4); border-radius: var(--radius); background: linear-gradient(180deg, #0d1d08, #050a03); box-shadow: var(--glow-md); text-align: center; }
+    .roleta-result h3 { margin: 0 0 6px; font-family: var(--font-display); color: var(--primary); letter-spacing: -.01em; }
+    .roleta-result .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+    .roleta-result .row .box { background: rgba(0,0,0,.4); border: 1px solid var(--border-faint); padding: 10px 12px; border-radius: var(--radius-sm); text-align: left; }
+    .roleta-result .row .box .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+    .roleta-result .row .box .val { font-weight: 700; color: #fff; margin-top: 2px; word-break: break-word; }
+    @media (max-width: 520px) { .roleta-result .row { grid-template-columns: 1fr; } }
+    .ind-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    @media (max-width: 720px) { .ind-stats { grid-template-columns: repeat(2, 1fr); } }
+    .ind-stat { background: linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid var(--border-faint); border-radius: var(--radius-sm); padding: 14px; }
+    .ind-stat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+    .ind-stat .val { font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--primary); margin-top: 4px; }
+    .ind-stat.cyan .val { color: var(--info); }
+    .ind-stat.yellow .val { color: var(--warning); }
+    .ind-stat.white .val { color: #fff; }
+
+    /* ===== SIDEBAR + SUBTABS ===== */
+    .menu-toggle { display: none; background: #0a0a0a; color: var(--primary); border: 1px solid rgba(57,255,20,.4); border-radius: 12px; width: 44px; height: 44px; min-height: 44px; padding: 0; align-items: center; justify-content: center; font-size: 18px; box-shadow: var(--glow-sm); margin-right: 4px; cursor: pointer; }
+    .menu-toggle:hover { background: #121212; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); backdrop-filter: blur(4px); z-index: 90; opacity: 0; transition: opacity .25s ease; }
+    .sidebar-overlay.active { display: block; opacity: 1; }
+    .sidebar { background: transparent; }
+    .sidebar-header { display: none; align-items: center; justify-content: space-between; padding: 18px 16px 10px; border-bottom: 1px solid var(--border-faint); margin-bottom: 12px; }
+    .sidebar-title { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; color: var(--primary); font-size: 15px; letter-spacing: .02em; }
+    .sidebar-close { background: transparent; border: 1px solid var(--border-faint); width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 10px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .sidebar-close:hover { background: #121212; border-color: rgba(255,255,255,.18); }
+    .tab .tab-icon { display: none; }
+
+    /* Sub-tabs (Configuração) */
+    .subtabs { display: none; gap: 6px; padding: 5px; margin: -8px 0 22px; background: #060606; border: 1px solid var(--border-faint); border-radius: 999px; box-shadow: var(--shadow-sm); overflow-x: auto; scrollbar-width: thin; }
+    .subtabs::-webkit-scrollbar { height: 6px; }
+    .subtabs.active { display: flex; }
+    .subtab { background: transparent; color: var(--text-dim); border: 1px solid transparent; padding: 9px 16px; border-radius: 999px; font-weight: 600; font-size: 13px; min-height: 36px; cursor: pointer; transition: all .18s ease; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; flex: 0 0 auto; font-family: var(--font-body); letter-spacing: .01em; }
+    .subtab:hover { color: #fff; background: rgba(255,255,255,.03); }
+    .subtab.active { background: linear-gradient(180deg, #0e210a, #050a03); color: var(--primary); border-color: rgba(57,255,20,.4); box-shadow: var(--glow-sm); }
+
+    /* Mobile: sidebar as left drawer */
+    @media (max-width: 900px) {
+      .menu-toggle { display: inline-flex; }
+      .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: min(280px, 80vw); background: linear-gradient(180deg, #050505, #0a0a0a); border-right: 1px solid rgba(57,255,20,.25); box-shadow: 4px 0 28px rgba(0,0,0,.6); z-index: 100; transform: translateX(-105%); transition: transform .28s cubic-bezier(.2,.8,.2,1); overflow-y: auto; padding: 0 12px 18px; }
+      .sidebar.active { transform: translateX(0); }
+      .sidebar-header { display: flex; }
+      .sidebar .tabs { display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 6px; margin: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
+      .sidebar .tab { width: 100%; justify-content: flex-start; text-align: left; border-radius: 12px; padding: 12px 14px; min-height: 46px; font-size: 14px; gap: 12px; }
+      .sidebar .tab .tab-icon { display: inline-flex; width: 22px; justify-content: center; font-size: 14px; opacity: .85; }
+      .sidebar .tab.active { background: linear-gradient(180deg, #0e210a, #050a03); border-color: rgba(57,255,20,.4); }
+      .sidebar .tab.active .tab-icon { color: var(--primary); opacity: 1; }
+      .subtabs { margin-top: 6px; }
+      .subtab { font-size: 12.5px; padding: 8px 13px; }
+    }
+
+    @media (min-width: 901px) {
+      .sidebar-overlay { display: none !important; }
+      .menu-toggle { display: none !important; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <header class="topbar">
       <div class="brand">
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" data-testid="menu-toggle"><i class="fas fa-bars"></i></button>
         <div class="brand-mark"><div class="brand-dot"></div></div>
         <div class="title">
           <h1>Painel <span>IPTV</span></h1>
@@ -296,14 +385,20 @@
       </div>
     </header>
 
-    <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="cadastros" data-testid="tab-cadastros">Cadastros</button>
-      <button class="tab" data-tab="dashboard" data-testid="tab-dashboard">Vencimento</button>
-      <button class="tab" data-tab="clientes" data-testid="tab-clientes">Clientes</button>
-      <button class="tab" data-tab="calculadora" data-testid="tab-calculadora">Calculadora</button>
-      <button class="tab" data-tab="gestao" data-testid="tab-gestao">Gestão</button>
-      <button class="tab" data-tab="config" data-testid="tab-config">Configuração</button>
-    </nav>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title"><i class="fas fa-bars"></i> Menu</div>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu"><i class="fas fa-times"></i></button>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="cadastros" data-testid="tab-cadastros"><i class="fas fa-user-plus tab-icon"></i><span>Cadastros</span></button>
+        <button class="tab" data-tab="dashboard" data-testid="tab-dashboard"><i class="fas fa-calendar-day tab-icon"></i><span>Vencimento</span></button>
+        <button class="tab" data-tab="clientes" data-testid="tab-clientes"><i class="fas fa-users tab-icon"></i><span>Clientes</span></button>
+        <button class="tab" data-tab="roleta" data-testid="tab-roleta"><i class="fas fa-dharmachakra tab-icon"></i><span>Roleta</span></button>
+        <button class="tab" data-tab="config" data-testid="tab-config"><i class="fas fa-cog tab-icon"></i><span>Configuração</span></button>
+      </nav>
+    </aside>
 
     <section id="dashboard" class="panel">
       <div class="table-card" style="margin-bottom:18px;">
@@ -621,6 +716,132 @@
         </div>
       </div>
     </section>
+
+    <section id="indicacoes" class="panel">
+      <div class="ind-stats">
+        <div class="ind-stat"><div class="lbl">Números na roleta</div><div class="val" id="statRoletaCount">0</div></div>
+        <div class="ind-stat cyan"><div class="lbl">Testes realizados</div><div class="val" id="statTestesCount">0</div></div>
+        <div class="ind-stat yellow"><div class="lbl">Meses grátis concedidos</div><div class="val" id="statMesesGratis">0</div></div>
+        <div class="ind-stat white"><div class="lbl">Total de indicações</div><div class="val" id="statTotalInd">0</div></div>
+      </div>
+
+      <div class="form-card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-user-friends"></i><h2>Nova Indicação</h2><span class="tag">+1 número da sorte</span></div>
+        </div>
+        <p class="card-hint" style="margin: 0 0 14px;">Selecione o cliente que indicou e informe os dados do amigo indicado que realizou o teste grátis. O sistema gera automaticamente um <b style="color:var(--primary);">código da sorte de 6 dígitos</b> que entra na roleta do sorteio mensal.</p>
+        <form id="indicacaoForm" autocomplete="off">
+          <input type="hidden" id="indicacaoId" />
+          <div class="form-grid">
+            <div class="field" style="grid-column: span 2;">
+              <label for="indIndicadorId">Cliente que indicou</label>
+              <select id="indIndicadorId" class="form-select" required data-testid="ind-indicador"></select>
+            </div>
+            <div class="field" style="grid-column: span 2;">
+              <label for="indTesteId"><i class="fas fa-flask" style="color:var(--warning); margin-right:6px;"></i>Teste ativo do amigo indicado</label>
+              <select id="indTesteId" class="form-select" required data-testid="ind-teste-id"></select>
+              <p style="margin:6px 0 0; font-size:12px; color:var(--muted);">Selecione um teste cadastrado para puxar os dados automaticamente.</p>
+            </div>
+            <input type="hidden" id="indAmigoNome" data-testid="ind-amigo-nome" />
+            <input type="hidden" id="indAmigoTelefone" data-testid="ind-amigo-tel" />
+            <div class="field" style="grid-column: span 2;"><label for="indObs">Observações (opcional)</label><input id="indObs" placeholder="Ex.: indicado via Instagram" data-testid="ind-obs" /></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" data-testid="save-indicacao-btn"><i class="fas fa-ticket-alt"></i> Gerar número da sorte</button>
+            <button type="button" class="btn-secondary" id="clearIndicacaoBtn" data-testid="clear-ind-btn">Limpar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-card" style="margin-top:18px;">
+        <div class="card-header">
+          <div class="card-title"><h2>Indicações ativas (na roleta)</h2><span class="tag">Aguardando sorteio</span></div>
+          <span class="count-badge" id="countIndAtivas">0</span>
+        </div>
+        <p class="card-hint">Amigos indicados que realizaram o teste grátis e ainda não fecharam assinatura. Cada um vale <b style="color:var(--primary);">1 número da sorte</b> no sorteio mensal. Marque "Fechou assinatura" para conceder 1 mês grátis ao indicador (o número sai automaticamente da roleta).</p>
+        <div id="listaIndAtivas" data-testid="lista-ind-ativas"></div>
+        <div class="pagination-bar" id="paginationIndAtivas"></div>
+      </div>
+
+      <div class="table-card" style="margin-top:18px;">
+        <div class="card-header">
+          <div class="card-title"><h2>Histórico — Assinaturas convertidas</h2><span class="tag">Mês grátis concedido</span></div>
+          <span class="count-badge" id="countIndAssinou">0</span>
+        </div>
+        <p class="card-hint">Amigos indicados que fecharam assinatura. O indicador já ganhou 1 mês grátis e o número saiu do sorteio.</p>
+        <div id="listaIndAssinou" data-testid="lista-ind-assinou"></div>
+        <div class="pagination-bar" id="paginationIndAssinou"></div>
+      </div>
+
+      <div class="table-card" style="margin-top:18px;">
+        <div class="card-header">
+          <div class="card-title"><h2>Histórico — Ganhadores de sorteios</h2><span class="tag">Premiados</span></div>
+          <span class="count-badge" id="countIndGanhou">0</span>
+        </div>
+        <p class="card-hint">Indicadores que tiveram seu número sorteado no sorteio mensal.</p>
+        <div id="listaIndGanhou" data-testid="lista-ind-ganhou"></div>
+        <div class="pagination-bar" id="paginationIndGanhou"></div>
+      </div>
+    </section>
+
+    <section id="roleta" class="panel">
+      <div class="table-card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-dharmachakra"></i><h2>Roleta da Sorte</h2><span class="tag">Sorteio mensal</span></div>
+          <span class="count-badge" id="countRoletaTopo">0</span>
+        </div>
+        <div class="roleta-wrap">
+          <div class="roleta-stage">
+            <div class="roleta-pointer"></div>
+            <div class="roleta-wheel" id="roletaWheel"></div>
+            <div class="roleta-hub"><i class="fas fa-trophy"></i></div>
+          </div>
+          <button type="button" class="btn-primary" id="btnSortear" style="min-width:220px; font-size:15px; padding:14px 24px;" data-testid="btn-sortear">
+            <i class="fas fa-random"></i> Sortear ganhador
+          </button>
+          <p class="card-hint" style="margin: 0; text-align:center; max-width: 520px;">Concorrem apenas os números dos amigos que fizeram o <b>teste grátis</b> e ainda não fecharam assinatura. Os números convertidos em mês grátis ficam de fora do sorteio.</p>
+        </div>
+      </div>
+
+      <div id="roletaResultBox" class="table-card" style="margin-top:18px; display:none;">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-trophy" style="color: var(--warning);"></i><h2>Ganhador do sorteio</h2><span class="tag">Resultado</span></div>
+        </div>
+        <div class="roleta-result" style="margin: 8px auto 0;">
+          <h3>Número sorteado</h3>
+          <div class="lucky-code xl" id="resultNumero">------</div>
+          <div class="row">
+            <div class="box">
+              <div class="lbl"><i class="fas fa-user-tag"></i> Indicador (ganhador)</div>
+              <div class="val" id="resultIndicadorNome">—</div>
+              <div class="lbl" style="margin-top:8px;">Telefone</div>
+              <div class="val" id="resultIndicadorTel">—</div>
+            </div>
+            <div class="box">
+              <div class="lbl"><i class="fas fa-user-friends"></i> Amigo indicado (gerou o número)</div>
+              <div class="val" id="resultAmigoNome">—</div>
+              <div class="lbl" style="margin-top:8px;">Telefone</div>
+              <div class="val" id="resultAmigoTel">—</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
+            <button class="btn-whatsapp" id="btnWhatsGanhador" style="min-width:220px;"><i class="fab fa-whatsapp"></i> Avisar ganhador no WhatsApp</button>
+            <button class="btn-secondary" id="btnConfirmarGanhador"><i class="fas fa-check"></i> Confirmar premiação</button>
+            <button class="btn-secondary" id="btnFecharResult"><i class="fas fa-times"></i> Fechar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card" style="margin-top:18px;">
+        <div class="card-header">
+          <div class="card-title"><h2>Números participantes</h2><span class="tag">Em disputa</span></div>
+          <span class="count-badge" id="countRoletaLista">0</span>
+        </div>
+        <p class="card-hint">Lista de todos os números da sorte que estão concorrendo neste sorteio.</p>
+        <div id="listaRoleta" data-testid="lista-roleta"></div>
+        <div class="pagination-bar" id="paginationRoleta"></div>
+      </div>
+    </section>
   </div>
 
   <div id="modalPacote" class="modal">
@@ -849,13 +1070,16 @@
        ========================================================= */
     const STORAGE_KEY = 'iptv_clientes_v1';
     const STORAGE_KEY_TESTES = 'iptv_testes_v1';
+    const STORAGE_KEY_INDICACOES = 'iptv_indicacoes_v1';
     const INIT_FLAG_KEY = 'iptv_clientes_v1_initialized';
     let clients = [];
     let testes = [];
+    let indicacoes = [];
     const ITEMS_PER_PAGE = 10;
     const state = {
       todayPage: 1, tomorrowPage: 1, weekPage: 1, expiredPage: 1,
       clientesPage: 1, testesPage: 1, historicoPage: 1,
+      indAtivasPage: 1, indAssinouPage: 1, indGanhouPage: 1, roletaPage: 1,
       filtroMes: 'all'
     };
 
@@ -1220,14 +1444,30 @@
     function switchTab(tabName) {
       els.tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
       els.panels.forEach(panel => panel.classList.toggle('active', panel.id === tabName));
-      if (tabName === 'gestao') {
+      closeSidebar();
+      if (tabName === 'config') {
+        // Atualiza dados das sub-seções expansíveis (Calculadora, Gestão, Indicações)
         setTimeout(() => {
-          atualizarSelectMesGestao();
-          atualizarGraficoClientes();
-          atualizarStatsFinanceiras();
-          gerarTextoWhatsAppGestao();
+          try { atualizarSelectMesGestao(); atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao(); } catch (e) {}
+          try { popularSelectIndicadores(); popularSelectTestes(); renderIndicacoes(); } catch (e) {}
         }, 80);
       }
+      if (tabName === 'roleta') {
+        renderRoleta();
+      }
+    }
+
+    function openSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (sb) sb.classList.add('active');
+      if (ov) ov.classList.add('active');
+    }
+    function closeSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      if (sb) sb.classList.remove('active');
+      if (ov) ov.classList.remove('active');
     }
 
     function paginate(list, page, perPage = ITEMS_PER_PAGE) {
@@ -1759,6 +1999,14 @@
       if (f) f.addEventListener('change', () => { state.clientesPage = 1; renderClientes(); });
     })();
     els.tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+    (function wireSidebar() {
+      const tog = document.getElementById('menuToggle');
+      const cls = document.getElementById('sidebarClose');
+      const ov = document.getElementById('sidebarOverlay');
+      if (tog) tog.addEventListener('click', openSidebar);
+      if (cls) cls.addEventListener('click', closeSidebar);
+      if (ov) ov.addEventListener('click', closeSidebar);
+    })();
 
     els.exportBtn.addEventListener('click', () => {
       const payload = { clients, testes, paineis, pacotes, planos, movimentacoes, lucrosCustos };
@@ -1783,7 +2031,9 @@
           if (Array.isArray(data.paineis) && data.paineis.length >= 2) {
             paineis = data.paineis.slice(0, 2).map((x, i) => ({
               id: x.id || PAINEIS_DEFAULT[i].id,
-              nome: (x.nome && String(x.nome).trim()) || PAINEIS_DEFAULT[i].nome
+              nome: (x.nome && String(x.nome).trim()) || PAINEIS_DEFAULT[i].nome,
+              cor: (x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor))) ? x.cor : PAINEIS_DEFAULT[i].cor,
+              logo: (typeof x.logo === 'string') ? x.logo : ''
             }));
             salvarPaineis();
           }
@@ -1833,8 +2083,8 @@
 
     /* ---------- PAINÉIS (2 painéis de crédito) ---------- */
     const PAINEIS_DEFAULT = [
-      { id: 'p1', nome: 'Painel 1' },
-      { id: 'p2', nome: 'Painel 2' }
+      { id: 'p1', nome: 'Painel 1', cor: '#39ff14', logo: '' },
+      { id: 'p2', nome: 'Painel 2', cor: '#5cf0ff', logo: '' }
     ];
     function salvarPaineis() { localStorage.setItem('iptv_paineis', JSON.stringify(paineis)); }
     function carregarPaineis() {
@@ -1845,7 +2095,9 @@
           if (Array.isArray(p) && p.length >= 2) {
             paineis = p.slice(0, 2).map((x, i) => ({
               id: x.id || PAINEIS_DEFAULT[i].id,
-              nome: (x.nome && String(x.nome).trim()) || PAINEIS_DEFAULT[i].nome
+              nome: (x.nome && String(x.nome).trim()) || PAINEIS_DEFAULT[i].nome,
+              cor: (x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor))) ? x.cor : PAINEIS_DEFAULT[i].cor,
+              logo: (typeof x.logo === 'string') ? x.logo : ''
             }));
             return;
           }
@@ -1888,11 +2140,7 @@
       const p = localStorage.getItem('iptv_pacotes');
       if (p) pacotes = JSON.parse(p);
       else {
-        pacotes = [
-          { id: 1, quantidade: 10, preco: 11 }, { id: 2, quantidade: 30, preco: 10 },
-          { id: 3, quantidade: 50, preco: 8 }, { id: 4, quantidade: 100, preco: 7 },
-          { id: 5, quantidade: 500, preco: 6.5 }, { id: 6, quantidade: 1000, preco: 6 }
-        ];
+        pacotes = [];
         salvarPacotes();
       }
       let mutPac = false;
@@ -2352,16 +2600,34 @@
           const cls = idx === 1 ? 'painel-2' : '';
           const disp = Number.isInteger(s.disponiveis) ? s.disponiveis : s.disponiveis.toFixed(3);
           const usd = Number.isInteger(s.usados) ? s.usados : s.usados.toFixed(3);
-          const color1 = idx === 1 ? 'color: var(--info);' : '';
+          const cor = p.cor || (idx === 1 ? '#5cf0ff' : '#39ff14');
+          const logoHtml = p.logo
+            ? `<img class="painel-logo" src="${escapeHtml(p.logo)}" alt="Logo ${escapeHtml(p.nome)}" data-testid="painel-logo-${p.id}" />`
+            : `<div class="painel-logo-empty" data-testid="painel-logo-empty-${p.id}"><i class="fas fa-image"></i></div>`;
+          const removeBtn = p.logo
+            ? `<button type="button" class="painel-brand-btn danger" data-action="remove-logo" data-painel-id="${p.id}" data-testid="painel-logo-remove-${p.id}"><i class="fas fa-trash"></i> Remover</button>`
+            : '';
           return `
-            <div class="painel-box ${cls}" data-testid="painel-box-${p.id}">
+            <div class="painel-box ${cls}" data-testid="painel-box-${p.id}" style="--painel-color: ${cor};">
               <div class="painel-box-head">
                 <span class="painel-box-tag">${idx === 0 ? 'Painel 1' : 'Painel 2'}</span>
                 <input class="painel-name-input" type="text" value="${escapeHtml(p.nome)}" data-painel-id="${p.id}" data-testid="painel-nome-${p.id}" />
               </div>
+              <div class="painel-brand-row">
+                ${logoHtml}
+                <div class="painel-brand-actions">
+                  <button type="button" class="painel-brand-btn" data-action="upload-logo" data-painel-id="${p.id}" data-testid="painel-logo-upload-${p.id}"><i class="fas fa-upload"></i> ${p.logo ? 'Trocar logo' : 'Enviar logo'}</button>
+                  ${removeBtn}
+                  <label class="painel-color-wrap" title="Cor do painel">
+                    <input type="color" class="painel-color-swatch" value="${cor}" data-painel-id="${p.id}" data-testid="painel-cor-${p.id}" />
+                    <span class="painel-color-label">${cor.toUpperCase()}</span>
+                  </label>
+                </div>
+                <input type="file" accept="image/*" class="painel-file-hidden" data-painel-file="${p.id}" data-testid="painel-logo-file-${p.id}" />
+              </div>
               <div class="painel-stats">
                 <div class="painel-stat">
-                  <div class="painel-stat-value" style="${color1}" data-testid="painel-disp-${p.id}">${disp}</div>
+                  <div class="painel-stat-value" data-testid="painel-disp-${p.id}">${disp}</div>
                   <div class="painel-stat-label">Disponíveis</div>
                 </div>
                 <div class="painel-stat">
@@ -2392,6 +2658,62 @@
               renderDashboard(); renderClientes();
               showToast(`Painel renomeado para "${novo}"`);
             }
+          });
+        });
+        // Wire color pickers
+        grid.querySelectorAll('.painel-color-swatch').forEach(inp => {
+          const sync = (e) => {
+            const pid = e.target.getAttribute('data-painel-id');
+            const novo = String(e.target.value || '').toLowerCase();
+            if (!/^#[0-9a-f]{6}$/.test(novo)) return;
+            const target = paineis.find(p => p.id === pid);
+            if (!target) return;
+            target.cor = novo;
+            salvarPaineis();
+            const box = e.target.closest('.painel-box');
+            if (box) box.style.setProperty('--painel-color', novo);
+            const lbl = e.target.parentElement && e.target.parentElement.querySelector('.painel-color-label');
+            if (lbl) lbl.textContent = novo.toUpperCase();
+          };
+          inp.addEventListener('input', sync);
+          inp.addEventListener('change', (e) => { sync(e); showToast('Cor do painel atualizada.'); });
+        });
+        // Wire logo upload / remove
+        grid.querySelectorAll('[data-action="upload-logo"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const pid = btn.getAttribute('data-painel-id');
+            const file = grid.querySelector(`input[data-painel-file="${pid}"]`);
+            if (file) file.click();
+          });
+        });
+        grid.querySelectorAll('[data-action="remove-logo"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const pid = btn.getAttribute('data-painel-id');
+            const target = paineis.find(p => p.id === pid);
+            if (!target) return;
+            target.logo = '';
+            salvarPaineis();
+            atualizarCreditos();
+            showToast('Logo removida.');
+          });
+        });
+        grid.querySelectorAll('input[data-painel-file]').forEach(inp => {
+          inp.addEventListener('change', (e) => {
+            const pid = inp.getAttribute('data-painel-file');
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            if (!/^image\//.test(file.type)) { showToast('Selecione um arquivo de imagem.'); inp.value = ''; return; }
+            if (file.size > 1024 * 1024) { showToast('Imagem muito grande (máx. 1 MB).'); inp.value = ''; return; }
+            const reader = new FileReader();
+            reader.onload = () => {
+              const target = paineis.find(p => p.id === pid);
+              if (!target) return;
+              target.logo = String(reader.result || '');
+              salvarPaineis();
+              atualizarCreditos();
+              showToast('Logo atualizada.');
+            };
+            reader.readAsDataURL(file);
           });
         });
       }
@@ -3152,22 +3474,615 @@
     }
     window.copiarTextoGestao = copiarTextoGestao;
 
+    /* =========================================================
+       PARTE 4 — INDICAÇÕES + ROLETA DA SORTE
+       ========================================================= */
+    function salvarIndicacoes() {
+      try { localStorage.setItem(STORAGE_KEY_INDICACOES, JSON.stringify(indicacoes)); }
+      catch (e) { showToast('Falha ao salvar indicações.', true); }
+    }
+    function carregarIndicacoes() {
+      const raw = localStorage.getItem(STORAGE_KEY_INDICACOES);
+      if (!raw) { indicacoes = []; return; }
+      try { const p = JSON.parse(raw); indicacoes = Array.isArray(p) ? p : []; }
+      catch (e) { indicacoes = []; }
+    }
+    function gerarNumeroSorte() {
+      const usados = new Set(indicacoes.map(i => i.numero));
+      let n;
+      let tries = 0;
+      do {
+        n = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+        tries++;
+      } while (usados.has(n) && tries < 9999);
+      return n;
+    }
+    function popularSelectTestes() {
+      const sel = document.getElementById('indTesteId');
+      if (!sel) return;
+      const prev = sel.value;
+      const testesAtivos = [...testes].sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+      sel.innerHTML = '<option value="">Selecione um teste ativo…</option>' +
+        testesAtivos.map(t => `<option value="${t.id}">${escapeHtml(t.nome || '(sem nome)')}${t.telefone ? ' • ' + escapeHtml(t.telefone) : ''}${t.plano ? ' — ' + escapeHtml(t.plano) : ''}</option>`).join('');
+      if (prev) sel.value = prev;
+    }
+
+    document.addEventListener('change', function(ev) {
+      if (ev.target && ev.target.id === 'indTesteId') {
+        const testeId = ev.target.value;
+        const t = testes.find(x => x.id === testeId);
+        document.getElementById('indAmigoNome').value = t ? (t.nome || '') : '';
+        document.getElementById('indAmigoTelefone').value = t ? (t.telefone || '') : '';
+      }
+    });
+
+    function popularSelectIndicadores() {
+      const sel = document.getElementById('indIndicadorId');
+      if (!sel) return;
+      const prev = sel.value;
+      const todos = [...clients].sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+      sel.innerHTML = '<option value="">Selecione um cliente cadastrado…</option>' +
+        todos.map(c => `<option value="${c.id}">${escapeHtml(c.nome || '(sem nome)')}${c.telefone ? ' • ' + escapeHtml(c.telefone) : ''}</option>`).join('');
+      if (prev) sel.value = prev;
+    }
+    function fmtDataBR(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+    function getClienteById(id) { return clients.find(c => c.id === id); }
+
+    function salvarIndicacao(ev) {
+      ev && ev.preventDefault();
+      const id = document.getElementById('indicacaoId').value;
+      const indicadorId = document.getElementById('indIndicadorId').value;
+      const testeIdSel = document.getElementById('indTesteId') ? document.getElementById('indTesteId').value : '';
+      // Preenche os hidden inputs a partir do teste selecionado (caso ainda não tenham sido preenchidos)
+      if (testeIdSel) {
+        const tSel = testes.find(x => x.id === testeIdSel);
+        if (tSel) {
+          document.getElementById('indAmigoNome').value = tSel.nome || '';
+          document.getElementById('indAmigoTelefone').value = tSel.telefone || '';
+        }
+      }
+      const amigoNome = document.getElementById('indAmigoNome').value.trim();
+      const amigoTelefone = document.getElementById('indAmigoTelefone').value.trim();
+      const obs = document.getElementById('indObs').value.trim();
+      if (!indicadorId) { showToast('Selecione o cliente que indicou.', true); return; }
+      if (!amigoNome) { showToast('Selecione um teste ativo do amigo indicado.', true); return; }
+      const indicador = getClienteById(indicadorId);
+      if (!indicador) { showToast('Cliente indicador não encontrado.', true); return; }
+
+      if (id) {
+        const ind = indicacoes.find(i => i.id === id);
+        if (!ind) { showToast('Indicação não encontrada.', true); return; }
+        ind.indicadorId = indicadorId;
+        ind.indicadorNome = indicador.nome;
+        ind.indicadorTelefone = indicador.telefone || '';
+        ind.amigoNome = amigoNome;
+        ind.amigoTelefone = amigoTelefone;
+        ind.observacoes = obs;
+        ind.updatedAt = new Date().toISOString();
+        salvarIndicacoes();
+        limparFormIndicacao();
+        renderIndicacoes();
+        showToast(`Indicação atualizada • número ${ind.numero}`);
+      } else {
+        const numero = gerarNumeroSorte();
+        const novo = {
+          id: 'ind_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+          numero,
+          indicadorId,
+          indicadorNome: indicador.nome,
+          indicadorTelefone: indicador.telefone || '',
+          amigoNome,
+          amigoTelefone,
+          observacoes: obs,
+          status: 'teste',       // 'teste' = na roleta | 'assinou' = mês grátis concedido | 'ganhou' = sorteado
+          fezTesteEm: new Date().toISOString(),
+          assinouEm: null,
+          ganhouEm: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        indicacoes.push(novo);
+        salvarIndicacoes();
+        limparFormIndicacao();
+        renderIndicacoes();
+        showToast(`Número da sorte ${numero} gerado e adicionado à roleta!`);
+      }
+    }
+
+    function limparFormIndicacao() {
+      document.getElementById('indicacaoId').value = '';
+      document.getElementById('indIndicadorId').value = '';
+      const selTeste = document.getElementById('indTesteId'); if (selTeste) selTeste.value = '';
+      document.getElementById('indAmigoNome').value = '';
+      document.getElementById('indAmigoTelefone').value = '';
+      document.getElementById('indObs').value = '';
+    }
+
+    function editarIndicacao(id) {
+      const ind = indicacoes.find(i => i.id === id);
+      if (!ind) return;
+      popularSelectIndicadores();
+      popularSelectTestes();
+      document.getElementById('indicacaoId').value = ind.id;
+      document.getElementById('indIndicadorId').value = ind.indicadorId;
+      document.getElementById('indAmigoNome').value = ind.amigoNome || '';
+      document.getElementById('indAmigoTelefone').value = ind.amigoTelefone || '';
+      // Tenta pré-selecionar o teste ativo pelo nome do amigo
+      const selTeste = document.getElementById('indTesteId');
+      if (selTeste) {
+        const testeMatch = testes.find(t => t.nome === ind.amigoNome && t.telefone === ind.amigoTelefone);
+        selTeste.value = testeMatch ? testeMatch.id : '';
+      }
+      document.getElementById('indObs').value = ind.observacoes || '';
+      switchTab('config');
+      // Expandir card de Indicações
+      const card = document.getElementById('cardIndicacoes');
+      if (card) card.classList.remove('collapsed');
+      setTimeout(() => { const focusEl = document.getElementById('indTesteId') || document.getElementById('indAmigoNome'); if (focusEl) { focusEl.focus(); focusEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, 150);
+    }
+
+    function removerIndicacao(id) {
+      const ind = indicacoes.find(i => i.id === id);
+      if (!ind) return;
+      if (!confirmar(`Remover a indicação ${ind.numero} (${ind.amigoNome})?`)) return;
+      indicacoes = indicacoes.filter(i => i.id !== id);
+      salvarIndicacoes();
+      renderIndicacoes();
+      showToast('Indicação removida.');
+    }
+
+    function marcarAssinou(id) {
+      const ind = indicacoes.find(i => i.id === id);
+      if (!ind) return;
+      if (ind.status === 'ganhou') { showToast('Esta indicação já foi sorteada.', true); return; }
+      if (ind.status === 'assinou') { showToast('Esta indicação já foi convertida.', true); return; }
+      if (!confirmar(`Confirmar assinatura de ${ind.amigoNome}? O número ${ind.numero} sai da roleta e ${ind.indicadorNome} ganha 1 mês grátis.`)) return;
+      ind.status = 'assinou';
+      ind.assinouEm = new Date().toISOString();
+      ind.updatedAt = new Date().toISOString();
+      salvarIndicacoes();
+      renderIndicacoes();
+      showToast(`Mês grátis concedido a ${ind.indicadorNome}!`);
+    }
+
+    function reverterAssinou(id) {
+      const ind = indicacoes.find(i => i.id === id);
+      if (!ind || ind.status !== 'assinou') return;
+      if (!confirmar('Reverter? O número volta para a roleta.')) return;
+      ind.status = 'teste';
+      ind.assinouEm = null;
+      ind.updatedAt = new Date().toISOString();
+      salvarIndicacoes();
+      renderIndicacoes();
+      showToast('Status revertido para teste.');
+    }
+
+    function whatsappIndicador(id, msg) {
+      const ind = indicacoes.find(i => i.id === id);
+      if (!ind) return;
+      const phone = String(ind.indicadorTelefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(msg);
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+    function whatsappAvisarTeste(id) {
+      const ind = indicacoes.find(i => i.id === id); if (!ind) return;
+      const msg = [
+        `🎰 *Olá ${ind.indicadorNome}!*`,
+        ``,
+        `Sua indicação de *${ind.amigoNome}* foi registrada com sucesso! 🎉`,
+        ``,
+        `🎟️ Você ganhou *+1 número da sorte* para o sorteio mensal:`,
+        ``,
+        `🔢 *Número: ${ind.numero}*`,
+        ``,
+        `💡 Lembre-se: se o seu amigo fechar a assinatura, esse número se transforma em *1 mês grátis* para você automaticamente!`,
+        ``,
+        `Boa sorte! 🍀`
+      ].join('\n');
+      whatsappIndicador(id, msg);
+    }
+    function whatsappAvisarMesGratis(id) {
+      const ind = indicacoes.find(i => i.id === id); if (!ind) return;
+      const msg = [
+        `🎉 *Parabéns ${ind.indicadorNome}!*`,
+        ``,
+        `Seu amigo *${ind.amigoNome}* fechou a assinatura!`,
+        ``,
+        `✅ O número *${ind.numero}* gerado pela indicação foi convertido em *1 MÊS GRÁTIS* para você. 🥳`,
+        ``,
+        `Obrigado por indicar nossos serviços! Continue indicando para concorrer ao sorteio mensal. 🎰`
+      ].join('\n');
+      whatsappIndicador(id, msg);
+    }
+    function whatsappAvisarGanhador(id) {
+      const ind = indicacoes.find(i => i.id === id); if (!ind) return;
+      const msg = [
+        `🏆 *PARABÉNS ${ind.indicadorNome}!* 🎉`,
+        ``,
+        `Você foi o(a) *GANHADOR(A)* do sorteio mensal! 🎰`,
+        ``,
+        `🔢 Número sorteado: *${ind.numero}*`,
+        `👤 Indicação de: *${ind.amigoNome}*`,
+        ``,
+        `🎁 Em breve entraremos em contato para entregar o seu prêmio!`,
+        ``,
+        `Obrigado por participar e por indicar nossos serviços. 🙏`
+      ].join('\n');
+      whatsappIndicador(id, msg);
+    }
+
+    function renderIndicacoes() {
+      // Stats
+      const ativas = indicacoes.filter(i => i.status === 'teste');
+      const assinou = indicacoes.filter(i => i.status === 'assinou');
+      const ganhou = indicacoes.filter(i => i.status === 'ganhou');
+      const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      setText('statRoletaCount', ativas.length);
+      setText('statTestesCount', indicacoes.length);
+      setText('statMesesGratis', assinou.length);
+      setText('statTotalInd', indicacoes.length);
+      setText('countIndAtivas', ativas.length);
+      setText('countIndAssinou', assinou.length);
+      setText('countIndGanhou', ganhou.length);
+      setText('countRoletaTopo', ativas.length);
+      setText('countRoletaLista', ativas.length);
+
+      renderListaIndicacoes('listaIndAtivas', 'paginationIndAtivas', ativas, 'indAtivasPage', 'changeIndAtivasPage', 'ativa');
+      renderListaIndicacoes('listaIndAssinou', 'paginationIndAssinou', assinou, 'indAssinouPage', 'changeIndAssinouPage', 'assinou');
+      renderListaIndicacoes('listaIndGanhou', 'paginationIndGanhou', ganhou, 'indGanhouPage', 'changeIndGanhouPage', 'ganhou');
+      renderRoleta();
+    }
+
+    function renderListaIndicacoes(listId, pagId, arr, pageKey, pageRefName, tipo) {
+      const cont = document.getElementById(listId);
+      if (!cont) return;
+      const sorted = [...arr].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const { items, totalPages, safePage } = paginate(sorted, state[pageKey]);
+      state[pageKey] = safePage;
+      if (items.length === 0) {
+        cont.innerHTML = `<div class="empty-state">Nenhuma indicação ${tipo === 'ativa' ? 'ativa na roleta' : tipo === 'assinou' ? 'convertida em mês grátis' : 'sorteada'} até o momento.</div>`;
+        renderPagination(document.getElementById(pagId), 1, 1, null);
+        return;
+      }
+      cont.innerHTML = items.map(ind => {
+        let actions = '';
+        if (tipo === 'ativa') {
+          actions = `
+            <button class="btn-success" onclick="marcarAssinou('${ind.id}')" title="Marcar que o amigo fechou assinatura"><i class="fas fa-check-circle"></i> Fechou assinatura</button>
+            <button class="btn-whatsapp" onclick="whatsappAvisarTeste('${ind.id}')" title="Avisar indicador no WhatsApp"><i class="fab fa-whatsapp"></i></button>
+            <button class="btn-secondary" onclick="editarIndicacao('${ind.id}')" title="Editar"><i class="fas fa-pen"></i></button>
+            <button class="btn-danger" onclick="removerIndicacao('${ind.id}')" title="Remover"><i class="fas fa-trash"></i></button>
+          `;
+        } else if (tipo === 'assinou') {
+          actions = `
+            <button class="btn-whatsapp" onclick="whatsappAvisarMesGratis('${ind.id}')" title="Avisar mês grátis no WhatsApp"><i class="fab fa-whatsapp"></i> Avisar mês grátis</button>
+            <button class="btn-secondary" onclick="reverterAssinou('${ind.id}')" title="Reverter para roleta"><i class="fas fa-undo"></i></button>
+            <button class="btn-danger" onclick="removerIndicacao('${ind.id}')" title="Remover"><i class="fas fa-trash"></i></button>
+          `;
+        } else {
+          actions = `
+            <button class="btn-whatsapp" onclick="whatsappAvisarGanhador('${ind.id}')" title="Reenviar aviso ao ganhador"><i class="fab fa-whatsapp"></i> Avisar ganhador</button>
+            <button class="btn-danger" onclick="removerIndicacao('${ind.id}')" title="Remover"><i class="fas fa-trash"></i></button>
+          `;
+        }
+        const pill = tipo === 'ativa'
+          ? `<span class="pill-tested"><i class="fas fa-vial"></i> Teste realizado</span>`
+          : tipo === 'assinou'
+            ? `<span class="pill-subscribed"><i class="fas fa-star"></i> Assinou — Mês grátis concedido</span>`
+            : `<span class="pill-won"><i class="fas fa-trophy"></i> Ganhador sorteio</span>`;
+        const dataInfo = tipo === 'assinou' ? `Assinou em ${fmtDataBR(ind.assinouEm)}` :
+                         tipo === 'ganhou' ? `Sorteado em ${fmtDataBR(ind.ganhouEm)}` :
+                         `Indicado em ${fmtDataBR(ind.fezTesteEm || ind.createdAt)}`;
+        return `
+          <div class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="background: rgba(57,255,20,.08); color: var(--primary);"><i class="fas fa-ticket-alt"></i></div>
+              <div style="min-width:0; flex:1;">
+                <div class="list-item-text" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                  <span class="lucky-code">${ind.numero}</span>
+                  ${pill}
+                </div>
+                <div class="list-item-sub" style="margin-top:6px;">
+                  <i class="fas fa-user-tag"></i> Indicador: <b style="color:#fff;">${escapeHtml(ind.indicadorNome)}</b>${ind.indicadorTelefone ? ' • ' + escapeHtml(ind.indicadorTelefone) : ''}
+                </div>
+                <div class="list-item-sub" style="margin-top:3px;">
+                  <i class="fas fa-user-friends"></i> Amigo: <b style="color:#fff;">${escapeHtml(ind.amigoNome)}</b>${ind.amigoTelefone ? ' • ' + escapeHtml(ind.amigoTelefone) : ''}
+                </div>
+                <div class="list-item-sub" style="margin-top:3px; color: var(--muted);">
+                  <i class="far fa-clock"></i> ${dataInfo}${ind.observacoes ? ' • ' + escapeHtml(ind.observacoes) : ''}
+                </div>
+              </div>
+            </div>
+            <div class="client-row-actions" style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">${actions}</div>
+          </div>
+        `;
+      }).join('');
+      renderPagination(document.getElementById(pagId), safePage, totalPages, pageRefName);
+    }
+
+    /* ============ ROLETA / WHEEL ============ */
+    let currentSpinDeg = 0;
+    let lastWinnerId = null;
+    let spinning = false;
+
+    function getNumerosNaRoleta() {
+      return indicacoes
+        .filter(i => i.status === 'teste')
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    }
+
+    function renderRoleta() {
+      const wheel = document.getElementById('roletaWheel');
+      const lista = document.getElementById('listaRoleta');
+      if (!wheel) return;
+      const numeros = getNumerosNaRoleta();
+
+      // Build wheel slices
+      wheel.innerHTML = '';
+      if (numeros.length === 0) {
+        wheel.innerHTML = `<div class="roleta-empty"><div><i class="fas fa-inbox" style="font-size:28px; opacity:.4; display:block; margin-bottom:10px;"></i>Nenhum número na roleta.<br><span style="font-size:12px;">Cadastre indicações na aba <b>Indicações</b>.</span></div></div>`;
+      } else {
+        // Limit visible slices on the wheel to 24 for readability, but keep all in raffle pool
+        const visible = numeros.slice(0, Math.min(numeros.length, 24));
+        const sliceAngle = 360 / visible.length;
+        const palette = ['#0d2a06', '#143d09', '#0a1f04', '#102e07'];
+        const fragments = visible.map((ind, idx) => {
+          const rot = idx * sliceAngle;
+          const skew = 90 - sliceAngle;
+          const bg = palette[idx % palette.length];
+          // Each slice is a triangle-like wedge using transform skew
+          return `
+            <div class="roleta-slice" style="transform: rotate(${rot}deg) skewY(-${skew}deg); background: linear-gradient(135deg, ${bg}, #050505); border-right: 1px solid rgba(57,255,20,.18);">
+              <span style="transform: skewY(${skew}deg) rotate(${sliceAngle/2}deg) translateY(2px);">${ind.numero}</span>
+            </div>
+          `;
+        }).join('');
+        wheel.innerHTML = fragments;
+      }
+
+      // Build list
+      if (lista) {
+        if (numeros.length === 0) {
+          lista.innerHTML = `<div class="empty-state">Nenhum número concorrendo.</div>`;
+          renderPagination(document.getElementById('paginationRoleta'), 1, 1, null);
+        } else {
+          const { items, totalPages, safePage } = paginate(numeros, state.roletaPage);
+          state.roletaPage = safePage;
+          lista.innerHTML = items.map(ind => `
+            <div class="list-item">
+              <div class="list-item-content">
+                <div class="list-item-icon" style="background: rgba(57,255,20,.08); color: var(--primary);"><i class="fas fa-ticket-alt"></i></div>
+                <div style="min-width:0; flex:1;">
+                  <div class="list-item-text" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <span class="lucky-code lg">${ind.numero}</span>
+                  </div>
+                  <div class="list-item-sub" style="margin-top:6px;">
+                    <i class="fas fa-user-tag"></i> Indicador: <b style="color:#fff;">${escapeHtml(ind.indicadorNome)}</b>
+                  </div>
+                  <div class="list-item-sub" style="margin-top:3px;">
+                    <i class="fas fa-user-friends"></i> Amigo: <b style="color:#fff;">${escapeHtml(ind.amigoNome)}</b>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('');
+          renderPagination(document.getElementById('paginationRoleta'), safePage, totalPages, 'changeRoletaPage');
+        }
+      }
+    }
+
+    function sortearGanhador() {
+      if (spinning) return;
+      const numeros = getNumerosNaRoleta();
+      if (numeros.length === 0) {
+        showToast('Não há números concorrendo. Cadastre indicações primeiro.', true);
+        return;
+      }
+      spinning = true;
+      const btn = document.getElementById('btnSortear');
+      if (btn) btn.disabled = true;
+
+      const visible = numeros.slice(0, Math.min(numeros.length, 24));
+      const winnerIdx = Math.floor(Math.random() * numeros.length);
+      const winner = numeros[winnerIdx];
+      // For visual: find the visible index for the winner (or just spin to a random visible slice)
+      const visibleIdx = visible.findIndex(v => v.id === winner.id);
+      const targetIdx = visibleIdx >= 0 ? visibleIdx : Math.floor(Math.random() * visible.length);
+      const sliceAngle = 360 / visible.length;
+      // Pointer is at top (0deg). To land slice center at top, we rotate negative.
+      const baseRotations = 6 * 360;
+      const targetDeg = baseRotations + (360 - (targetIdx * sliceAngle + sliceAngle / 2));
+      currentSpinDeg = (Math.floor(currentSpinDeg / 360) * 360) + targetDeg;
+      const wheel = document.getElementById('roletaWheel');
+      if (wheel) {
+        wheel.classList.add('spinning');
+        wheel.style.transform = `rotate(${currentSpinDeg}deg)`;
+      }
+
+      setTimeout(() => {
+        spinning = false;
+        if (btn) btn.disabled = false;
+        mostrarResultadoSorteio(winner);
+      }, 5700);
+    }
+
+    function mostrarResultadoSorteio(winner) {
+      lastWinnerId = winner.id;
+      const box = document.getElementById('roletaResultBox');
+      if (!box) return;
+      box.style.display = '';
+      document.getElementById('resultNumero').textContent = winner.numero;
+      document.getElementById('resultIndicadorNome').textContent = winner.indicadorNome || '—';
+      document.getElementById('resultIndicadorTel').textContent = winner.indicadorTelefone || '—';
+      document.getElementById('resultAmigoNome').textContent = winner.amigoNome || '—';
+      document.getElementById('resultAmigoTel').textContent = winner.amigoTelefone || '—';
+      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showToast(`🎉 Número ${winner.numero} sorteado!`);
+    }
+
+    function confirmarPremiacaoGanhador() {
+      if (!lastWinnerId) return;
+      const ind = indicacoes.find(i => i.id === lastWinnerId);
+      if (!ind) return;
+      if (!confirmar(`Confirmar premiação? O número ${ind.numero} sai da roleta e ${ind.indicadorNome} é registrado como ganhador.`)) return;
+      ind.status = 'ganhou';
+      ind.ganhouEm = new Date().toISOString();
+      ind.updatedAt = new Date().toISOString();
+      salvarIndicacoes();
+      renderIndicacoes();
+      const box = document.getElementById('roletaResultBox');
+      if (box) box.style.display = 'none';
+      lastWinnerId = null;
+      showToast(`Premiação registrada para ${ind.indicadorNome}.`);
+    }
+
+    function wireRoletaEvents() {
+      const btnSort = document.getElementById('btnSortear');
+      if (btnSort) btnSort.addEventListener('click', sortearGanhador);
+      const btnWhats = document.getElementById('btnWhatsGanhador');
+      if (btnWhats) btnWhats.addEventListener('click', () => { if (lastWinnerId) whatsappAvisarGanhador(lastWinnerId); });
+      const btnConf = document.getElementById('btnConfirmarGanhador');
+      if (btnConf) btnConf.addEventListener('click', confirmarPremiacaoGanhador);
+      const btnFech = document.getElementById('btnFecharResult');
+      if (btnFech) btnFech.addEventListener('click', () => {
+        const box = document.getElementById('roletaResultBox');
+        if (box) box.style.display = 'none';
+        lastWinnerId = null;
+      });
+      const form = document.getElementById('indicacaoForm');
+      if (form) form.addEventListener('submit', salvarIndicacao);
+      const clearBtn = document.getElementById('clearIndicacaoBtn');
+      if (clearBtn) clearBtn.addEventListener('click', limparFormIndicacao);
+    }
+
+    // Expor funções para os onclick inline
+    window.editarIndicacao = editarIndicacao;
+    window.removerIndicacao = removerIndicacao;
+    window.marcarAssinou = marcarAssinou;
+    window.reverterAssinou = reverterAssinou;
+    window.whatsappAvisarTeste = whatsappAvisarTeste;
+    window.whatsappAvisarMesGratis = whatsappAvisarMesGratis;
+    window.whatsappAvisarGanhador = whatsappAvisarGanhador;
+    window.changeIndAtivasPage = function (p) { state.indAtivasPage = p; renderIndicacoes(); };
+    window.changeIndAssinouPage = function (p) { state.indAssinouPage = p; renderIndicacoes(); };
+    window.changeIndGanhouPage = function (p) { state.indGanhouPage = p; renderIndicacoes(); };
+    window.changeRoletaPage = function (p) { state.roletaPage = p; renderRoleta(); };
+
+    /* ===== Migração: Calculadora / Gestão / Indicações vão para dentro de Configuração como cards expansíveis ===== */
+    function migrarParaConfig() {
+      const cfg = document.getElementById('config');
+      if (!cfg) return;
+      const moveAsCard = (sectionId, cardId, titulo, iconClass, badgeHtml) => {
+        const sec = document.getElementById(sectionId);
+        if (!sec || document.getElementById(cardId)) return;
+        const card = document.createElement('div');
+        card.className = 'card collapsed';
+        card.id = cardId;
+        const headerId = 'header' + cardId.slice(4);
+        const header = document.createElement('div');
+        header.className = 'card-header collapsible';
+        header.id = headerId;
+        header.innerHTML = `
+          <div class="card-title"><i class="${iconClass}"></i><h2>${titulo}</h2></div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${badgeHtml || ''}
+            <span class="chev"><i class="fas fa-chevron-down"></i></span>
+          </div>`;
+        const body = document.createElement('div');
+        body.className = 'card-body';
+        body.id = 'body' + cardId.slice(4);
+        while (sec.firstChild) body.appendChild(sec.firstChild);
+        card.appendChild(header);
+        card.appendChild(body);
+        sec.parentNode.removeChild(sec);
+        cfg.appendChild(card);
+        header.addEventListener('click', () => {
+          card.classList.toggle('collapsed');
+          if (!card.classList.contains('collapsed')) {
+            // Ao expandir, atualizar dados da seção
+            if (cardId === 'cardGestao') {
+              try { atualizarSelectMesGestao(); atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao(); } catch (e) {}
+            }
+            if (cardId === 'cardIndicacoes') {
+              try { popularSelectIndicadores(); renderIndicacoes(); } catch (e) {}
+            }
+          }
+        });
+      };
+      moveAsCard('calculadora', 'cardCalculadora', 'Calculadora de Lucros', 'fas fa-calculator', '');
+      moveAsCard('gestao', 'cardGestao', 'Gestão Financeira', 'fas fa-chart-line', '');
+      moveAsCard('indicacoes', 'cardIndicacoes', 'Indicações & Sorteios', 'fas fa-user-friends',
+        `<span class="count-badge" id="badgeIndCard">0</span>`);
+
+      /* Ordem dos cards na aba Configuração:
+         1-Gestão de Crédito, 2-Gestão Financeira, 3-Pacote de Crédito,
+         4-Planos Disponíveis, 5-Lucro e Custo personalizado, 6-Indicação,
+         7-Histórico de movimentação, 8-Histórico de taxa bancária, 9-Calculadora */
+      const ordemCards = [
+        'cardGestaoCreditos',
+        'cardGestao',
+        'cardPacotes',
+        'cardPlanos',
+        'cardLucrosCustos',
+        'cardIndicacoes',
+        'cardHistorico',
+        'cardHistoricoTaxas',
+        'cardCalculadora'
+      ];
+      ordemCards.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) cfg.appendChild(el);
+      });
+      // Atualizar badge de indicações ativas
+      const updateIndBadge = () => {
+        const b = document.getElementById('badgeIndCard');
+        if (b) b.textContent = indicacoes.filter(i => i.status === 'teste').length;
+      };
+      updateIndBadge();
+      // Hook pra atualizar badge quando indicações mudarem
+      const origRender = renderIndicacoes;
+      window.renderIndicacoes = function () { origRender.apply(this, arguments); updateIndBadge(); };
+    }
+
     /* ===== INIT ===== */
     loadClients(); carregarTestes();
-    const alreadyInitialized = localStorage.getItem(INIT_FLAG_KEY) === '1';
-    if (!alreadyInitialized && clients.length === 0) {
-      const d0 = toInputDate(todayLocalDate());
-      const d1 = toInputDate(addDays(todayLocalDate(), 1));
-      const d7 = toInputDate(addDays(todayLocalDate(), 7));
-      clients = [
-        { id: generateId(), nome: 'Cliente Exemplo Hoje', telefone: '5541999999999', aplicativo: 'XCIPTV', usuario: 'clientehoje', senha: '123456', plano: 'Mensal', valor: '30,00', creditos: 1, dataInicio: toInputDate(addDays(todayLocalDate(), -30)), dataPagamento: toInputDate(addDays(todayLocalDate(), -30)), dataRenovacao: d0, linkRenovacao: 'https://seulink.com/renovar/hoje', observacoes: '', msgSentAt: null },
-        { id: generateId(), nome: 'Cliente Exemplo Amanhã', telefone: '5541988888888', aplicativo: 'SmartOne', usuario: 'clienteamanha', senha: '654321', plano: 'Mensal', valor: '35,00', creditos: 1, dataInicio: toInputDate(addDays(todayLocalDate(), -29)), dataPagamento: toInputDate(addDays(todayLocalDate(), -29)), dataRenovacao: d1, linkRenovacao: 'https://seulink.com/renovar/amanha', observacoes: '', msgSentAt: null },
-        { id: generateId(), nome: 'Cliente Exemplo 7 Dias', telefone: '5541977777777', aplicativo: 'Bob Player', usuario: 'cliente7dias', senha: '789456', plano: 'Mensal', valor: '25,00', creditos: 1, dataInicio: toInputDate(addDays(todayLocalDate(), -23)), dataPagamento: toInputDate(addDays(todayLocalDate(), -23)), dataRenovacao: d7, linkRenovacao: 'https://seulink.com/renovar/7dias', observacoes: '', msgSentAt: null }
-      ];
-      saveClients();
-    }
     localStorage.setItem(INIT_FLAG_KEY, '1');
     carregarDadosCalc();
+
+    /* Limpeza única dos dados de exemplo (clientes e pacotes seed) */
+    (function limparExemplosUmaVez() {
+      const FLAG = 'iptv_seed_examples_cleared_v1';
+      if (localStorage.getItem(FLAG) === '1') return;
+      try {
+        const nomesExemplo = ['Cliente Exemplo Hoje', 'Cliente Exemplo Amanhã', 'Cliente Exemplo 7 Dias'];
+        const antesC = clients.length;
+        clients = clients.filter(c => !nomesExemplo.includes((c.nome || '').trim()));
+        if (clients.length !== antesC) saveClients();
+
+        const seedPacotes = [
+          { quantidade: 10,   preco: 11  },
+          { quantidade: 30,   preco: 10  },
+          { quantidade: 50,   preco: 8   },
+          { quantidade: 100,  preco: 7   },
+          { quantidade: 500,  preco: 6.5 },
+          { quantidade: 1000, preco: 6   }
+        ];
+        const antesP = pacotes.length;
+        pacotes = pacotes.filter(p =>
+          !seedPacotes.some(s => Number(s.quantidade) === Number(p.quantidade) && Number(s.preco) === Number(p.preco))
+        );
+        if (pacotes.length !== antesP) salvarPacotes();
+      } catch (e) {}
+      localStorage.setItem(FLAG, '1');
+    })();
+
     atualizarSelectsPaineis();
     renderAll(); renderTestes();
     atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
@@ -3177,6 +4092,12 @@
     atualizarSelectMesGestao(); atualizarStatsFinanceiras();
     atualizarSelectDxPaineis();
     popularSelectClientesDiasExtras();
+    carregarIndicacoes();
+    popularSelectIndicadores();
+    popularSelectTestes();
+    renderIndicacoes();
+    wireRoletaEvents();
+    migrarParaConfig();
   </script>
 </body>
 </html>
