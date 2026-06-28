@@ -392,15 +392,59 @@
         <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu"><i class="fas fa-times"></i></button>
       </div>
       <nav class="tabs" role="tablist">
-        <button class="tab active" data-tab="cadastros" data-testid="tab-cadastros"><i class="fas fa-user-plus tab-icon"></i><span>Cadastros</span></button>
-        <button class="tab" data-tab="dashboard" data-testid="tab-dashboard"><i class="fas fa-calendar-day tab-icon"></i><span>Vencimento</span></button>
+        <button class="tab active" data-tab="dashboard" data-testid="tab-dashboard"><i class="fas fa-chart-line tab-icon"></i><span>Dashboard</span></button>
+        <button class="tab" data-tab="cadastros" data-testid="tab-cadastros"><i class="fas fa-user-plus tab-icon"></i><span>Cadastros</span></button>
         <button class="tab" data-tab="clientes" data-testid="tab-clientes"><i class="fas fa-users tab-icon"></i><span>Clientes</span></button>
         <button class="tab" data-tab="roleta" data-testid="tab-roleta"><i class="fas fa-dharmachakra tab-icon"></i><span>Roleta</span></button>
         <button class="tab" data-tab="config" data-testid="tab-config"><i class="fas fa-cog tab-icon"></i><span>Configuração</span></button>
       </nav>
     </aside>
 
-    <section id="dashboard" class="panel">
+    <section id="dashboard" class="panel active">
+      <!-- GESTÃO FINANCEIRA -->
+      <div class="credit-stats" style="margin-bottom: 18px;">
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashTotalLucro" style="color: var(--primary);">R$ 0,00</div>
+          <div class="credit-stat-label">Lucro Total</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashTotalCusto" style="color: #ff9b9b;">R$ 0,00</div>
+          <div class="credit-stat-label">Custo Total</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashTotalTaxas" style="color: var(--warning);">R$ 0,00</div>
+          <div class="credit-stat-label">Taxas Bancárias</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashTotalLiquido" style="color: var(--info);">R$ 0,00</div>
+          <div class="credit-stat-label">Lucro Líquido</div>
+        </div>
+      </div>
+      <!-- GRÁFICO DO MÊS ATUAL -->
+      <div class="card" style="margin-bottom: 18px;">
+        <div class="card-header"><div class="card-title"><i class="fas fa-chart-line"></i><h2>Movimentação do Mês</h2><span class="tag" id="dashChartMesTag">Mês atual</span></div></div>
+        <div class="chart-container"><canvas id="dashGraficoMes"></canvas></div>
+      </div>
+      <!-- VISÃO GERAL DE CLIENTES -->
+      <div class="credit-stats" style="margin-bottom: 18px;">
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashTestesMes" style="color: var(--warning);">0</div>
+          <div class="credit-stat-label">Testes no Mês</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashClientesAtivos" style="color: var(--primary);">0</div>
+          <div class="credit-stat-label">Clientes Ativos</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashClientesVencidos" style="color: #ff9b9b;">0</div>
+          <div class="credit-stat-label">Clientes Vencidos</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashVence7Dias" style="color: var(--info);">0</div>
+          <div class="credit-stat-label">Vence em 7 dias</div>
+        </div>
+      </div>
+      <!-- VENCIMENTOS DETALHADOS -->
       <div class="table-card" style="margin-bottom:18px;">
         <div class="card-header">
           <div class="card-title"><h2>Vencidos (não renovaram)</h2><span class="tag">Atrasados</span></div>
@@ -439,7 +483,7 @@
       </div>
     </section>
 
-    <section id="cadastros" class="panel active">
+    <section id="cadastros" class="panel">
       <div class="form-card">
         <div class="card-header">
           <div class="card-title"><h2 id="formTitle">Cadastrar Teste IPTV</h2><span class="tag">Formulário</span></div>
@@ -538,29 +582,7 @@
       <div class="month-filter-bar" data-testid="month-filter-bar">
         <label><i class="fas fa-filter"></i> Filtrar por mês</label>
         <select id="filtroMesGestao" class="form-select" data-testid="filtro-mes-gestao"><option value="all">Todos os meses</option></select>
-        <span class="month-filter-hint" id="filtroMesHint">Aplicado aos cards, gráfico e resumo.</span>
-      </div>
-      <div class="credit-stats" style="margin-bottom: 18px;">
-        <div class="credit-stat-card">
-          <div class="credit-stat-value" id="totalLucro" style="color: var(--primary);" data-testid="total-lucro">R$ 0,00</div>
-          <div class="credit-stat-label">Lucro Total</div>
-        </div>
-        <div class="credit-stat-card">
-          <div class="credit-stat-value" id="totalCusto" style="color: #ff9b9b;" data-testid="total-custo">R$ 0,00</div>
-          <div class="credit-stat-label">Custo Total</div>
-        </div>
-        <div class="credit-stat-card">
-          <div class="credit-stat-value" id="totalTaxas" style="color: var(--warning);" data-testid="total-taxas">R$ 0,00</div>
-          <div class="credit-stat-label">Taxas Bancárias</div>
-        </div>
-        <div class="credit-stat-card">
-          <div class="credit-stat-value" id="totalLiquido" style="color: var(--info);" data-testid="total-liquido">R$ 0,00</div>
-          <div class="credit-stat-label">Lucro Líquido</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title"><i class="fas fa-users"></i><h2>Movimentação de Clientes</h2></div></div>
-        <div class="chart-container"><canvas id="graficoClientes"></canvas></div>
+        <span class="month-filter-hint" id="filtroMesHint">Aplicado ao resumo.</span>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title"><i class="fab fa-whatsapp"></i><h2>Resumo Completo — WhatsApp</h2></div></div>
@@ -1445,6 +1467,12 @@
       els.tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
       els.panels.forEach(panel => panel.classList.toggle('active', panel.id === tabName));
       closeSidebar();
+      if (tabName === 'dashboard') {
+        setTimeout(() => {
+          try { atualizarDashboardFinanceiro(); } catch (e) {}
+          try { renderDashboard(); } catch (e) {}
+        }, 80);
+      }
       if (tabName === 'config') {
         // Atualiza dados das sub-seções expansíveis (Calculadora, Gestão, Indicações)
         setTimeout(() => {
@@ -1562,6 +1590,7 @@
       renderPagination(els.paginationTomorrow, pTomorrow.safePage, pTomorrow.totalPages, 'changeTomorrowPage');
       renderPagination(els.paginationWeek, pWeek.safePage, pWeek.totalPages, 'changeWeekPage');
       renderPagination(els.paginationExpired, pExpired.safePage, pExpired.totalPages, 'changeExpiredPage');
+      try { atualizarDashboardFinanceiro(); } catch (e) {}
     }
 
     function renderClientes() {
@@ -3272,8 +3301,156 @@
       if (elT) elT.textContent = fmt(taxas);
       if (elN) { elN.textContent = fmt(liquido); elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b'; }
       atualizarDetalheTaxas();
+      try { atualizarDashboardFinanceiro(); } catch (e) {}
     }
     window.atualizarStatsFinanceiras = atualizarStatsFinanceiras;
+
+    /* ---------- DASHBOARD: stats financeiras + gráfico mês atual + visão geral ---------- */
+    let dashGraficoMes = null;
+
+    function getCurrentMonthKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function computeTotaisMesAtual() {
+      const mk = getCurrentMonthKey();
+      let custo = 0, lucro = 0, taxas = 0;
+      movimentacoes.forEach(m => {
+        if (monthKey(m.data) !== mk) return;
+        if (m.tipo === 'add') custo += (m.custo || 0);
+        else if (m.tipo === 'use') {
+          lucro += (m.valor || 0);
+          taxas += (m.taxa || 0);
+        }
+      });
+      // Lucros/custos fixos do mês atual
+      lucrosCustos.forEach(lc => {
+        const startKey = monthKey(lc.data);
+        if (!startKey) return;
+        if (lc.fixo) {
+          if (startKey <= mk) {
+            if (lc.valor >= 0) lucro += lc.valor;
+            else custo += Math.abs(lc.valor);
+          }
+        } else {
+          if (monthKey(lc.data) === mk) {
+            if (lc.valor >= 0) lucro += lc.valor;
+            else custo += Math.abs(lc.valor);
+          }
+        }
+      });
+      return { custo, lucro, taxas, liquido: lucro - custo - taxas };
+    }
+
+    function atualizarDashboardFinanceiro() {
+      // --- Cards financeiros do mês atual ---
+      const { custo, lucro, taxas, liquido } = computeTotaisMesAtual();
+      const fmt = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
+      const elL = document.getElementById('dashTotalLucro');
+      const elC = document.getElementById('dashTotalCusto');
+      const elT = document.getElementById('dashTotalTaxas');
+      const elN = document.getElementById('dashTotalLiquido');
+      if (elL) elL.textContent = fmt(lucro);
+      if (elC) elC.textContent = fmt(custo);
+      if (elT) elT.textContent = fmt(taxas);
+      if (elN) { elN.textContent = fmt(liquido); elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b'; }
+
+      // --- Tag do mês no gráfico ---
+      const now = new Date();
+      const mesLabel = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      const tagEl = document.getElementById('dashChartMesTag');
+      if (tagEl) tagEl.textContent = mesLabel.charAt(0).toUpperCase() + mesLabel.slice(1);
+
+      // --- Gráfico do mês atual (diário) ---
+      atualizarGraficoMesAtual();
+
+      // --- Cards de visão geral de clientes ---
+      const today = todayLocalDate();
+      const mk = getCurrentMonthKey();
+      // Testes no mês atual
+      let testesMes = 0;
+      movimentacoes.forEach(m => {
+        if (m.tipo === 'teste' && monthKey(m.data) === mk) testesMes += (m.quantidade || 1);
+      });
+      // Clientes ativos (com data de renovação válida e não vencida)
+      let ativos = 0, vencidos = 0, vence7 = 0;
+      clients.forEach(c => {
+        const due = parseDate(c.dataRenovacao);
+        if (!due) { ativos++; return; }
+        const d = diffInDays(due, today);
+        if (d < 0) vencidos++;
+        else if (d >= 0 && d <= 7) vence7++;
+        if (d >= 0) ativos++;
+      });
+      const elTM = document.getElementById('dashTestesMes');
+      const elCA = document.getElementById('dashClientesAtivos');
+      const elCV = document.getElementById('dashClientesVencidos');
+      const elV7 = document.getElementById('dashVence7Dias');
+      if (elTM) elTM.textContent = testesMes;
+      if (elCA) elCA.textContent = ativos;
+      if (elCV) elCV.textContent = vencidos;
+      if (elV7) elV7.textContent = vence7;
+    }
+
+    function atualizarGraficoMesAtual() {
+      const parent = document.querySelector('#dashboard .chart-container');
+      if (!parent) return;
+      const mk = getCurrentMonthKey();
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      // Agrupar movimentações por dia do mês atual
+      const porDia = {};
+      for (let d = 1; d <= daysInMonth; d++) porDia[d] = { novos: 0, renovacoes: 0, testes: 0, lucro: 0 };
+      movimentacoes.forEach(m => {
+        if (monthKey(m.data) !== mk) return;
+        const dt = new Date(m.data);
+        const day = dt.getDate();
+        if (!porDia[day]) porDia[day] = { novos: 0, renovacoes: 0, testes: 0, lucro: 0 };
+        if (m.tipo === 'use' && m.tipoCliente === 'novo') { porDia[day].novos++; porDia[day].lucro += (m.valor || 0); }
+        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') { porDia[day].renovacoes++; porDia[day].lucro += (m.valor || 0); }
+        else if (m.tipo === 'teste') porDia[day].testes += (m.quantidade || 1);
+        else if (m.tipo === 'use' && m.tipoCliente === 'dias_extras') { porDia[day].renovacoes++; porDia[day].lucro += (m.valor || 0); }
+      });
+      const labels = [];
+      const dataNovos = [], dataRenov = [], dataTestes = [], dataLucro = [];
+      for (let d = 1; d <= daysInMonth; d++) {
+        labels.push(String(d).padStart(2, '0'));
+        dataNovos.push(porDia[d].novos);
+        dataRenov.push(porDia[d].renovacoes);
+        dataTestes.push(porDia[d].testes);
+        dataLucro.push(porDia[d].lucro);
+      }
+      if (!document.getElementById('dashGraficoMes')) parent.innerHTML = '<canvas id="dashGraficoMes"></canvas>';
+      const canvas = document.getElementById('dashGraficoMes');
+      if (dashGraficoMes) dashGraficoMes.destroy();
+      dashGraficoMes = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Novos', data: dataNovos, backgroundColor: 'rgba(57,255,20,.55)', borderColor: '#39ff14', borderWidth: 1, borderRadius: 3 },
+            { label: 'Renovações', data: dataRenov, backgroundColor: 'rgba(92,240,255,.45)', borderColor: '#5cf0ff', borderWidth: 1, borderRadius: 3 },
+            { label: 'Testes', data: dataTestes, backgroundColor: 'rgba(255,228,92,.4)', borderColor: '#ffe45c', borderWidth: 1, borderRadius: 3 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { color: '#f5f5f5', font: { size: 11, weight: '600' }, padding: 10, usePointStyle: true } },
+            tooltip: { backgroundColor: '#0a0a0a', titleColor: '#fff', bodyColor: '#f5f5f5', borderColor: 'rgba(57,255,20,.3)', borderWidth: 1 }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.07)' }, ticks: { color: '#a1a1aa', precision: 0 } },
+            x: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { size: 9 }, maxRotation: 0 } }
+          }
+        }
+      });
+    }
+    window.atualizarDashboardFinanceiro = atualizarDashboardFinanceiro;
 
     function atualizarDetalheTaxas() {
       const cont = document.getElementById('detalheTaxas');
@@ -3319,7 +3496,9 @@
     }
 
     function atualizarGraficoClientes() {
-      const parent = document.querySelector('#gestao .chart-container'); if (!parent) return;
+      const parent = document.querySelector('#gestao .chart-container');
+      if (graficoClientes) { graficoClientes.destroy(); graficoClientes = null; }
+      if (!parent) return;
       const porMes = {};
       const ensure = k => { if (!porMes[k]) porMes[k] = { novos: 0, renovacoes: 0, naoRenovou: 0, vencidos: 0, testes: 0 }; };
       movimentacoes.forEach(m => {
@@ -4099,5 +4278,6 @@
     wireRoletaEvents();
     migrarParaConfig();
   </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
