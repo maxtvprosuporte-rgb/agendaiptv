@@ -445,41 +445,61 @@
         </div>
       </div>
       <!-- VENCIMENTOS DETALHADOS -->
-      <div class="table-card" style="margin-bottom:18px;">
-        <div class="card-header">
+      <div class="card collapsed" style="margin-bottom:18px;">
+        <div class="card-header collapsible">
           <div class="card-title"><h2>Vencidos (não renovaram)</h2><span class="tag">Atrasados</span></div>
-          <span class="count-badge danger" id="countExpired" data-testid="count-expired">0</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count-badge danger" id="countExpired" data-testid="count-expired">0</span>
+            <span class="chev"><i class="fas fa-chevron-down"></i></span>
+          </div>
         </div>
-        <p class="card-hint">Clientes com vencimento no passado. 10 por página.</p>
-        <div id="listExpired" data-testid="list-expired"></div>
-        <div class="pagination-bar" id="paginationExpired"></div>
+        <div class="card-body">
+          <p class="card-hint">Clientes com vencimento no passado. 10 por página.</p>
+          <div id="listExpired" data-testid="list-expired"></div>
+          <div class="pagination-bar" id="paginationExpired"></div>
+        </div>
       </div>
-      <div class="table-card" style="margin-bottom:18px;">
-        <div class="card-header">
+      <div class="card collapsed" style="margin-bottom:18px;">
+        <div class="card-header collapsible">
           <div class="card-title"><h2>Vencendo hoje</h2><span class="tag">D-Day</span></div>
-          <span class="count-badge danger" id="countToday" data-testid="count-today">0</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count-badge danger" id="countToday" data-testid="count-today">0</span>
+            <span class="chev"><i class="fas fa-chevron-down"></i></span>
+          </div>
         </div>
-        <p class="card-hint">Clientes cujo plano vence hoje. WhatsApp vermelho = mensagem ainda não enviada neste ciclo. Verde = já enviada. 10 por página.</p>
-        <div id="listToday" data-testid="list-today"></div>
-        <div class="pagination-bar" id="paginationToday"></div>
+        <div class="card-body">
+          <p class="card-hint">Clientes cujo plano vence hoje. WhatsApp vermelho = mensagem ainda não enviada neste ciclo. Verde = já enviada. 10 por página.</p>
+          <div id="listToday" data-testid="list-today"></div>
+          <div class="pagination-bar" id="paginationToday"></div>
+        </div>
       </div>
-      <div class="table-card" style="margin-bottom:18px;">
-        <div class="card-header">
+      <div class="card collapsed" style="margin-bottom:18px;">
+        <div class="card-header collapsible">
           <div class="card-title"><h2>Vence amanhã</h2><span class="tag">D-1</span></div>
-          <span class="count-badge warning" id="countTomorrow" data-testid="count-tomorrow">0</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count-badge warning" id="countTomorrow" data-testid="count-tomorrow">0</span>
+            <span class="chev"><i class="fas fa-chevron-down"></i></span>
+          </div>
         </div>
-        <p class="card-hint">Previsão para o próximo dia. 10 por página.</p>
-        <div id="listTomorrow" data-testid="list-tomorrow"></div>
-        <div class="pagination-bar" id="paginationTomorrow"></div>
+        <div class="card-body">
+          <p class="card-hint">Previsão para o próximo dia. 10 por página.</p>
+          <div id="listTomorrow" data-testid="list-tomorrow"></div>
+          <div class="pagination-bar" id="paginationTomorrow"></div>
+        </div>
       </div>
-      <div class="table-card">
-        <div class="card-header">
+      <div class="card collapsed">
+        <div class="card-header collapsible">
           <div class="card-title"><h2>Vence em até 7 dias</h2><span class="tag">D-7</span></div>
-          <span class="count-badge" id="countWeek" data-testid="count-week">0</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count-badge" id="countWeek" data-testid="count-week">0</span>
+            <span class="chev"><i class="fas fa-chevron-down"></i></span>
+          </div>
         </div>
-        <p class="card-hint">Clientes com vencimento nos próximos 2 a 7 dias. 10 por página.</p>
-        <div id="listWeek" data-testid="list-week"></div>
-        <div class="pagination-bar" id="paginationWeek"></div>
+        <div class="card-body">
+          <p class="card-hint">Clientes com vencimento nos próximos 2 a 7 dias. 10 por página.</p>
+          <div id="listWeek" data-testid="list-week"></div>
+          <div class="pagination-bar" id="paginationWeek"></div>
+        </div>
       </div>
     </section>
 
@@ -592,13 +612,16 @@
     </section>
 
     <section id="config" class="panel">
-      <div class="card" id="cardGestaoCreditos">
+      <div class="card collapsed" id="cardGestaoCreditos">
         <div class="card-header collapsible" id="headerGestaoCreditos" data-testid="header-gestao-creditos">
           <div class="card-title"><i class="fas fa-coins"></i><h2>Gestão de Créditos</h2></div>
           <span class="chev"><i class="fas fa-chevron-down"></i></span>
         </div>
         <div class="card-body" id="bodyGestaoCreditos">
-          <p class="card-hint" style="margin: 0 0 12px;">Você gerencia <b style="color:var(--primary);">2 painéis</b> de créditos com custos independentes. Renomeie cada painel abaixo. O painel é definido em cada <b>Pacote</b> e <b>Plano</b>.</p>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+            <p class="card-hint" style="margin:0;">Você gerencia <b style="color:var(--primary);" id="paineisCountHint">2 painéis</b> de créditos com custos independentes. Renomeie cada painel, adicione novos ou exclua os que não precisa. O painel é definido em cada <b>Pacote</b> e <b>Plano</b>.</p>
+            <button class="btn-primary" onclick="adicionarPainel()" style="flex-shrink:0;"><i class="fas fa-plus"></i> Adicionar Painel</button>
+          </div>
 
           <div class="paineis-grid" id="paineisGrid"></div>
 
@@ -627,7 +650,7 @@
 
       <div class="card collapsed" id="cardLucrosCustos">
         <div class="card-header collapsible" id="headerLucrosCustos" data-testid="header-lucros-custos">
-          <div class="card-title"><i class="fas fa-chart-pie"></i><h2>Lucros e Custos Personalizados</h2></div>
+          <div class="card-title"><i class="fas fa-chart-pie"></i><h2>Lucro/Custo Extra</h2></div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="count-badge" id="countLucrosCustos" data-testid="count-lucros-custos">0</span>
             <span class="chev"><i class="fas fa-chevron-down"></i></span>
@@ -712,7 +735,7 @@
 
       <div class="card collapsed" id="cardHistorico">
         <div class="card-header collapsible" id="headerHistorico" data-testid="header-historico">
-          <div class="card-title"><i class="fas fa-history"></i><h2>Histórico de Movimentações</h2></div>
+          <div class="card-title"><i class="fas fa-history"></i><h2>Movimentação</h2></div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="count-badge" id="countHistorico" data-testid="count-historico">0</span>
             <span class="chev"><i class="fas fa-chevron-down"></i></span>
@@ -726,7 +749,7 @@
 
       <div class="card collapsed" id="cardHistoricoTaxas">
         <div class="card-header collapsible" id="headerHistoricoTaxas" data-testid="header-historico-taxas">
-          <div class="card-title"><i class="fas fa-percent"></i><h2>Histórico de Taxas Bancárias</h2></div>
+          <div class="card-title"><i class="fas fa-percent"></i><h2>Taxa Bancária</h2></div>
           <div style="display:flex; align-items:center; gap:10px;">
             <span class="count-badge warning" id="countTaxas" data-testid="count-taxas">0</span>
             <span class="chev"><i class="fas fa-chevron-down"></i></span>
@@ -2057,14 +2080,15 @@
         else if (data && typeof data === 'object') {
           if (Array.isArray(data.clients)) clients = data.clients;
           if (Array.isArray(data.testes)) { testes = data.testes; salvarTestes(); }
-          if (Array.isArray(data.paineis) && data.paineis.length >= 2) {
-            paineis = data.paineis.slice(0, 2).map((x, i) => ({
-              id: x.id || PAINEIS_DEFAULT[i].id,
-              nome: (x.nome && String(x.nome).trim()) || PAINEIS_DEFAULT[i].nome,
-              cor: (x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor))) ? x.cor : PAINEIS_DEFAULT[i].cor,
+          if (Array.isArray(data.paineis) && data.paineis.length >= 1) {
+            paineis = data.paineis.map((x, i) => ({
+              id: x.id || ('p' + (i + 1)),
+              nome: (x.nome && String(x.nome).trim()) || ('Painel ' + (i + 1)),
+              cor: (x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor))) ? x.cor : '#39ff14',
               logo: (typeof x.logo === 'string') ? x.logo : ''
             }));
             salvarPaineis();
+            atualizarHintPaineis();
           }
           if (Array.isArray(data.pacotes)) {
             pacotes = data.pacotes.map(p => ({ ...p, painelId: p.painelId || paineis[0].id }));
@@ -2089,7 +2113,8 @@
         renderAll(); renderTestes();
         atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
         atualizarListaPlanos(); atualizarSelectPlanos();
-        atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
+    atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
+    atualizarHintPaineis();
         atualizarSelectMesGestao();
         atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
         showToast('Backup importado com sucesso.');
@@ -2121,11 +2146,11 @@
       if (raw) {
         try {
           const p = JSON.parse(raw);
-          if (Array.isArray(p) && p.length >= 2) {
-            paineis = p.slice(0, 2).map((x, i) => ({
-              id: x.id || PAINEIS_DEFAULT[i].id,
-              nome: (x.nome && String(x.nome).trim()) || PAINEIS_DEFAULT[i].nome,
-              cor: (x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor))) ? x.cor : PAINEIS_DEFAULT[i].cor,
+          if (Array.isArray(p) && p.length >= 1) {
+            paineis = p.map((x, i) => ({
+              id: x.id || ('p' + (i + 1)),
+              nome: (x.nome && String(x.nome).trim()) || ('Painel ' + (i + 1)),
+              cor: (x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor))) ? x.cor : PAINEIS_DEFAULT[Math.min(i, PAINEIS_DEFAULT.length - 1)].cor,
               logo: (typeof x.logo === 'string') ? x.logo : ''
             }));
             return;
@@ -2134,6 +2159,49 @@
       }
       paineis = JSON.parse(JSON.stringify(PAINEIS_DEFAULT));
       salvarPaineis();
+    }
+    function adicionarPainel() {
+      const novoIdx = paineis.length + 1;
+      const novoId = 'p' + Date.now().toString(36);
+      const cores = ['#39ff14','#5cf0ff','#ff5c5c','#ffe45c','#ff9bff','#5cffa1','#ff8c42','#c084fc'];
+      const cor = cores[paineis.length % cores.length];
+      paineis.push({ id: novoId, nome: 'Painel ' + novoIdx, cor: cor, logo: '' });
+      salvarPaineis();
+      atualizarCreditos();
+      atualizarSelectsPaineis();
+      if (typeof atualizarSelectDxPaineis === 'function') atualizarSelectDxPaineis();
+      atualizarListaPacotes();
+      atualizarListaPlanos();
+      atualizarHintPaineis();
+      showToast('Painel adicionado.');
+    }
+    function removerPainel(pid) {
+      if (paineis.length <= 1) { showToast('É necessário manter pelo menos 1 painel.', true); return; }
+      const alvo = paineis.find(p => p.id === pid);
+      const nome = alvo ? alvo.nome : pid;
+      if (!confirmar('Excluir o painel "' + nome + '" e todas as suas movimentações?')) return;
+      // Move itens do painel excluído para o primeiro painel restante
+      const fallbackId = paineis.find(p => p.id !== pid).id;
+      pacotes.forEach(pac => { if (pac.painelId === pid) pac.painelId = fallbackId; });
+      planos.forEach(pl => { if (pl.painelId === pid) pl.painelId = fallbackId; });
+      movimentacoes.forEach(mv => { if (mv.painelId === pid) mv.painelId = fallbackId; });
+      salvarPacotes(); salvarPlanos(); salvarMovimentacoes();
+      paineis = paineis.filter(p => p.id !== pid);
+      salvarPaineis();
+      atualizarCreditos();
+      atualizarSelectsPaineis();
+      if (typeof atualizarSelectDxPaineis === 'function') atualizarSelectDxPaineis();
+      atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
+      atualizarListaPlanos(); atualizarSelectPlanos();
+      atualizarHistorico();
+      atualizarHintPaineis();
+      renderDashboard(); renderClientes();
+      atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      showToast('Painel "' + nome + '" excluído.');
+    }
+    function atualizarHintPaineis() {
+      const el = document.getElementById('paineisCountHint');
+      if (el) el.textContent = paineis.length + ' painel' + (paineis.length !== 1 ? 'éis' : '');
     }
     function getPainelById(pid) {
       return paineis.find(p => p.id === pid) || paineis[0];
@@ -2144,7 +2212,8 @@
     }
     function getPainelIdxClass(pid) {
       const idx = paineis.findIndex(p => p.id === pid);
-      return idx === 1 ? 'painel-2' : '';
+      if (idx <= 0) return '';
+      return 'painel-' + ((idx % 2) + 1);
     }
     function resolverPainelDeMovimentacao(m) {
       if (m.painelId && paineis.some(p => p.id === m.painelId)) return m.painelId;
@@ -2626,27 +2695,28 @@
       if (grid) {
         grid.innerHTML = paineis.map((p, idx) => {
           const s = stats[p.id];
-          const cls = idx === 1 ? 'painel-2' : '';
+          const cls = idx === 0 ? '' : 'painel-' + ((idx % 2) + 1);
           const disp = Number.isInteger(s.disponiveis) ? s.disponiveis : s.disponiveis.toFixed(3);
           const usd = Number.isInteger(s.usados) ? s.usados : s.usados.toFixed(3);
-          const cor = p.cor || (idx === 1 ? '#5cf0ff' : '#39ff14');
+          const cor = p.cor || '#39ff14';
           const logoHtml = p.logo
             ? `<img class="painel-logo" src="${escapeHtml(p.logo)}" alt="Logo ${escapeHtml(p.nome)}" data-testid="painel-logo-${p.id}" />`
             : `<div class="painel-logo-empty" data-testid="painel-logo-empty-${p.id}"><i class="fas fa-image"></i></div>`;
-          const removeBtn = p.logo
+          const logoRemoveBtn = p.logo
             ? `<button type="button" class="painel-brand-btn danger" data-action="remove-logo" data-painel-id="${p.id}" data-testid="painel-logo-remove-${p.id}"><i class="fas fa-trash"></i> Remover</button>`
             : '';
           return `
             <div class="painel-box ${cls}" data-testid="painel-box-${p.id}" style="--painel-color: ${cor};">
               <div class="painel-box-head">
-                <span class="painel-box-tag">${idx === 0 ? 'Painel 1' : 'Painel 2'}</span>
+                <span class="painel-box-tag">Painel ${idx + 1}</span>
                 <input class="painel-name-input" type="text" value="${escapeHtml(p.nome)}" data-painel-id="${p.id}" data-testid="painel-nome-${p.id}" />
+                <button type="button" class="painel-brand-btn danger" onclick="removerPainel('${p.id}')" title="Excluir painel" style="margin-left:auto; flex-shrink:0;"><i class="fas fa-trash-alt"></i> Excluir</button>
               </div>
               <div class="painel-brand-row">
                 ${logoHtml}
                 <div class="painel-brand-actions">
                   <button type="button" class="painel-brand-btn" data-action="upload-logo" data-painel-id="${p.id}" data-testid="painel-logo-upload-${p.id}"><i class="fas fa-upload"></i> ${p.logo ? 'Trocar logo' : 'Enviar logo'}</button>
-                  ${removeBtn}
+                  ${logoRemoveBtn}
                   <label class="painel-color-wrap" title="Cor do painel">
                     <input type="color" class="painel-color-swatch" value="${cor}" data-painel-id="${p.id}" data-testid="painel-cor-${p.id}" />
                     <span class="painel-color-label">${cor.toUpperCase()}</span>
@@ -3081,6 +3151,11 @@
     document.getElementById('headerHistorico').addEventListener('click', () => { document.getElementById('cardHistorico').classList.toggle('collapsed'); });
     document.getElementById('headerLucrosCustos').addEventListener('click', () => { document.getElementById('cardLucrosCustos').classList.toggle('collapsed'); });
     document.getElementById('headerHistoricoTaxas').addEventListener('click', () => { document.getElementById('cardHistoricoTaxas').classList.toggle('collapsed'); });
+
+    // Dashboard collapsible cards (vencimentos)
+    document.querySelectorAll('#dashboard .card-header.collapsible').forEach(header => {
+      header.addEventListener('click', () => { header.closest('.card').classList.toggle('collapsed'); });
+    });
 
     (function wireLcRadio() {
       const sim = document.getElementById('lc_fixo_sim');
@@ -4278,6 +4353,7 @@
     wireRoletaEvents();
     migrarParaConfig();
   </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
