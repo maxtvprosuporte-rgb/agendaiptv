@@ -1239,6 +1239,22 @@
       return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
     }
     function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate() + days); return d; }
+    function addMonths(date, months) {
+      const d = new Date(date);
+      const day = d.getDate();
+      d.setMonth(d.getMonth() + months);
+      // Evita rolagem quando o dia original não existe no mês destino (ex: 31/01 + 1 mês)
+      if (d.getDate() !== day) { d.setDate(0); }
+      return d;
+    }
+    function addPlanPeriod(date, dias) {
+      // Para planos de 30+ dias, soma meses calendário (1 mês per 30 dias)
+      // Para planos menores, soma os dias exatos
+      if (dias >= 30 && dias % 30 === 0) {
+        return addMonths(date, Math.round(dias / 30));
+      }
+      return addDays(date, dias);
+    }
     function diffInDays(a, b) {
       const ms = 86400000;
       const x = new Date(a.getFullYear(), a.getMonth(), a.getDate());
@@ -1361,7 +1377,7 @@
       // Calcula sempre a partir de HOJE (dia da renovação), não do vencimento antigo
       const dueDate = parseDate(client.dataRenovacao);
       const baseDate = today;
-      const nd = addDays(baseDate, dias);
+      const nd = addPlanPeriod(baseDate, dias);
       const novaDataStr = toInputDate(nd);
       const valorVenda = parseValor(client.valor);
       const taxa = calcularTaxaPlano(planoCadastrado, valorVenda);
@@ -1828,7 +1844,7 @@
         usuario: t.usuario, senha: t.senha, plano: t.plano, valor: t.valor,
         creditos: creditosUsar,
         dataInicio: toInputDate(hoje), dataPagamento: toInputDate(hoje),
-        dataRenovacao: toInputDate(addDays(hoje, dias)),
+        dataRenovacao: toInputDate(addPlanPeriod(hoje, dias)),
         linkRenovacao: t.linkRenovacao, observacoes: t.observacoes,
         msgSentAt: null, updatedAt: new Date().toISOString()
       };
@@ -1940,7 +1956,7 @@
         const d = parseDate(inicio.value); if (!d) return;
         const planoCad = planoPorIdSelect(planoSel);
         const dias = planoCad ? planoCad.dias : 30;
-        renov.value = toInputDate(addDays(d, dias));
+        renov.value = toInputDate(addPlanPeriod(d, dias));
       };
       inicio.addEventListener('change', recalc);
       if (btn) btn.addEventListener('click', recalc);
@@ -1993,7 +2009,7 @@
       atualizarSelectPlanos();
       const hoje = todayLocalDate();
       document.getElementById('nc_dataInicio').value = toInputDate(hoje);
-      document.getElementById('nc_dataRenovacao').value = toInputDate(addDays(hoje, 30));
+      document.getElementById('nc_dataRenovacao').value = toInputDate(addPlanPeriod(hoje, 30));
       document.getElementById('nc_creditos').value = 1;
       document.querySelector('input[name="nc_contabilizar"][value="sim"]').checked = true;
       document.getElementById('nc_contab_sim').classList.add('active');
@@ -2014,7 +2030,7 @@
         const d = parseDate(inicio.value); if (!d) return;
         const planoCad = planoPorIdSelect(planoSel);
         const dias = planoCad ? planoCad.dias : 30;
-        renov.value = toInputDate(addDays(d, dias));
+        renov.value = toInputDate(addPlanPeriod(d, dias));
       };
       inicio.addEventListener('change', recalc);
       if (btn) btn.addEventListener('click', recalc);
@@ -2043,7 +2059,7 @@
       const ncPlanoSel = document.getElementById('nc_plano');
       const planoCad = planoPorIdSelect(ncPlanoSel);
       const dias = planoCad ? planoCad.dias : 30;
-      const dataRenovacao = document.getElementById('nc_dataRenovacao').value || toInputDate(addDays(parseDate(dataInicio) || hoje, dias));
+      const dataRenovacao = document.getElementById('nc_dataRenovacao').value || toInputDate(addPlanPeriod(parseDate(dataInicio) || hoje, dias));
       const valor = document.getElementById('nc_valor').value.trim();
       const planoNome = ncPlanoSel && ncPlanoSel.tagName === 'SELECT' ? getPlanoNomeDoSelect(ncPlanoSel) : '';
       const ncCredVal = document.getElementById('nc_creditos').value;
@@ -2471,7 +2487,7 @@
       if (dataInicioElId && dataRenovacaoElId) {
         const inicioStr = document.getElementById(dataInicioElId).value;
         const baseDate = parseDate(inicioStr) || todayLocalDate();
-        document.getElementById(dataRenovacaoElId).value = toInputDate(addDays(baseDate, p.dias));
+        document.getElementById(dataRenovacaoElId).value = toInputDate(addPlanPeriod(baseDate, p.dias));
       }
       if (creditosElId) { const elC = document.getElementById(creditosElId); if (elC) elC.value = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1; }
     }
