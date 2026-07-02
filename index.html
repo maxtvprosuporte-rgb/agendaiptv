@@ -1064,7 +1064,7 @@
         <h3 class="modal-title"><i class="fas fa-rotate-right" style="color: var(--info); margin-right: 6px;"></i> Confirmar Renovação</h3>
         <button class="modal-close" onclick="fecharModalConfirmarRenovacao()" data-testid="close-confirm-renovacao"><i class="fas fa-times"></i></button>
       </div>
-      <p class="card-hint" style="margin: 0 0 6px;">Confira os dados abaixo. Ao confirmar, o cliente será renovado e <b style="color:var(--primary);">os dias restantes serão somados</b> ao novo período.</p>
+      <p class="card-hint" style="margin: 0 0 6px;">Confira os dados abaixo. Ao confirmar, o cliente será renovado e <b style="color:var(--primary);">a nova data será calculada a partir de hoje</b>.</p>
       <div class="renew-confirm-grid" id="renewConfirmGrid"></div>
       <div style="display:flex; gap:10px; justify-content:flex-end;">
         <button type="button" class="btn-secondary" onclick="fecharModalConfirmarRenovacao()" data-testid="cancel-renovacao">Cancelar</button>
@@ -1086,6 +1086,23 @@
         <button type="button" class="btn-success" onclick="copiarMensagemRenovacao()" data-testid="btn-copiar-msg-renovacao"><i class="fas fa-copy"></i> Copiar mensagem</button>
         <button type="button" class="btn-whatsapp" onclick="enviarMensagemRenovacaoWhatsApp()" data-testid="btn-whats-renovacao"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
         <button type="button" class="btn-secondary" onclick="fecharModalMensagemRenovacao()" style="margin-left:auto;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mensagem pós-ativação (teste -> assinatura) -->
+  <div id="modalMensagemAtivacao" class="modal">
+    <div class="modal-content sm">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-bolt" style="color: var(--primary); margin-right: 6px;"></i> Mensagem de Ativação</h3>
+        <button class="modal-close" onclick="fecharModalMensagemAtivacao()" data-testid="close-msg-ativacao"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="card-hint" style="margin: 0 0 6px;">Assinatura ativada! Use os botões abaixo para enviar a mensagem ao cliente.</p>
+      <div class="renew-msg-box" id="ativacaoMsgBox" data-testid="ativacao-msg-box"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="button" class="btn-success" onclick="copiarMensagemAtivacao()" data-testid="btn-copiar-msg-ativacao"><i class="fas fa-copy"></i> Copiar mensagem</button>
+        <button type="button" class="btn-whatsapp" onclick="enviarMensagemAtivacaoWhatsApp()" data-testid="btn-whats-ativacao"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
+        <button type="button" class="btn-secondary" onclick="fecharModalMensagemAtivacao()" style="margin-left:auto;">Fechar</button>
       </div>
     </div>
   </div>
@@ -1341,9 +1358,9 @@
       const dias = planoCadastrado ? planoCadastrado.dias : 30;
       const creditosUsar = resolverCreditosCliente(client);
       const today = todayLocalDate();
-      // Soma dias restantes: se a data de renovação ainda é futura, partimos dela; caso contrário, de hoje
+      // Calcula sempre a partir de HOJE (dia da renovação), não do vencimento antigo
       const dueDate = parseDate(client.dataRenovacao);
-      const baseDate = (dueDate && dueDate >= today) ? dueDate : today;
+      const baseDate = today;
       const nd = addDays(baseDate, dias);
       const novaDataStr = toInputDate(nd);
       const valorVenda = parseValor(client.valor);
@@ -1352,12 +1369,12 @@
       const painelNome = getPainelNome(painelId);
       const painelCls = getPainelIdxClass(painelId);
 
-      // Dias restantes que estamos preservando
-      const diasRestantes = (dueDate && dueDate > today) ? diffInDays(dueDate, today) : 0;
+      // Informação sobre o cálculo
       const venceuHa = (dueDate && dueDate < today) ? diffInDays(today, dueDate) : 0;
+      const diasRestantes = (dueDate && dueDate > today) ? diffInDays(dueDate, today) : 0;
       let baseInfo;
       if (diasRestantes > 0) {
-        baseInfo = `<span style="color:var(--primary);">+${diasRestantes} dia${diasRestantes === 1 ? '' : 's'} restantes preservados</span> + ${dias} dias do plano`;
+        baseInfo = `<span style="color:var(--primary);">${diasRestantes} dia${diasRestantes === 1 ? '' : 's'} restantes</span> — contando ${dias} dias a partir de hoje (renovação antecipada)`;
       } else if (venceuHa > 0) {
         baseInfo = `<span style="color:#ff9b9b;">Venceu há ${venceuHa} dia${venceuHa === 1 ? '' : 's'}</span> — contando ${dias} dias a partir de hoje`;
       } else {
@@ -1703,12 +1720,55 @@
     function buildTesteMessage(t) {
       const link = (t.linkRenovacao || '').trim();
       return [
-        `Olá! 😊`,
-        `Vimos que você realizou o teste, mas ainda não ativou sua assinatura.`,
-        `Para continuar aproveitando tudo, basta acessar o link abaixo e concluir a ativação 👇`,
-        ``, link || '[informe o link de ativação no cadastro]'
+        `🎉 Olá *${t.nome || ''}*, *Teste Gerado com Sucesso!*`, ``,
+        `👤 *Usuário*: ${t.usuario || ''}`,
+        `🔑 *Senha*: ${t.senha || ''}`, ``,
+        `🔗 *Link de renovação*: ${link || '[informe o link de ativação no cadastro]'}`, ``,
+        `⏰ *3 Horas de Teste Grátis!*`
       ].join('\n');
     }
+
+    function buildAtivacaoMessage(client) {
+      return [
+        `🎉 Olá *${client.nome || ''}*, *Usuário Ativado com sucesso!*`, ``,
+        `👤 *Usuário*: ${client.usuario || ''}`,
+        `🔑 *Senha*: ${client.senha || ''}`,
+        `🗓️ *Nova data de vencimento*: ${formatDate(client.dataRenovacao)}`, ``,
+        `🙏 Obrigado pela preferência!`
+      ].join('\n');
+    }
+
+    let ativacaoClienteAtual = null;
+    function abrirModalMensagemAtivacao(client) {
+      ativacaoClienteAtual = client;
+      const box = document.getElementById('ativacaoMsgBox');
+      if (box) box.textContent = buildAtivacaoMessage(client);
+      document.getElementById('modalMensagemAtivacao').classList.add('active');
+    }
+    function fecharModalMensagemAtivacao() {
+      document.getElementById('modalMensagemAtivacao').classList.remove('active');
+      ativacaoClienteAtual = null;
+    }
+    function copiarMensagemAtivacao() {
+      if (!ativacaoClienteAtual) return;
+      const msg = buildAtivacaoMessage(ativacaoClienteAtual);
+      const name = ativacaoClienteAtual.nome || '';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${name}`)).catch(() => fallbackCopy(msg, name));
+      } else fallbackCopy(msg, name);
+    }
+    function enviarMensagemAtivacaoWhatsApp() {
+      if (!ativacaoClienteAtual) return;
+      const c = ativacaoClienteAtual;
+      const phone = String(c.telefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(buildAtivacaoMessage(c));
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+    window.fecharModalMensagemAtivacao = fecharModalMensagemAtivacao;
+    window.copiarMensagemAtivacao = copiarMensagemAtivacao;
+    window.enviarMensagemAtivacaoWhatsApp = enviarMensagemAtivacaoWhatsApp;
 
     function renderTestes() {
       const cont = document.getElementById('listaTestes');
@@ -1790,6 +1850,7 @@
       atualizarSelectMesGestao();
       switchTab('clientes');
       showToast(`${novoCliente.nome} ativado • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} • Vence em ${formatDate(novoCliente.dataRenovacao)}${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}`);
+      abrirModalMensagemAtivacao(novoCliente);
     }
 
     function excluirTeste(id) {
@@ -4355,5 +4416,6 @@
   </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
