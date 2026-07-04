@@ -178,6 +178,19 @@
     .btn-pending { background: #0a0a03; color: var(--warning); border: 1px solid rgba(255,228,92,.35); box-shadow: 0 0 8px rgba(255,228,92,.08); }
     .btn-pending:hover { background: #141406; border-color: rgba(255,228,92,.6); box-shadow: 0 0 14px rgba(255,228,92,.18); }
 
+    .pending-dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .pending-dashboard-card { border-color: rgba(255,228,92,.28); background: linear-gradient(180deg, rgba(255,228,92,.055), var(--card-2)); }
+    .pending-dashboard-card::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--warning); box-shadow: 0 0 18px rgba(255,228,92,.38); opacity: .9; }
+    .pending-metric { display: flex; align-items: flex-end; gap: 10px; margin: 4px 0 10px; flex-wrap: wrap; }
+    .pending-metric-value { font-family: var(--font-mono); font-size: clamp(28px, 5vw, 40px); line-height: 1; font-weight: 800; color: var(--warning); }
+    .pending-metric-sub { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding-bottom: 4px; }
+    .pending-list-mini { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .pending-mini-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: #080808; border: 1px solid rgba(255,228,92,.12); }
+    .pending-mini-main { min-width: 0; }
+    .pending-mini-name { font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pending-mini-meta { margin-top: 2px; font-family: var(--font-mono); color: var(--muted); font-size: 11.5px; }
+    .pending-mini-action { padding: 7px 10px; min-height: 32px; font-size: 11.5px; }
+
     .empty-state { text-align: center; color: var(--muted); padding: 38px 20px; font-size: 14px; background: #080808; border: 1px dashed var(--border-faint); border-radius: 12px; }
     .empty-state i { font-size: 40px; opacity: .4; margin-bottom: 10px; display: block; }
     .empty-state p { margin: 0; font-weight: 500; }
@@ -214,7 +227,7 @@
     .painel-name-input { flex: 1; background: transparent; border: 1px dashed var(--border-faint); border-radius: 10px; color: var(--text); font-family: var(--font-display); font-weight: 700; font-size: 18px; padding: 8px 12px; outline: none; transition: border-color .2s, background .2s; min-width: 0; }
     .painel-name-input:hover { border-color: var(--border-strong); background: color-mix(in srgb, var(--painel-color) 4%, transparent); }
     .painel-name-input:focus { border-style: solid; border-color: var(--painel-color); background: color-mix(in srgb, var(--painel-color) 6%, transparent); }
-    .painel-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .painel-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
     .painel-stat { background: #060606; border: 1px solid var(--border-faint); border-radius: 12px; padding: 12px 10px; text-align: center; }
     .painel-stat-value { font-family: var(--font-mono); font-size: 22px; font-weight: 700; line-height: 1.1; color: var(--painel-color); }
     .painel-stat-label { margin-top: 4px; font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
@@ -421,6 +434,25 @@
         <div class="credit-stat-card">
           <div class="credit-stat-value" id="dashTotalLiquido" style="color: var(--info);">R$ 0,00</div>
           <div class="credit-stat-label">Lucro Líquido</div>
+        </div>
+      </div>
+      <!-- ALERTAS DE PAGAMENTOS PENDENTES (aparecem somente quando existem pendências) -->
+      <div class="pending-dashboard-grid hidden" id="pendingDashboardBoxes" data-testid="pending-dashboard-boxes">
+        <div class="card pending-dashboard-card hidden" id="boxCreditosReservados" data-testid="box-creditos-reservados">
+          <div class="card-header"><div class="card-title"><i class="fas fa-lock" style="color:var(--warning);"></i><h2>Créditos reservados</h2><span class="tag">Pendentes</span></div></div>
+          <div class="pending-metric">
+            <div class="pending-metric-value" id="dashCreditosReservadosValor">0</div>
+            <div class="pending-metric-sub" id="dashCreditosReservadosDetalhe">reservados em pagamentos pendentes</div>
+          </div>
+          <p class="card-hint" style="margin:0;">Estes créditos já foram separados do saldo disponível e serão convertidos em usados quando o pagamento for confirmado.</p>
+        </div>
+        <div class="card pending-dashboard-card hidden" id="boxPagamentosPendentes" data-testid="box-pagamentos-pendentes">
+          <div class="card-header"><div class="card-title"><i class="fas fa-clock" style="color:var(--warning);"></i><h2>Pagamentos pendentes</h2><span class="tag" id="dashPagamentosPendentesCount">0</span></div></div>
+          <div class="pending-metric">
+            <div class="pending-metric-value" id="dashPagamentosPendentesValor">R$ 0,00</div>
+            <div class="pending-metric-sub">aguardando confirmação</div>
+          </div>
+          <div class="pending-list-mini" id="dashPagamentosPendentesList"></div>
         </div>
       </div>
       <!-- GRÁFICO DO MÊS ATUAL -->
@@ -1501,15 +1533,19 @@
         abrirModalMensagemRenovacao(client);
         showToast(`Renovação confirmada • Novo vencimento: ${formatDate(client.dataRenovacao)} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} (${getPainelNome(painelId)})${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}`);
       } else {
-        // Pagamento pendente - não contabiliza ainda
+        // Pagamento pendente - reserva o crédito agora, sem contabilizar lucro/taxa ainda
         client.pagamentoPendente = true;
-        client._renovacaoPendente = { valorVenda, painelId, creditosUsar, taxa };
+        const reservaId = reservarCreditoPagamentoPendente(client, { valorVenda, painelId, creditosUsar, taxa });
+        client._renovacaoPendente = { valorVenda, painelId, creditosUsar, taxa, reservaId };
         
         saveClients();
         renderAll();
+        atualizarCreditos(); atualizarHistorico();
+        atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+        atualizarSelectMesGestao();
         fecharModalConfirmarRenovacao();
         abrirModalMensagemRenovacao(client);
-        showToast(`Renovação marcada como pagamento pendente • Novo vencimento: ${formatDate(client.dataRenovacao)}`);
+        showToast(`Renovação pendente • ${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} reservado${creditosUsar === 1 ? '' : 's'} em ${getPainelNome(painelId)}`);
       }
     }
 
@@ -1517,16 +1553,14 @@
       const client = clients.find(c => c.id === id);
       if (!client || !client.pagamentoPendente) return;
       const dados = client._renovacaoPendente || {};
-      const { valorVenda = 0, painelId, creditosUsar = 0, taxa = 0 } = dados;
+      const valorVenda = Number(dados.valorVenda) || parseValor(client.valor);
+      const painelId = dados.painelId || ((encontrarPlanoPorNome(client.plano) || {}).painelId) || paineis[0].id;
+      const creditosUsar = Number(dados.creditosUsar) || resolverCreditosCliente(client);
+      const taxa = Number(dados.taxa) || 0;
       client.pagamentoPendente = false;
       delete client._renovacaoPendente;
       client.updatedAt = new Date().toISOString();
-      movimentacoes.push({
-        data: new Date().toISOString(), tipo: 'use', tipoCliente: 'renovacao',
-        valor: valorVenda, quantidade: creditosUsar, taxa: taxa,
-        planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
-        painelId
-      });
+      converterReservaEmUso(client, { valorVenda, painelId, creditosUsar, taxa, reservaId: dados.reservaId });
       salvarMovimentacoes();
       saveClients();
       renderAll();
@@ -1536,6 +1570,94 @@
       showToast(`Pagamento confirmado de ${client.nome} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} (${getPainelNome(painelId)})${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}`);
     }
     window.confirmarPagamento = confirmarPagamento;
+
+    function formatCreditos(qtd) {
+      const n = Number(qtd) || 0;
+      return Number.isInteger(n) ? String(n) : n.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+    }
+
+    function criarReservaId() { return 'reserva-' + generateId(); }
+
+    function encontrarReservaPendente(client, reservaId) {
+      if (reservaId) {
+        const porId = movimentacoes.find(m => m.id === reservaId && m.tipo === 'reserve');
+        if (porId) return porId;
+      }
+      return movimentacoes.find(m => m.tipo === 'reserve' && m.reservaPagamento && m.clientId === client.id) || null;
+    }
+
+    function reservarCreditoPagamentoPendente(client, dados) {
+      const creditosUsar = Math.max(0, Number(dados.creditosUsar) || 0);
+      const painelId = dados.painelId || ((encontrarPlanoPorNome(client.plano) || {}).painelId) || paineis[0].id;
+      let reserva = encontrarReservaPendente(client, dados.reservaId);
+      if (!reserva) {
+        reserva = { id: criarReservaId(), data: new Date().toISOString(), tipo: 'reserve', tipoCliente: 'pendente', reservaPagamento: true };
+        movimentacoes.push(reserva);
+      }
+      Object.assign(reserva, {
+        quantidade: creditosUsar, valor: 0, taxa: 0,
+        planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
+        painelId, pagamentoValor: Number(dados.valorVenda) || parseValor(client.valor),
+        pagamentoTaxa: Number(dados.taxa) || 0
+      });
+      salvarMovimentacoes();
+      return reserva.id;
+    }
+
+    function converterReservaEmUso(client, dados) {
+      const reserva = encontrarReservaPendente(client, dados.reservaId);
+      const payload = {
+        data: new Date().toISOString(), tipo: 'use', tipoCliente: 'renovacao',
+        valor: Number(dados.valorVenda) || 0, quantidade: Number(dados.creditosUsar) || 0, taxa: Number(dados.taxa) || 0,
+        planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
+        painelId: dados.painelId || paineis[0].id
+      };
+      if (reserva) {
+        Object.keys(reserva).forEach(k => { if (!(k in payload) && k !== 'id') delete reserva[k]; });
+        Object.assign(reserva, payload);
+      } else {
+        movimentacoes.push(payload);
+      }
+    }
+
+    function liberarReservaPagamentoPendente(client) {
+      if (!client) return;
+      const reservaId = client._renovacaoPendente && client._renovacaoPendente.reservaId;
+      const before = movimentacoes.length;
+      movimentacoes = movimentacoes.filter(m => !(m.tipo === 'reserve' && (m.id === reservaId || (m.reservaPagamento && m.clientId === client.id))));
+      if (movimentacoes.length !== before) salvarMovimentacoes();
+    }
+
+    function garantirReservasPagamentosPendentes() {
+      if (!Array.isArray(clients) || !Array.isArray(movimentacoes) || !paineis.length) return;
+      const pendingIds = new Set(clients.filter(c => c.pagamentoPendente).map(c => c.id));
+      let mudouMov = false, mudouCli = false;
+      const antes = movimentacoes.length;
+      movimentacoes = movimentacoes.filter(m => !(m.tipo === 'reserve' && m.reservaPagamento && (!m.clientId || !pendingIds.has(m.clientId))));
+      if (movimentacoes.length !== antes) mudouMov = true;
+      clients.forEach(c => {
+        if (!c.pagamentoPendente) return;
+        const dados = c._renovacaoPendente || {};
+        const valorVenda = Number(dados.valorVenda) || parseValor(c.valor);
+        const painelId = dados.painelId || ((encontrarPlanoPorNome(c.plano) || {}).painelId) || paineis[0].id;
+        const creditosUsar = Number(dados.creditosUsar) || resolverCreditosCliente(c);
+        const taxa = Number(dados.taxa) || 0;
+        let reserva = encontrarReservaPendente(c, dados.reservaId);
+        if (!reserva && creditosUsar > 0) {
+          reserva = { id: criarReservaId(), data: c.updatedAt || new Date().toISOString(), tipo: 'reserve', tipoCliente: 'pendente', reservaPagamento: true };
+          movimentacoes.push(reserva);
+          mudouMov = true;
+        }
+        if (reserva) {
+          Object.assign(reserva, { quantidade: creditosUsar, valor: 0, taxa: 0, planoNome: c.plano || '', clientId: c.id, clientNome: c.nome, painelId, pagamentoValor: valorVenda, pagamentoTaxa: taxa });
+          c._renovacaoPendente = { ...dados, valorVenda, painelId, creditosUsar, taxa, reservaId: reserva.id };
+          mudouCli = true;
+          mudouMov = true;
+        }
+      });
+      if (mudouMov) salvarMovimentacoes();
+      if (mudouCli) saveClients();
+    }
 
     function buildRenewMessage(client) {
       const statusLinha = client.pagamentoPendente
@@ -1688,6 +1810,57 @@
       }).join('');
     }
 
+    function renderDashboardPendingBoxes() {
+      const wrap = document.getElementById('pendingDashboardBoxes');
+      const boxCred = document.getElementById('boxCreditosReservados');
+      const boxPag = document.getElementById('boxPagamentosPendentes');
+      if (!wrap || !boxCred || !boxPag) return;
+      const pendentes = clients.filter(c => c.pagamentoPendente);
+      if (!pendentes.length) {
+        wrap.classList.add('hidden'); boxCred.classList.add('hidden'); boxPag.classList.add('hidden');
+        return;
+      }
+      let totalCred = 0, totalValor = 0;
+      const porPainel = {};
+      pendentes.forEach(c => {
+        const dados = c._renovacaoPendente || {};
+        const creditos = Number(dados.creditosUsar) || resolverCreditosCliente(c);
+        const valor = Number(dados.valorVenda) || parseValor(c.valor);
+        const painelId = dados.painelId || ((encontrarPlanoPorNome(c.plano) || {}).painelId) || paineis[0].id;
+        totalCred += creditos; totalValor += valor;
+        porPainel[painelId] = (porPainel[painelId] || 0) + creditos;
+      });
+      const fmtMoney = v => `R$ ${(Number(v) || 0).toFixed(2).replace('.', ',')}`;
+      const elCred = document.getElementById('dashCreditosReservadosValor');
+      const elDet = document.getElementById('dashCreditosReservadosDetalhe');
+      const elCnt = document.getElementById('dashPagamentosPendentesCount');
+      const elVal = document.getElementById('dashPagamentosPendentesValor');
+      const elList = document.getElementById('dashPagamentosPendentesList');
+      if (elCred) elCred.textContent = formatCreditos(totalCred);
+      if (elDet) {
+        const detalhe = Object.entries(porPainel).map(([pid, qtd]) => `${escapeHtml(getPainelNome(pid))}: ${formatCreditos(qtd)}`).join(' • ');
+        elDet.innerHTML = detalhe || 'reservados em pagamentos pendentes';
+      }
+      if (elCnt) elCnt.textContent = `${pendentes.length} pendente${pendentes.length === 1 ? '' : 's'}`;
+      if (elVal) elVal.textContent = fmtMoney(totalValor);
+      if (elList) {
+        elList.innerHTML = pendentes.slice(0, 6).map(c => {
+          const dados = c._renovacaoPendente || {};
+          const creditos = Number(dados.creditosUsar) || resolverCreditosCliente(c);
+          const valor = Number(dados.valorVenda) || parseValor(c.valor);
+          return `
+            <div class="pending-mini-row" data-testid="pending-mini-${c.id}">
+              <div class="pending-mini-main">
+                <div class="pending-mini-name">${escapeHtml(c.nome || '—')}</div>
+                <div class="pending-mini-meta">${fmtMoney(valor)} • ${formatCreditos(creditos)} créd. • venc. ${escapeHtml(formatDate(c.dataRenovacao))}</div>
+              </div>
+              <button class="btn-pending pending-mini-action" onclick="confirmarPagamento('${c.id}')" data-testid="dash-confirmar-pag-${c.id}"><i class="fas fa-check"></i> Confirmar</button>
+            </div>`;
+        }).join('') + (pendentes.length > 6 ? `<p class="card-hint" style="margin:2px 0 0;">+${pendentes.length - 6} pendente${pendentes.length - 6 === 1 ? '' : 's'} na lista de clientes.</p>` : '');
+      }
+      wrap.classList.remove('hidden'); boxCred.classList.remove('hidden'); boxPag.classList.remove('hidden');
+    }
+
     function renderDashboard() {
       const today = todayLocalDate();
       const dueToday = [], dueTomorrow = [], dueWeek = [], expired = [];
@@ -1720,6 +1893,7 @@
       renderPagination(els.paginationTomorrow, pTomorrow.safePage, pTomorrow.totalPages, 'changeTomorrowPage');
       renderPagination(els.paginationWeek, pWeek.safePage, pWeek.totalPages, 'changeWeekPage');
       renderPagination(els.paginationExpired, pExpired.safePage, pExpired.totalPages, 'changeExpiredPage');
+      renderDashboardPendingBoxes();
       try { atualizarDashboardFinanceiro(); } catch (e) {}
     }
 
@@ -2179,8 +2353,9 @@
     window.deleteClient = id => {
       const c = clients.find(x => x.id === id); if (!c) return;
       if (!confirmar(`Excluir ${c.nome}?`)) return;
+      liberarReservaPagamentoPendente(c);
       clients = clients.filter(x => x.id !== id);
-      renderAll(); atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      renderAll(); atualizarCreditos(); atualizarHistorico(); atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
       showToast('Cliente excluído.');
     };
@@ -2264,6 +2439,7 @@
           if (Array.isArray(data.lucrosCustos)) { lucrosCustos = data.lucrosCustos; salvarLucrosCustos(); }
         } else throw new Error('Formato inválido');
         atualizarSelectsPaineis();
+        garantirReservasPagamentosPendentes();
         renderAll(); renderTestes();
         atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
         atualizarListaPlanos(); atualizarSelectPlanos();
@@ -2838,12 +3014,13 @@
     function atualizarCreditos() {
       // Cálculo por painel
       const stats = {};
-      paineis.forEach(p => { stats[p.id] = { disponiveis: 0, usados: 0, custoTotal: 0 }; });
+      paineis.forEach(p => { stats[p.id] = { disponiveis: 0, usados: 0, reservados: 0, custoTotal: 0 }; });
       movimentacoes.forEach(m => {
         const pid = m.painelId && stats[m.painelId] ? m.painelId : paineis[0].id;
         const s = stats[pid];
         if (m.tipo === 'add') { s.disponiveis += Number(m.quantidade) || 0; s.custoTotal += Number(m.custo) || 0; }
         else if (m.tipo === 'use') { s.usados += Number(m.quantidade) || 0; s.disponiveis -= Number(m.quantidade) || 0; }
+        else if (m.tipo === 'reserve') { s.reservados += Number(m.quantidade) || 0; s.disponiveis -= Number(m.quantidade) || 0; }
       });
       const grid = document.getElementById('paineisGrid');
       if (grid) {
@@ -2852,6 +3029,7 @@
           const cls = idx === 0 ? '' : 'painel-' + ((idx % 2) + 1);
           const disp = Number.isInteger(s.disponiveis) ? s.disponiveis : s.disponiveis.toFixed(3);
           const usd = Number.isInteger(s.usados) ? s.usados : s.usados.toFixed(3);
+          const res = Number.isInteger(s.reservados) ? s.reservados : s.reservados.toFixed(3);
           const cor = p.cor || '#39ff14';
           const logoHtml = p.logo
             ? `<img class="painel-logo" src="${escapeHtml(p.logo)}" alt="Logo ${escapeHtml(p.nome)}" data-testid="painel-logo-${p.id}" />`
@@ -2884,7 +3062,11 @@
                   <div class="painel-stat-label">Disponíveis</div>
                 </div>
                 <div class="painel-stat">
-                  <div class="painel-stat-value" style="color: var(--warning);" data-testid="painel-usd-${p.id}">${usd}</div>
+                  <div class="painel-stat-value" style="color: var(--warning);" data-testid="painel-res-${p.id}">${res}</div>
+                  <div class="painel-stat-label">Reservados</div>
+                </div>
+                <div class="painel-stat">
+                  <div class="painel-stat-value" style="color: var(--info);" data-testid="painel-usd-${p.id}">${usd}</div>
                   <div class="painel-stat-label">Usados</div>
                 </div>
                 <div class="painel-stat">
@@ -3000,6 +3182,20 @@
             </div>
             <button class="btn-secondary" onclick="editarMovimentacao(${realIdx})"><i class="fas fa-edit"></i></button>
             <button class="btn-danger" onclick="removerMovimentacao(${realIdx})"><i class="fas fa-trash"></i></button>
+          </div>`;
+      } else if (m.tipo === 'reserve') {
+        const qtd = formatCreditos(m.quantidade || 0);
+        const painelNome = getPainelNome(m.painelId);
+        const valor = Number(m.pagamentoValor) || 0;
+        return `
+          <div class="list-item">
+            <div class="list-item-content">
+              <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-lock"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div class="list-item-text">${m.clientNome ? escapeHtml(m.clientNome) : 'Pagamento pendente'} <span style="opacity:.6; font-weight:500;">• Crédito reservado</span></div>
+                <div class="list-item-sub">${data} • ${qtd} créd. reservados${painelNome ? ` • ${escapeHtml(painelNome)}` : ''}${valor ? ` • R$ ${valor.toFixed(2)}` : ''}</div>
+              </div>
+            </div>
           </div>`;
       } else if (m.tipo === 'churn') {
         return `
@@ -3633,6 +3829,7 @@
       if (elCA) elCA.textContent = ativos;
       if (elCV) elCV.textContent = vencidos;
       if (elV7) elV7.textContent = vence7;
+      renderDashboardPendingBoxes();
     }
 
     function atualizarGraficoMesAtual() {
@@ -4476,6 +4673,7 @@
     loadClients(); carregarTestes();
     localStorage.setItem(INIT_FLAG_KEY, '1');
     carregarDadosCalc();
+    garantirReservasPagamentosPendentes();
 
     /* Limpeza única dos dados de exemplo (clientes e pacotes seed) */
     (function limparExemplosUmaVez() {
@@ -4522,6 +4720,7 @@
   </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
