@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#050505" />
-  <title>Texto Principal Agenda IPTV</title>
+  <title>Agenda IPTV</title>
   <link rel="icon" type="image/png" href="./favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,16 +20,13 @@
         <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" data-testid="menu-toggle"><i class="fas fa-bars"></i></button>
         <div class="brand-mark"><div class="brand-dot"></div></div>
         <div class="title">
-          <h1>Texto Principal <span>Agenda IPTV</span></h1>
+          <h1><span>Agenda IPTV</span></h1>
           <p>Controle de Cliente, lucro e custo!</p>
         </div>
       </div>
       <div class="actions">
         <div class="auth-status-chip" id="authStatusBadge">Aguardando login</div>
-        <button class="btn-secondary hidden" id="headerLogoutBtn" type="button"><i class="fas fa-right-from-bracket"></i> Sair</button>
-        <button class="btn-secondary" id="exportBtn" data-testid="export-backup-btn">Exportar backup</button>
-        <label class="btn btn-secondary" for="importFile" data-testid="import-backup-label">Importar backup</label>
-        <input id="importFile" type="file" accept="application/json" class="hidden" data-testid="import-backup-input" />
+        <button class="icon-action hidden" id="headerLogoutBtn" type="button" aria-label="Sair" title="Sair"><i class="fas fa-right-from-bracket"></i></button>
       </div>
     </header>
 
@@ -51,36 +48,29 @@
     </aside>
 
     <section id="login" class="panel active">
-      <div class="auth-grid">
-        <div class="card auth-card">
-          <div class="card-header">
-            <div class="card-title"><i class="fas fa-user-shield"></i><h2>Login Firebase</h2><span class="tag">Email e senha</span></div>
+      <div class="auth-shell">
+        <div class="card auth-card auth-card-single">
+          <div class="auth-card-top">
+            <div class="brand-mark"><div class="brand-dot"></div></div>
+            <span class="auth-kicker">Painel profissional</span>
           </div>
-          <p class="card-hint">Entre com seu email e senha para carregar e salvar automaticamente seus dados no Firestore.</p>
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-user-shield"></i><h2>Entrar no painel</h2><span class="tag" id="cloudSyncTag">Firebase</span></div>
+          </div>
+          <p class="card-hint">Acesse com seu email e senha para abrir o dashboard e sincronizar automaticamente seus dados.</p>
           <form id="firebaseLoginForm" autocomplete="on">
             <div class="form-grid auth-form-grid">
               <div class="field"><label for="firebaseEmail">Email</label><input id="firebaseEmail" type="email" placeholder="voce@exemplo.com" required /></div>
               <div class="field"><label for="firebasePassword">Senha</label><input id="firebasePassword" type="password" placeholder="Sua senha" required /></div>
             </div>
-            <div class="form-actions">
+            <div class="form-actions auth-form-actions">
               <button type="submit" class="btn-primary" id="firebaseLoginBtn"><i class="fas fa-right-to-bracket"></i> Entrar</button>
               <button type="button" class="btn-secondary" id="firebaseRegisterBtn"><i class="fas fa-user-plus"></i> Criar conta</button>
-              <button type="button" class="btn-secondary hidden" id="firebaseLogoutBtn"><i class="fas fa-right-from-bracket"></i> Sair</button>
             </div>
           </form>
-        </div>
-
-        <div class="card auth-card">
-          <div class="card-header">
-            <div class="card-title"><i class="fas fa-cloud"></i><h2>Status da nuvem</h2><span class="tag" id="cloudSyncTag">Offline</span></div>
-          </div>
           <div class="auth-status-stack">
             <div class="auth-user-line"><span>Conta conectada</span><strong id="authUserEmail">Nenhuma</strong></div>
             <p class="card-hint" id="authHelperText">Habilite o método Email/Senha no Firebase Authentication para usar o login.</p>
-          </div>
-          <div class="auth-note">
-            <p>Depois do login, o painel continua com a mesma interface, mas os dados passam a ser sincronizados com o Firestore.</p>
-            <p>Os botões de backup continuam disponíveis para exportar ou importar seus dados manualmente.</p>
           </div>
         </div>
       </div>
@@ -120,9 +110,25 @@
           <div class="pending-list-mini hidden" id="dashPagamentosPendentesList"></div>
         </div>
       </div>
-      <!-- GRÁFICO DO MÊS ATUAL -->
+      <!-- GRÁFICO DO DASHBOARD -->
       <div class="card" style="margin-bottom: 18px;">
-        <div class="card-header"><div class="card-title"><i class="fas fa-chart-line"></i><h2>Movimentação por Mês</h2><span class="tag" id="dashChartMesTag">Últimos 12 meses</span></div></div>
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-chart-line"></i><h2>Movimentação</h2><span class="tag" id="dashChartMesTag">Mês atual</span></div>
+          <div class="chart-toolbar">
+            <div class="field chart-toolbar-field">
+              <label for="dashFiltroAno">Ano</label>
+              <select id="dashFiltroAno" class="form-select"></select>
+            </div>
+            <div class="field chart-toolbar-field">
+              <label for="dashFiltroMes">Período</label>
+              <select id="dashFiltroMes" class="form-select">
+                <option value="all">Ano todo</option>
+              </select>
+            </div>
+            <div class="chart-clock" id="brasiliaNow">Brasília • --/--/---- --:--</div>
+          </div>
+        </div>
+        <p class="card-hint">Escolha um mês para ver a movimentação por dia ou selecione `Ano todo` para visualizar o ano inteiro.</p>
         <div class="chart-container"><canvas id="dashGraficoMes"></canvas></div>
       </div>
       <!-- VISÃO GERAL DE CLIENTES -->

@@ -15,7 +15,9 @@
       todayPage: 1, tomorrowPage: 1, weekPage: 1, expiredPage: 1, pendingPaymentsPage: 1,
       clientesPage: 1, testesPage: 1, historicoPage: 1,
       indAtivasPage: 1, indAssinouPage: 1, indGanhouPage: 1, roletaPage: 1,
-      filtroMes: 'all'
+      filtroMes: 'all',
+      dashChartYear: new Date().getFullYear(),
+      dashChartMonth: String(new Date().getMonth() + 1).padStart(2, '0')
     };
 
     const FIREBASE_CONFIG = {
@@ -34,6 +36,46 @@
     let cloudSaveTimer = null;
     let lastCloudPayloadSerialized = '';
     let firebaseWired = false;
+    const APP_TIMEZONE = 'America/Sao_Paulo';
+    const MONTH_NAMES_SHORT = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const MONTH_NAMES_LONG = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    const zonedDateFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: APP_TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const zonedDateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: APP_TIMEZONE,
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    const zonedClockFormatter = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: APP_TIMEZONE,
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    function getZonedDateParts(dateLike = new Date()) {
+      const d = dateLike instanceof Date ? dateLike : new Date(dateLike);
+      if (isNaN(d.getTime())) return null;
+      const parts = zonedDateFormatter.formatToParts(d);
+      const year = Number(parts.find(p => p.type === 'year')?.value);
+      const month = Number(parts.find(p => p.type === 'month')?.value);
+      const day = Number(parts.find(p => p.type === 'day')?.value);
+      if (!year || !month || !day) return null;
+      return { year, month, day };
+    }
+
+    function getCurrentZonedYear() {
+      return getZonedDateParts(new Date())?.year || new Date().getFullYear();
+    }
 
 
 const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
@@ -544,20 +586,28 @@ function setupMessageEditor() {
       setCloudStatus('Alterações pendentes', 'warn', 'Existe uma atualização aguardando envio ao Firestore.');
       cloudSaveTimer = setTimeout(() => { syncCloudDataNow(reason); }, 900);
     }
+    function applyAuthScreenState() {
+      document.body.classList.toggle('auth-screen', !currentFirebaseUser);
+      document.body.classList.toggle('is-authenticated', !!currentFirebaseUser);
+      const loginTab = document.querySelector('.tab[data-tab="login"]');
+      if (loginTab) loginTab.classList.toggle('hidden', !!currentFirebaseUser);
+    }
     function updateAuthUi() {
       const emailEl = document.getElementById('authUserEmail');
-      const logoutBtn = document.getElementById('firebaseLogoutBtn');
       const headerLogoutBtn = document.getElementById('headerLogoutBtn');
       const registerBtn = document.getElementById('firebaseRegisterBtn');
+      applyAuthScreenState();
       if (emailEl) emailEl.textContent = currentFirebaseUser && currentFirebaseUser.email ? currentFirebaseUser.email : 'Nenhuma';
-      if (logoutBtn) logoutBtn.classList.toggle('hidden', !currentFirebaseUser);
       if (headerLogoutBtn) headerLogoutBtn.classList.toggle('hidden', !currentFirebaseUser);
       if (registerBtn) registerBtn.classList.toggle('hidden', !!currentFirebaseUser);
       els.tabs.forEach(tab => {
         const isFree = tab.dataset.authExempt === 'true';
         tab.classList.toggle('tab-locked', !currentFirebaseUser && !isFree);
       });
-      if (!currentFirebaseUser) {
+      if (currentFirebaseUser) {
+        setCloudStatus('Conta conectada', 'ok', 'Login realizado. Carregando os dados da sua conta.');
+        if (document.querySelector('.panel.active')?.id === 'login') switchTab('dashboard');
+      } else {
         setCloudStatus('Aguardando login', 'warn', 'Entre com email e senha para carregar e salvar seus dados no Firebase.');
         switchTab('login');
       }
@@ -653,11 +703,9 @@ function setupMessageEditor() {
         firebaseDbInstance = firebase.firestore();
         const form = document.getElementById('firebaseLoginForm');
         const registerBtn = document.getElementById('firebaseRegisterBtn');
-        const logoutBtn = document.getElementById('firebaseLogoutBtn');
         const headerLogoutBtn = document.getElementById('headerLogoutBtn');
         if (form) form.addEventListener('submit', handleFirebaseLogin);
         if (registerBtn) registerBtn.addEventListener('click', handleFirebaseRegister);
-        if (logoutBtn) logoutBtn.addEventListener('click', handleFirebaseLogout);
         if (headerLogoutBtn) headerLogoutBtn.addEventListener('click', handleFirebaseLogout);
         firebaseAuthInstance.onAuthStateChanged(async (user) => {
           currentFirebaseUser = user || null;
@@ -708,7 +756,10 @@ function setupMessageEditor() {
     }
 
     function pad(n) { return String(n).padStart(2, '0'); }
-    function todayLocalDate() { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+    function todayLocalDate() {
+      const parts = getZonedDateParts(new Date());
+      return parts ? new Date(parts.year, parts.month - 1, parts.day) : new Date();
+    }
     function parseDate(value) {
       if (!value) return null;
       const parts = String(value).split('-').map(Number);
@@ -722,6 +773,12 @@ function setupMessageEditor() {
       const d = parseDate(value);
       if (!d || isNaN(d.getTime())) return '—';
       return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+    }
+    function formatDateTimeSaoPaulo(dateLike) {
+      if (!dateLike) return '—';
+      const d = dateLike instanceof Date ? dateLike : new Date(dateLike);
+      if (isNaN(d.getTime())) return '—';
+      return zonedDateTimeFormatter.format(d);
     }
     function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate() + days); return d; }
     function addMonths(date, months) {
@@ -1143,7 +1200,7 @@ let renovacaoClienteAtual = null;
     window.enviarMensagemRenovacaoWhatsApp = enviarMensagemRenovacaoWhatsApp;
 
     function switchTab(tabName) {
-      const targetTab = (!currentFirebaseUser && tabName !== 'login') ? 'login' : tabName;
+      const targetTab = !currentFirebaseUser ? 'login' : (tabName === 'login' ? 'dashboard' : tabName);
       els.tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === targetTab));
       els.panels.forEach(panel => panel.classList.toggle('active', panel.id === targetTab));
       closeSidebar();
@@ -1532,7 +1589,7 @@ let ativacaoClienteAtual = null;
       const ordenados = testes.slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
       const pag = paginate(ordenados, state.testesPage); state.testesPage = pag.safePage;
       cont.innerHTML = pag.items.map(t => {
-        const data = t.createdAt ? new Date(t.createdAt).toLocaleString('pt-BR') : '—';
+        const data = t.createdAt ? formatDateTimeSaoPaulo(t.createdAt) : '—';
         const linhaInfo = [
           t.plano ? `📦 ${escapeHtml(t.plano)}` : '',
           t.valor ? `💰 R$ ${escapeHtml(t.valor)}` : '',
@@ -1883,71 +1940,22 @@ let ativacaoClienteAtual = null;
       if (ov) ov.addEventListener('click', closeSidebar);
     })();
 
-    els.exportBtn.addEventListener('click', () => {
-      const payload = { clients, testes, indicacoes, paineis, pacotes, planos, movimentacoes, lucrosCustos, messageTemplates };
-      const data = JSON.stringify(payload, null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `backup_iptv_${toInputDate(todayLocalDate())}.json`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast('Backup exportado.');
-    });
-    els.importFile.addEventListener('change', async (e) => {
-      const file = e.target.files[0]; if (!file) return;
-      try {
-        const text = await file.text();
-        const data = JSON.parse(text);
-        if (Array.isArray(data)) { clients = data; }
-        else if (data && typeof data === 'object') {
-          if (Array.isArray(data.clients)) clients = data.clients;
-          if (Array.isArray(data.testes)) { testes = data.testes; salvarTestes(); }
-          if (Array.isArray(data.paineis) && data.paineis.length >= 1) {
-            paineis = data.paineis.map((x, i) => ({
-              id: x.id || ('p' + (i + 1)),
-              nome: (x.nome && String(x.nome).trim()) || ('Painel ' + (i + 1)),
-              cor: (x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor))) ? x.cor : '#39ff14',
-              logo: (typeof x.logo === 'string') ? x.logo : ''
-            }));
-            salvarPaineis();
-            atualizarHintPaineis();
-          }
-          if (Array.isArray(data.pacotes)) {
-            pacotes = data.pacotes.map(p => ({ ...p, painelId: p.painelId || paineis[0].id }));
-            salvarPacotes();
-          }
-          if (Array.isArray(data.planos)) {
-            planos = data.planos.map(p => ({ ...p, painelId: p.painelId || paineis[0].id }));
-            salvarPlanos();
-          }
-          if (Array.isArray(data.movimentacoes)) {
-            movimentacoes = data.movimentacoes;
-            movimentacoes.forEach(mv => {
-              if (!mv.painelId || !paineis.some(pp => pp.id === mv.painelId)) {
-                mv.painelId = resolverPainelDeMovimentacao(mv);
-              }
-            });
-            salvarMovimentacoes();
-          }
-          if (Array.isArray(data.lucrosCustos)) { lucrosCustos = data.lucrosCustos; salvarLucrosCustos(); }
-          if (Array.isArray(data.indicacoes)) { indicacoes = data.indicacoes; salvarIndicacoes(); }
-          if (data.messageTemplates && typeof data.messageTemplates === 'object') { messageTemplates = mergeMessageTemplates(data.messageTemplates); saveMessageTemplates(); }
-        } else throw new Error('Formato inválido');
-        atualizarSelectsPaineis();
-        garantirReservasPagamentosPendentes();
-        renderAll(); renderTestes();
-        atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
-        atualizarListaPlanos(); atualizarSelectPlanos();
-    atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
-    atualizarHintPaineis();
-        atualizarSelectMesGestao();
-        atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
-        renderMessageEditor();
-        showToast('Backup importado com sucesso.');
-      } catch (err) { showToast('Arquivo inválido.', true); }
-      finally { e.target.value = ''; }
-    });
+    (function wireDashboardFilters() {
+      const anoEl = document.getElementById('dashFiltroAno');
+      const mesEl = document.getElementById('dashFiltroMes');
+      if (anoEl) {
+        anoEl.addEventListener('change', () => {
+          state.dashChartYear = Number(anoEl.value) || getCurrentZonedYear();
+          atualizarDashboardFinanceiro();
+        });
+      }
+      if (mesEl) {
+        mesEl.addEventListener('change', () => {
+          state.dashChartMonth = mesEl.value || 'all';
+          atualizarDashboardFinanceiro();
+        });
+      }
+    })();
 
     /* =========================================================
        PARTE 2 — CALCULADORA / CRÉDITO / GESTÃO / CONFIGURAÇÃO
@@ -2656,7 +2664,7 @@ function aplicarDiasExtras() {
     }
 
     function renderMovimentacaoHtml(m, realIdx) {
-      const data = new Date(m.data).toLocaleString('pt-BR');
+      const data = formatDateTimeSaoPaulo(m.data);
       const tipos = { novo: 'Cliente Novo', renovacao: 'Renovação', nao_renovou: 'Não Renovou', avulso: 'Desconto avulso', dias_extras: 'Dias extras' };
       if (m.tipo === 'add') {
         const labelInfo = m.info ? `${escapeHtml(m.info)}: ` : '';
@@ -2882,7 +2890,7 @@ function aplicarDiasExtras() {
         const fixoBadge = lc.fixo
           ? `<span class="pill" style="background:rgba(255,228,92,.10); color:var(--warning); border-color:rgba(255,228,92,.35); font-size:11px;"><i class="fas fa-sync-alt" style="margin-right:4px;"></i>Fixo do mês</span>`
           : '';
-        const dataStr = lc.data ? new Date(lc.data).toLocaleDateString('pt-BR') : '';
+        const dataStr = lc.data ? formatDateTimeSaoPaulo(lc.data) : '';
         return `
           <div class="list-item" data-testid="lc-item-${idx}">
             <div class="list-item-content">
@@ -3127,13 +3135,13 @@ function aplicarDiasExtras() {
 
     /* ---------- GESTÃO: filtro por mês ---------- */
     function monthKey(dateLike) {
-      const d = new Date(dateLike);
-      if (isNaN(d.getTime())) return null;
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const parts = getZonedDateParts(dateLike);
+      if (!parts) return null;
+      return `${parts.year}-${String(parts.month).padStart(2, '0')}`;
     }
     function monthLabel(k) {
       const [y, mo] = k.split('-');
-      return new Date(Number(y), Number(mo) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+      return `${MONTH_NAMES_LONG[Number(mo) - 1]} de ${y}`;
     }
     function coletarMesesDisponiveis() {
       const set = new Set();
@@ -3233,12 +3241,111 @@ function aplicarDiasExtras() {
     }
     window.atualizarStatsFinanceiras = atualizarStatsFinanceiras;
 
-    /* ---------- DASHBOARD: stats financeiras + gráfico mês atual + visão geral ---------- */
+    /* ---------- DASHBOARD: stats financeiras + gráfico ---------- */
     let dashGraficoMes = null;
 
     function getCurrentMonthKey() {
-      const now = new Date();
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const parts = getZonedDateParts(new Date());
+      return parts ? `${parts.year}-${String(parts.month).padStart(2, '0')}` : monthKey(new Date());
+    }
+
+    function getDashboardSelectedMonthKey() {
+      return `${state.dashChartYear}-${state.dashChartMonth}`;
+    }
+
+    function coletarAnosDisponiveisDashboard() {
+      const years = new Set([getCurrentZonedYear()]);
+      movimentacoes.forEach(m => {
+        const parts = getZonedDateParts(m.data);
+        if (parts) years.add(parts.year);
+      });
+      return Array.from(years).sort((a, b) => b - a);
+    }
+
+    function atualizarRelogioBrasilia() {
+      const el = document.getElementById('brasiliaNow');
+      if (!el) return;
+      el.textContent = `Brasília • ${zonedClockFormatter.format(new Date())}`;
+    }
+
+    function atualizarFiltrosDashboardGrafico() {
+      const anoEl = document.getElementById('dashFiltroAno');
+      const mesEl = document.getElementById('dashFiltroMes');
+      if (!anoEl || !mesEl) return;
+      const anos = coletarAnosDisponiveisDashboard();
+      if (!anos.includes(state.dashChartYear)) state.dashChartYear = anos[0] || getCurrentZonedYear();
+      anoEl.innerHTML = anos.map(year => `<option value="${year}">${year}</option>`).join('');
+      anoEl.value = String(state.dashChartYear);
+
+      const prev = state.dashChartMonth;
+      mesEl.innerHTML = '<option value="all">Ano todo</option>' +
+        MONTH_NAMES_LONG.map((month, idx) => `<option value="${String(idx + 1).padStart(2, '0')}">${month}</option>`).join('');
+      mesEl.value = prev || String(getZonedDateParts(new Date())?.month || 1).padStart(2, '0');
+      state.dashChartMonth = mesEl.value;
+      atualizarRelogioBrasilia();
+    }
+
+    function getDashboardChartSeries() {
+      const isYearView = state.dashChartMonth === 'all';
+      const labels = [];
+      const dataNovos = [];
+      const dataRenov = [];
+      const dataTestes = [];
+      const year = Number(state.dashChartYear);
+
+      if (isYearView) {
+        const porMes = Array.from({ length: 12 }, () => ({ novos: 0, renovacoes: 0, testes: 0 }));
+        movimentacoes.forEach(m => {
+          const parts = getZonedDateParts(m.data);
+          if (!parts || parts.year !== year) return;
+          const idx = parts.month - 1;
+          if (m.tipo === 'use' && m.tipoCliente === 'novo') porMes[idx].novos += 1;
+          else if (m.tipo === 'use' && (m.tipoCliente === 'renovacao' || m.tipoCliente === 'dias_extras')) porMes[idx].renovacoes += 1;
+          else if (m.tipo === 'teste') porMes[idx].testes += (m.quantidade || 1);
+        });
+        MONTH_NAMES_SHORT.forEach((month, idx) => {
+          labels.push(month);
+          dataNovos.push(porMes[idx].novos);
+          dataRenov.push(porMes[idx].renovacoes);
+          dataTestes.push(porMes[idx].testes);
+        });
+        return {
+          isYearView,
+          labels,
+          dataNovos,
+          dataRenov,
+          dataTestes,
+          tag: `Ano todo • ${year}`,
+          tickLabel: 'Meses'
+        };
+      }
+
+      const month = Number(state.dashChartMonth);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const porDia = Array.from({ length: daysInMonth }, () => ({ novos: 0, renovacoes: 0, testes: 0 }));
+      movimentacoes.forEach(m => {
+        const parts = getZonedDateParts(m.data);
+        if (!parts || parts.year !== year || parts.month !== month) return;
+        const idx = parts.day - 1;
+        if (m.tipo === 'use' && m.tipoCliente === 'novo') porDia[idx].novos += 1;
+        else if (m.tipo === 'use' && (m.tipoCliente === 'renovacao' || m.tipoCliente === 'dias_extras')) porDia[idx].renovacoes += 1;
+        else if (m.tipo === 'teste') porDia[idx].testes += (m.quantidade || 1);
+      });
+      for (let day = 1; day <= daysInMonth; day++) {
+        labels.push(String(day).padStart(2, '0'));
+        dataNovos.push(porDia[day - 1].novos);
+        dataRenov.push(porDia[day - 1].renovacoes);
+        dataTestes.push(porDia[day - 1].testes);
+      }
+      return {
+        isYearView,
+        labels,
+        dataNovos,
+        dataRenov,
+        dataTestes,
+        tag: `${MONTH_NAMES_LONG[month - 1]} de ${year}`,
+        tickLabel: 'Dias do mês'
+      };
     }
 
     function computeTotaisMesAtual() {
@@ -3272,7 +3379,6 @@ function aplicarDiasExtras() {
     }
 
     function atualizarDashboardFinanceiro() {
-      // --- Cards financeiros do mês atual ---
       const { custo, lucro, taxas, liquido } = computeTotaisMesAtual();
       const fmt = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
       const elL = document.getElementById('dashTotalLucro');
@@ -3284,22 +3390,19 @@ function aplicarDiasExtras() {
       if (elT) elT.textContent = fmt(taxas);
       if (elN) { elN.textContent = fmt(liquido); elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b'; }
 
-      // --- Tag do gráfico ---
+      atualizarFiltrosDashboardGrafico();
       const tagEl = document.getElementById('dashChartMesTag');
-      if (tagEl) tagEl.textContent = 'Últimos 12 meses';
+      const chartData = getDashboardChartSeries();
+      if (tagEl) tagEl.textContent = chartData.tag;
 
-      // --- Gráfico mensal ---
       atualizarGraficoMesAtual();
 
-      // --- Cards de visão geral de clientes ---
       const today = todayLocalDate();
       const mk = getCurrentMonthKey();
-      // Testes no mês atual
       let testesMes = 0;
       movimentacoes.forEach(m => {
         if (m.tipo === 'teste' && monthKey(m.data) === mk) testesMes += (m.quantidade || 1);
       });
-      // Clientes ativos (com data de renovação válida e não vencida)
       let ativos = 0, vencidos = 0, vence7 = 0;
       clients.forEach(c => {
         const due = parseDate(c.dataRenovacao);
@@ -3323,34 +3426,7 @@ function aplicarDiasExtras() {
     function atualizarGraficoMesAtual() {
       const parent = document.querySelector('#dashboard .chart-container');
       if (!parent) return;
-      const now = new Date();
-      // Agrupar movimentações por mês nos últimos 12 meses
-      const monthKeys = [];
-      const porMes = {};
-      for (let i = 11; i >= 0; i--) {
-        const ref = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const key = `${ref.getFullYear()}-${String(ref.getMonth() + 1).padStart(2, '0')}`;
-        monthKeys.push(key);
-        porMes[key] = { novos: 0, renovacoes: 0, testes: 0, lucro: 0 };
-      }
-      movimentacoes.forEach(m => {
-        const mk = monthKey(m.data);
-        if (!porMes[mk]) return;
-        if (m.tipo === 'use' && m.tipoCliente === 'novo') { porMes[mk].novos++; porMes[mk].lucro += (m.valor || 0); }
-        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') { porMes[mk].renovacoes++; porMes[mk].lucro += (m.valor || 0); }
-        else if (m.tipo === 'teste') porMes[mk].testes += (m.quantidade || 1);
-        else if (m.tipo === 'use' && m.tipoCliente === 'dias_extras') { porMes[mk].renovacoes++; porMes[mk].lucro += (m.valor || 0); }
-      });
-      const labels = [];
-      const dataNovos = [], dataRenov = [], dataTestes = [], dataLucro = [];
-      monthKeys.forEach(mk => {
-        const [y, mo] = mk.split('-');
-        labels.push(new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', ''));
-        dataNovos.push(porMes[mk].novos);
-        dataRenov.push(porMes[mk].renovacoes);
-        dataTestes.push(porMes[mk].testes);
-        dataLucro.push(porMes[mk].lucro);
-      });
+      const { labels, dataNovos, dataRenov, dataTestes, isYearView, tickLabel } = getDashboardChartSeries();
       if (!document.getElementById('dashGraficoMes')) parent.innerHTML = '<canvas id="dashGraficoMes"></canvas>';
       const canvas = document.getElementById('dashGraficoMes');
       if (dashGraficoMes) dashGraficoMes.destroy();
@@ -3373,7 +3449,11 @@ function aplicarDiasExtras() {
           },
           scales: {
             y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.07)' }, ticks: { color: '#a1a1aa', precision: 0 } },
-            x: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { size: 11 }, maxRotation: 0 } }
+            x: {
+              grid: { display: false },
+              ticks: { color: '#a1a1aa', font: { size: 11 }, maxRotation: 0, autoSkip: isYearView },
+              title: { display: true, text: tickLabel, color: '#8a8a8a', font: { size: 11, weight: '600' } }
+            }
           }
         }
       });
@@ -3633,10 +3713,7 @@ function aplicarDiasExtras() {
       if (prev) sel.value = prev;
     }
     function fmtDataBR(iso) {
-      if (!iso) return '—';
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return '—';
-      return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      return formatDateTimeSaoPaulo(iso);
     }
     function getClienteById(id) { return clients.find(c => c.id === id); }
 
@@ -4173,6 +4250,9 @@ function renderIndicacoes() {
       localStorage.setItem(FLAG, '1');
     })();
 
+    applyAuthScreenState();
+    atualizarRelogioBrasilia();
+    setInterval(atualizarRelogioBrasilia, 30000);
     atualizarSelectsPaineis();
     renderAll(); renderTestes();
     atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
