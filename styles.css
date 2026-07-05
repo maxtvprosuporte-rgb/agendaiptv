@@ -52,10 +52,14 @@
     ::-webkit-scrollbar-thumb:hover { background: #242424; }
 
     .container { width: min(1400px, calc(100% - 28px)); margin: 28px auto 56px; position: relative; z-index: 1; }
-    body.auth-screen .container { width: min(560px, calc(100% - 28px)); min-height: 100vh; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+    body.auth-screen .container,
+    body:not(.is-authenticated) .container { width: min(560px, calc(100% - 28px)); min-height: 100vh; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
     body.auth-screen .topbar,
     body.auth-screen .sidebar,
-    body.auth-screen .sidebar-overlay { display: none !important; }
+    body.auth-screen .sidebar-overlay,
+    body:not(.is-authenticated) .topbar,
+    body:not(.is-authenticated) .sidebar,
+    body:not(.is-authenticated) .sidebar-overlay { display: none !important; }
 
     .topbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; padding-bottom: 0; border-bottom: 0; }
     .brand { display: flex; align-items: center; gap: 14px; }
@@ -103,7 +107,11 @@
 
     .panel { display: none; animation: fadeUp .35s ease both; }
     .panel.active { display: block; }
-    body.auth-screen .panel:not(#login) { display: none !important; }
+    body.auth-screen .panel:not(#login),
+    body:not(.is-authenticated) .panel:not(#login),
+    body.is-authenticated #login { display: none !important; }
+    body.auth-screen #login.panel,
+    body:not(.is-authenticated) #login.panel { display: block; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     .list-box, .form-card, .table-card, .card { background: linear-gradient(180deg, var(--card), var(--card-2)); border: 1px solid var(--border-faint); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; position: relative; overflow: hidden; }

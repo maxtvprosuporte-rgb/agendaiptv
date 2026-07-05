@@ -587,10 +587,14 @@ function setupMessageEditor() {
       cloudSaveTimer = setTimeout(() => { syncCloudDataNow(reason); }, 900);
     }
     function applyAuthScreenState() {
-      document.body.classList.toggle('auth-screen', !currentFirebaseUser);
-      document.body.classList.toggle('is-authenticated', !!currentFirebaseUser);
-      const loginTab = document.querySelector('.tab[data-tab="login"]');
-      if (loginTab) loginTab.classList.toggle('hidden', !!currentFirebaseUser);
+      const authenticated = !!currentFirebaseUser;
+      document.body.classList.toggle('auth-screen', !authenticated);
+      document.body.classList.toggle('is-authenticated', authenticated);
+      els.tabs.forEach(tab => {
+        const isLoginTab = tab.dataset.tab === 'login';
+        tab.classList.toggle('hidden', authenticated ? isLoginTab : !isLoginTab);
+      });
+      if (!authenticated) closeSidebar();
     }
     function updateAuthUi() {
       const emailEl = document.getElementById('authUserEmail');
@@ -606,7 +610,7 @@ function setupMessageEditor() {
       });
       if (currentFirebaseUser) {
         setCloudStatus('Conta conectada', 'ok', 'Login realizado. Carregando os dados da sua conta.');
-        if (document.querySelector('.panel.active')?.id === 'login') switchTab('dashboard');
+        switchTab('dashboard');
       } else {
         setCloudStatus('Aguardando login', 'warn', 'Entre com email e senha para carregar e salvar seus dados no Firebase.');
         switchTab('login');
@@ -621,7 +625,11 @@ function setupMessageEditor() {
         'auth/invalid-login-credentials': 'Email ou senha inválidos.',
         'auth/email-already-in-use': 'Este email já está em uso.',
         'auth/weak-password': 'A senha precisa ter pelo menos 6 caracteres.',
-        'auth/operation-not-allowed': 'Ative o método Email/Senha no Firebase Authentication.'
+        'auth/operation-not-allowed': 'Ative o método Email/Senha no Firebase Authentication.',
+        'auth/missing-password': 'Informe a senha.',
+        'auth/too-many-requests': 'Muitas tentativas. Aguarde e tente novamente.',
+        'auth/network-request-failed': 'Falha de rede ao conectar no Firebase.',
+        'auth/unauthorized-domain': 'Este domínio precisa ser autorizado no Firebase Authentication.'
       };
       return map[code] || fallback;
     }
