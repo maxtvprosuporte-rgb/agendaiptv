@@ -18,6 +18,23 @@
       filtroMes: 'all'
     };
 
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBBkv5fxVQp9q1i9JqMB57T-AlULUUaCDs",
+      authDomain: "agenda-iptv-dcf4e.firebaseapp.com",
+      projectId: "agenda-iptv-dcf4e",
+      storageBucket: "agenda-iptv-dcf4e.firebasestorage.app",
+      messagingSenderId: "497773832104",
+      appId: "1:497773832104:web:8b4bcc1934b4efb5b55f9d"
+    };
+
+    let firebaseAppInstance = null;
+    let firebaseAuthInstance = null;
+    let firebaseDbInstance = null;
+    let currentFirebaseUser = null;
+    let cloudSaveTimer = null;
+    let lastCloudPayloadSerialized = '';
+    let firebaseWired = false;
+
 
 const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
   cobranca: [
@@ -135,17 +152,19 @@ function mergeMessageTemplates(raw) {
 
 function loadMessageTemplates() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_MESSAGE_TEMPLATES);
+    const raw = readJsonCache(STORAGE_KEY_MESSAGE_TEMPLATES, null);
     if (!raw) { messageTemplates = { ...DEFAULT_MESSAGE_TEMPLATES }; return; }
-    messageTemplates = mergeMessageTemplates(JSON.parse(raw));
+    messageTemplates = mergeMessageTemplates(raw);
   } catch (e) {
     messageTemplates = { ...DEFAULT_MESSAGE_TEMPLATES };
   }
 }
 
 function saveMessageTemplates() {
-  try { localStorage.setItem(STORAGE_KEY_MESSAGE_TEMPLATES, JSON.stringify(messageTemplates)); }
-  catch (e) { showToast('Falha ao salvar modelos de mensagem.', true); }
+  try {
+    writeJsonCache(STORAGE_KEY_MESSAGE_TEMPLATES, messageTemplates);
+    queueCloudSave('messageTemplates');
+  } catch (e) { showToast('Falha ao salvar modelos de mensagem.', true); }
 }
 
 function getMessageTemplate(key) {
@@ -383,6 +402,274 @@ function setupMessageEditor() {
       toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2400);
     }
 
+    function writeJsonCache(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+    function readJsonCache(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return fallback;
+        return JSON.parse(raw);
+      } catch (e) {
+        return fallback;
+      }
+    }
+    function persistLocalSnapshot() {
+      try {
+        writeJsonCache(STORAGE_KEY, clients);
+        writeJsonCache(STORAGE_KEY_TESTES, testes);
+        writeJsonCache(STORAGE_KEY_INDICACOES, indicacoes);
+        writeJsonCache(STORAGE_KEY_MESSAGE_TEMPLATES, messageTemplates);
+        writeJsonCache('iptv_paineis', paineis);
+        writeJsonCache('iptv_pacotes', pacotes);
+        writeJsonCache('iptv_planos', planos);
+        writeJsonCache('iptv_movimentacoes', movimentacoes);
+        writeJsonCache('iptv_lucros_custos', lucrosCustos);
+      } catch (e) {}
+    }
+    function buildCloudPayload() {
+      return {
+        clients,
+        testes,
+        indicacoes,
+        messageTemplates,
+        paineis,
+        pacotes,
+        planos,
+        movimentacoes,
+        lucrosCustos
+      };
+    }
+    function serializeCloudPayload() {
+      try { return JSON.stringify(buildCloudPayload()); }
+      catch (e) { return ''; }
+    }
+    function getCloudDocRef() {
+      if (!firebaseDbInstance || !currentFirebaseUser) return null;
+      return firebaseDbInstance.collection('users').doc(currentFirebaseUser.uid).collection('app').doc('painel_iptv');
+    }
+    function setCloudStatus(label, tone = 'warn', helperText = '') {
+      const statusEl = document.getElementById('authStatusBadge');
+      const syncEl = document.getElementById('cloudSyncTag');
+      const helperEl = document.getElementById('authHelperText');
+      const classes = ['status-ok', 'status-warn', 'status-error'];
+      [statusEl, syncEl].forEach(el => {
+        if (!el) return;
+        el.textContent = label;
+        el.classList.remove(...classes);
+        if (tone === 'ok') el.classList.add('status-ok');
+        else if (tone === 'error') el.classList.add('status-error');
+        else el.classList.add('status-warn');
+      });
+      if (helperEl && helperText) helperEl.textContent = helperText;
+    }
+    function getDefaultPaineis() {
+      return [
+        { id: 'p1', nome: 'Painel 1', cor: '#39ff14', logo: '' },
+        { id: 'p2', nome: 'Painel 2', cor: '#5cf0ff', logo: '' }
+      ];
+    }
+    function normalizePaineis(list) {
+      if (!Array.isArray(list) || !list.length) return getDefaultPaineis();
+      return list.map((x, i) => ({
+        id: x && x.id ? x.id : ('p' + (i + 1)),
+        nome: x && x.nome ? String(x.nome).trim() : ('Painel ' + (i + 1)),
+        cor: x && x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor)) ? String(x.cor) : getDefaultPaineis()[Math.min(i, 1)].cor,
+        logo: x && typeof x.logo === 'string' ? x.logo : ''
+      }));
+    }
+    function hasMeaningfulData(payload) {
+      if (!payload || typeof payload !== 'object') return false;
+      return [payload.clients, payload.testes, payload.indicacoes, payload.pacotes, payload.planos, payload.movimentacoes, payload.lucrosCustos]
+        .some(arr => Array.isArray(arr) && arr.length > 0);
+    }
+    function refreshUiAfterCloudLoad() {
+      try { atualizarSelectsPaineis(); } catch (e) {}
+      try { garantirReservasPagamentosPendentes(); } catch (e) {}
+      try { renderAll(); renderTestes(); } catch (e) {}
+      try { atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito(); } catch (e) {}
+      try { atualizarListaPlanos(); atualizarSelectPlanos(); } catch (e) {}
+      try { atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos(); } catch (e) {}
+      try { atualizarListaAssinaturas(); atualizarListaCustos(); } catch (e) {}
+      try { atualizarSelectMesGestao(); atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao(); } catch (e) {}
+      try { atualizarSelectDxPaineis(); popularSelectClientesDiasExtras(); } catch (e) {}
+      try { popularSelectIndicadores(); popularSelectTestes(); renderIndicacoes(); } catch (e) {}
+      try { renderMessageEditor(); } catch (e) {}
+      try { renderRoleta(); } catch (e) {}
+    }
+    function applyCloudPayload(payload) {
+      const data = payload && typeof payload === 'object' ? payload : {};
+      clients = Array.isArray(data.clients) ? data.clients : [];
+      testes = Array.isArray(data.testes) ? data.testes : [];
+      indicacoes = Array.isArray(data.indicacoes) ? data.indicacoes : [];
+      messageTemplates = mergeMessageTemplates(data.messageTemplates || {});
+      paineis = normalizePaineis(data.paineis);
+      pacotes = Array.isArray(data.pacotes) ? data.pacotes.map(p => ({ ...p, painelId: p.painelId || paineis[0].id })) : [];
+      planos = Array.isArray(data.planos) ? data.planos.map(p => ({ ...p, painelId: p.painelId || paineis[0].id, creditos: Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1, taxaTipo: p.taxaTipo || 'none', taxaValor: p.taxaValor ?? 0 })) : [];
+      movimentacoes = Array.isArray(data.movimentacoes) ? data.movimentacoes.map(m => ({ ...m, painelId: m.painelId || paineis[0].id })) : [];
+      lucrosCustos = Array.isArray(data.lucrosCustos) ? data.lucrosCustos : [];
+      persistLocalSnapshot();
+      lastCloudPayloadSerialized = serializeCloudPayload();
+      refreshUiAfterCloudLoad();
+    }
+    async function syncCloudDataNow(reason = 'manual') {
+      if (!currentFirebaseUser || !firebaseDbInstance) return;
+      const ref = getCloudDocRef();
+      if (!ref) return;
+      const serialized = serializeCloudPayload();
+      if (!serialized) return;
+      if (serialized === lastCloudPayloadSerialized && reason !== 'force') {
+        setCloudStatus('Sincronizado', 'ok', 'Seus dados já estão atualizados no Firestore.');
+        return;
+      }
+      try {
+        setCloudStatus('Salvando...', 'warn', 'Sincronizando alterações com o Firestore.');
+        await ref.set({
+          version: 1,
+          email: currentFirebaseUser.email || '',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          payload: JSON.parse(serialized)
+        }, { merge: true });
+        lastCloudPayloadSerialized = serialized;
+        setCloudStatus('Sincronizado', 'ok', 'Os dados do painel estão salvos no Firestore.');
+      } catch (error) {
+        console.error(error);
+        setCloudStatus('Falha ao salvar', 'error', 'Não foi possível gravar no Firestore. Confira as regras e a autenticação.');
+        showToast('Falha ao sincronizar com o Firebase.', true);
+      }
+    }
+    function queueCloudSave(reason = 'update') {
+      if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
+      if (!currentFirebaseUser || !firebaseDbInstance) return;
+      setCloudStatus('Alterações pendentes', 'warn', 'Existe uma atualização aguardando envio ao Firestore.');
+      cloudSaveTimer = setTimeout(() => { syncCloudDataNow(reason); }, 900);
+    }
+    function updateAuthUi() {
+      const emailEl = document.getElementById('authUserEmail');
+      const logoutBtn = document.getElementById('firebaseLogoutBtn');
+      const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+      const registerBtn = document.getElementById('firebaseRegisterBtn');
+      if (emailEl) emailEl.textContent = currentFirebaseUser && currentFirebaseUser.email ? currentFirebaseUser.email : 'Nenhuma';
+      if (logoutBtn) logoutBtn.classList.toggle('hidden', !currentFirebaseUser);
+      if (headerLogoutBtn) headerLogoutBtn.classList.toggle('hidden', !currentFirebaseUser);
+      if (registerBtn) registerBtn.classList.toggle('hidden', !!currentFirebaseUser);
+      els.tabs.forEach(tab => {
+        const isFree = tab.dataset.authExempt === 'true';
+        tab.classList.toggle('tab-locked', !currentFirebaseUser && !isFree);
+      });
+      if (!currentFirebaseUser) {
+        setCloudStatus('Aguardando login', 'warn', 'Entre com email e senha para carregar e salvar seus dados no Firebase.');
+        switchTab('login');
+      }
+    }
+    function getFirebaseErrorMessage(error, fallback) {
+      const code = error && error.code ? error.code : '';
+      const map = {
+        'auth/invalid-email': 'Email inválido.',
+        'auth/user-not-found': 'Usuário não encontrado.',
+        'auth/wrong-password': 'Senha incorreta.',
+        'auth/invalid-login-credentials': 'Email ou senha inválidos.',
+        'auth/email-already-in-use': 'Este email já está em uso.',
+        'auth/weak-password': 'A senha precisa ter pelo menos 6 caracteres.',
+        'auth/operation-not-allowed': 'Ative o método Email/Senha no Firebase Authentication.'
+      };
+      return map[code] || fallback;
+    }
+    async function handleFirebaseLogin(event) {
+      event.preventDefault();
+      if (!firebaseAuthInstance) { showToast('Firebase Authentication não foi inicializado.', true); return; }
+      const email = String(document.getElementById('firebaseEmail')?.value || '').trim();
+      const password = String(document.getElementById('firebasePassword')?.value || '').trim();
+      if (!email || !password) { showToast('Informe email e senha.', true); return; }
+      try {
+        setCloudStatus('Entrando...', 'warn', 'Validando suas credenciais no Firebase Authentication.');
+        await firebaseAuthInstance.signInWithEmailAndPassword(email, password);
+        document.getElementById('firebasePassword').value = '';
+        showToast('Login realizado com sucesso.');
+      } catch (error) {
+        console.error(error);
+        setCloudStatus('Falha no login', 'error', 'Não foi possível autenticar com o Firebase Authentication.');
+        showToast(getFirebaseErrorMessage(error, 'Não foi possível entrar.'), true);
+      }
+    }
+    async function handleFirebaseRegister() {
+      if (!firebaseAuthInstance) { showToast('Firebase Authentication não foi inicializado.', true); return; }
+      const email = String(document.getElementById('firebaseEmail')?.value || '').trim();
+      const password = String(document.getElementById('firebasePassword')?.value || '').trim();
+      if (!email || !password) { showToast('Preencha email e senha para criar a conta.', true); return; }
+      try {
+        setCloudStatus('Criando conta...', 'warn', 'Criando o usuário no Firebase Authentication.');
+        await firebaseAuthInstance.createUserWithEmailAndPassword(email, password);
+        document.getElementById('firebasePassword').value = '';
+        showToast('Conta criada com sucesso.');
+      } catch (error) {
+        console.error(error);
+        setCloudStatus('Falha no cadastro', 'error', 'Não foi possível criar o usuário no Firebase Authentication.');
+        showToast(getFirebaseErrorMessage(error, 'Não foi possível criar a conta.'), true);
+      }
+    }
+    async function handleFirebaseLogout() {
+      if (!firebaseAuthInstance) return;
+      try {
+        await firebaseAuthInstance.signOut();
+        showToast('Sessão encerrada.');
+      } catch (error) {
+        console.error(error);
+        showToast('Não foi possível sair.', true);
+      }
+    }
+    async function loadCloudDataForUser() {
+      const ref = getCloudDocRef();
+      if (!ref) return;
+      try {
+        setCloudStatus('Carregando nuvem...', 'warn', 'Buscando seus dados no Firestore.');
+        const snap = await ref.get();
+        const raw = snap.exists ? (snap.data() || {}) : {};
+        if (raw.payload && typeof raw.payload === 'object') {
+          applyCloudPayload(raw.payload);
+          setCloudStatus('Sincronizado', 'ok', 'Dados carregados do Firestore com sucesso.');
+          if (document.querySelector('.panel.active')?.id === 'login') switchTab('dashboard');
+          return;
+        }
+        setCloudStatus('Conta conectada', 'ok', 'Nenhum documento foi encontrado ainda. O próximo salvamento criará sua base no Firestore.');
+        if (hasMeaningfulData(buildCloudPayload())) queueCloudSave('force');
+        if (document.querySelector('.panel.active')?.id === 'login') switchTab('dashboard');
+      } catch (error) {
+        console.error(error);
+        setCloudStatus('Erro na nuvem', 'error', 'Falha ao ler o documento do Firestore. Verifique as regras e o projeto configurado.');
+        showToast('Não foi possível carregar os dados do Firebase.', true);
+      }
+    }
+    function setupFirebaseAuth() {
+      if (firebaseWired) return;
+      firebaseWired = true;
+      if (!window.firebase) {
+        setCloudStatus('Firebase ausente', 'error', 'Os scripts do Firebase não foram carregados no navegador.');
+        return;
+      }
+      try {
+        firebaseAppInstance = firebase.apps && firebase.apps.length ? firebase.app() : firebase.initializeApp(FIREBASE_CONFIG);
+        firebaseAuthInstance = firebase.auth();
+        firebaseDbInstance = firebase.firestore();
+        const form = document.getElementById('firebaseLoginForm');
+        const registerBtn = document.getElementById('firebaseRegisterBtn');
+        const logoutBtn = document.getElementById('firebaseLogoutBtn');
+        const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+        if (form) form.addEventListener('submit', handleFirebaseLogin);
+        if (registerBtn) registerBtn.addEventListener('click', handleFirebaseRegister);
+        if (logoutBtn) logoutBtn.addEventListener('click', handleFirebaseLogout);
+        if (headerLogoutBtn) headerLogoutBtn.addEventListener('click', handleFirebaseLogout);
+        firebaseAuthInstance.onAuthStateChanged(async (user) => {
+          currentFirebaseUser = user || null;
+          updateAuthUi();
+          if (currentFirebaseUser) await loadCloudDataForUser();
+        });
+      } catch (error) {
+        console.error(error);
+        setCloudStatus('Falha no Firebase', 'error', 'Não foi possível inicializar o projeto Firebase com as credenciais informadas.');
+      }
+    }
+
     /* Substitui o confirm() nativo (bloqueado em iframes pelo Chrome).
        Padrão "clicar 2x em até 2.5s na mesma ação para confirmar". */
     const _pendingConfirms = new Map();
@@ -399,17 +686,25 @@ function setupMessageEditor() {
       return false;
     }
 
-    function saveClients() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); } catch (e) { showToast('Falha ao salvar localmente.', true); } }
-    function loadClients() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) { clients = []; return; }
-      try { const p = JSON.parse(raw); clients = Array.isArray(p) ? p : []; } catch (e) { clients = []; }
+    function saveClients() {
+      try {
+        writeJsonCache(STORAGE_KEY, clients);
+        queueCloudSave('clients');
+      } catch (e) { showToast('Falha ao salvar localmente.', true); }
     }
-    function salvarTestes() { try { localStorage.setItem(STORAGE_KEY_TESTES, JSON.stringify(testes)); } catch (e) {} }
+    function loadClients() {
+      const raw = readJsonCache(STORAGE_KEY, []);
+      clients = Array.isArray(raw) ? raw : [];
+    }
+    function salvarTestes() {
+      try {
+        writeJsonCache(STORAGE_KEY_TESTES, testes);
+        queueCloudSave('testes');
+      } catch (e) {}
+    }
     function carregarTestes() {
-      const raw = localStorage.getItem(STORAGE_KEY_TESTES);
-      if (!raw) { testes = []; return; }
-      try { const p = JSON.parse(raw); testes = Array.isArray(p) ? p : []; } catch (e) { testes = []; }
+      const raw = readJsonCache(STORAGE_KEY_TESTES, []);
+      testes = Array.isArray(raw) ? raw : [];
     }
 
     function pad(n) { return String(n).padStart(2, '0'); }
@@ -848,26 +1143,26 @@ let renovacaoClienteAtual = null;
     window.enviarMensagemRenovacaoWhatsApp = enviarMensagemRenovacaoWhatsApp;
 
     function switchTab(tabName) {
-      els.tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
-      els.panels.forEach(panel => panel.classList.toggle('active', panel.id === tabName));
+      const targetTab = (!currentFirebaseUser && tabName !== 'login') ? 'login' : tabName;
+      els.tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === targetTab));
+      els.panels.forEach(panel => panel.classList.toggle('active', panel.id === targetTab));
       closeSidebar();
-      if (tabName === 'dashboard') {
+      if (targetTab === 'dashboard') {
         setTimeout(() => {
           try { atualizarDashboardFinanceiro(); } catch (e) {}
           try { renderDashboard(); } catch (e) {}
         }, 80);
       }
-      if (tabName === 'config') {
-        // Atualiza dados das sub-seções expansíveis (Calculadora, Gestão, Indicações)
+      if (targetTab === 'config') {
         setTimeout(() => {
           try { atualizarSelectMesGestao(); atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao(); } catch (e) {}
           try { popularSelectIndicadores(); popularSelectTestes(); renderIndicacoes(); } catch (e) {}
         }, 80);
       }
-      if (tabName === 'mensagens') {
+      if (targetTab === 'mensagens') {
         setTimeout(() => { try { renderMessageEditor(); } catch (e) {} }, 60);
       }
-      if (tabName === 'roleta') {
+      if (targetTab === 'roleta') {
         renderRoleta();
       }
     }
@@ -1569,7 +1864,16 @@ let ativacaoClienteAtual = null;
       const f = document.getElementById('filtroClientesStatus');
       if (f) f.addEventListener('change', () => { state.clientesPage = 1; renderClientes(); });
     })();
-    els.tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+    els.tabs.forEach(tab => tab.addEventListener('click', () => {
+      const tabName = tab.dataset.tab;
+      const isFree = tab.dataset.authExempt === 'true';
+      if (!currentFirebaseUser && !isFree) {
+        showToast('Faça login para liberar as demais abas.', true);
+        switchTab('login');
+        return;
+      }
+      switchTab(tabName);
+    }));
     (function wireSidebar() {
       const tog = document.getElementById('menuToggle');
       const cls = document.getElementById('sidebarClose');
@@ -1663,22 +1967,20 @@ let ativacaoClienteAtual = null;
       { id: 'p1', nome: 'Painel 1', cor: '#39ff14', logo: '' },
       { id: 'p2', nome: 'Painel 2', cor: '#5cf0ff', logo: '' }
     ];
-    function salvarPaineis() { localStorage.setItem('iptv_paineis', JSON.stringify(paineis)); }
+    function salvarPaineis() {
+      writeJsonCache('iptv_paineis', paineis);
+      queueCloudSave('paineis');
+    }
     function carregarPaineis() {
-      const raw = localStorage.getItem('iptv_paineis');
-      if (raw) {
-        try {
-          const p = JSON.parse(raw);
-          if (Array.isArray(p) && p.length >= 1) {
-            paineis = p.map((x, i) => ({
-              id: x.id || ('p' + (i + 1)),
-              nome: (x.nome && String(x.nome).trim()) || ('Painel ' + (i + 1)),
-              cor: (x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor))) ? x.cor : PAINEIS_DEFAULT[Math.min(i, PAINEIS_DEFAULT.length - 1)].cor,
-              logo: (typeof x.logo === 'string') ? x.logo : ''
-            }));
-            return;
-          }
-        } catch (e) {}
+      const raw = readJsonCache('iptv_paineis', null);
+      if (Array.isArray(raw) && raw.length >= 1) {
+        paineis = raw.map((x, i) => ({
+          id: x.id || ('p' + (i + 1)),
+          nome: (x.nome && String(x.nome).trim()) || ('Painel ' + (i + 1)),
+          cor: (x.cor && /^#[0-9a-fA-F]{6}$/.test(String(x.cor))) ? x.cor : PAINEIS_DEFAULT[Math.min(i, PAINEIS_DEFAULT.length - 1)].cor,
+          logo: (typeof x.logo === 'string') ? x.logo : ''
+        }));
+        return;
       }
       paineis = JSON.parse(JSON.stringify(PAINEIS_DEFAULT));
       salvarPaineis();
@@ -1751,19 +2053,16 @@ let ativacaoClienteAtual = null;
       return paineis[0].id;
     }
 
-    function salvarPacotes() { localStorage.setItem('iptv_pacotes', JSON.stringify(pacotes)); }
-    function salvarPlanos()  { localStorage.setItem('iptv_planos',  JSON.stringify(planos));  }
-    function salvarMovimentacoes() { localStorage.setItem('iptv_movimentacoes', JSON.stringify(movimentacoes)); }
-    function salvarLucrosCustos() { localStorage.setItem('iptv_lucros_custos', JSON.stringify(lucrosCustos)); }
+    function salvarPacotes() { writeJsonCache('iptv_pacotes', pacotes); queueCloudSave('pacotes'); }
+    function salvarPlanos()  { writeJsonCache('iptv_planos', planos); queueCloudSave('planos'); }
+    function salvarMovimentacoes() { writeJsonCache('iptv_movimentacoes', movimentacoes); queueCloudSave('movimentacoes'); }
+    function salvarLucrosCustos() { writeJsonCache('iptv_lucros_custos', lucrosCustos); queueCloudSave('lucrosCustos'); }
 
     function carregarDadosCalc() {
       carregarPaineis();
-      const p = localStorage.getItem('iptv_pacotes');
-      if (p) pacotes = JSON.parse(p);
-      else {
-        pacotes = [];
-        salvarPacotes();
-      }
+      const p = readJsonCache('iptv_pacotes', []);
+      pacotes = Array.isArray(p) ? p : [];
+      if (!p || !Array.isArray(p)) salvarPacotes();
       let mutPac = false;
       pacotes.forEach(pac => {
         if (!pac.painelId || !paineis.some(pp => pp.id === pac.painelId)) {
@@ -1772,8 +2071,8 @@ let ativacaoClienteAtual = null;
         }
       });
       if (mutPac) salvarPacotes();
-      const pl = localStorage.getItem('iptv_planos');
-      if (pl) { try { planos = JSON.parse(pl) || []; } catch (e) { planos = []; } }
+      const pl = readJsonCache('iptv_planos', []);
+      planos = Array.isArray(pl) ? pl : [];
       let mutated = false;
       planos.forEach(plObj => {
         if (!Number.isFinite(parseInt(plObj.creditos))) { plObj.creditos = 1; mutated = true; }
@@ -1782,9 +2081,8 @@ let ativacaoClienteAtual = null;
         if (!plObj.painelId || !paineis.some(pp => pp.id === plObj.painelId)) { plObj.painelId = paineis[0].id; mutated = true; }
       });
       if (mutated) salvarPlanos();
-      const m = localStorage.getItem('iptv_movimentacoes');
-      if (m) movimentacoes = JSON.parse(m);
-      // Migração: garantir painelId em cada movimentação
+      const m = readJsonCache('iptv_movimentacoes', []);
+      movimentacoes = Array.isArray(m) ? m : [];
       let mutMov = false;
       movimentacoes.forEach(mv => {
         if (!mv.painelId || !paineis.some(pp => pp.id === mv.painelId)) {
@@ -1793,8 +2091,8 @@ let ativacaoClienteAtual = null;
         }
       });
       if (mutMov) salvarMovimentacoes();
-      const lc = localStorage.getItem('iptv_lucros_custos');
-      if (lc) lucrosCustos = JSON.parse(lc);
+      const lc = readJsonCache('iptv_lucros_custos', []);
+      lucrosCustos = Array.isArray(lc) ? lc : [];
     }
 
     /* ---------- PLANOS ---------- */
@@ -3287,14 +3585,14 @@ function aplicarDiasExtras() {
        PARTE 4 — INDICAÇÕES + ROLETA DA SORTE
        ========================================================= */
     function salvarIndicacoes() {
-      try { localStorage.setItem(STORAGE_KEY_INDICACOES, JSON.stringify(indicacoes)); }
-      catch (e) { showToast('Falha ao salvar indicações.', true); }
+      try {
+        writeJsonCache(STORAGE_KEY_INDICACOES, indicacoes);
+        queueCloudSave('indicacoes');
+      } catch (e) { showToast('Falha ao salvar indicações.', true); }
     }
     function carregarIndicacoes() {
-      const raw = localStorage.getItem(STORAGE_KEY_INDICACOES);
-      if (!raw) { indicacoes = []; return; }
-      try { const p = JSON.parse(raw); indicacoes = Array.isArray(p) ? p : []; }
-      catch (e) { indicacoes = []; }
+      const raw = readJsonCache(STORAGE_KEY_INDICACOES, []);
+      indicacoes = Array.isArray(raw) ? raw : [];
     }
     function gerarNumeroSorte() {
       const usados = new Set(indicacoes.map(i => i.numero));
@@ -3892,3 +4190,4 @@ function renderIndicacoes() {
     renderMessageEditor();
     wireRoletaEvents();
     migrarParaConfig();
+    setupFirebaseAuth();

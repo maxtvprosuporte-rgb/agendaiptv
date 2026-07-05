@@ -25,6 +25,8 @@
         </div>
       </div>
       <div class="actions">
+        <div class="auth-status-chip" id="authStatusBadge">Aguardando login</div>
+        <button class="btn-secondary hidden" id="headerLogoutBtn" type="button"><i class="fas fa-right-from-bracket"></i> Sair</button>
         <button class="btn-secondary" id="exportBtn" data-testid="export-backup-btn">Exportar backup</button>
         <label class="btn btn-secondary" for="importFile" data-testid="import-backup-label">Importar backup</label>
         <input id="importFile" type="file" accept="application/json" class="hidden" data-testid="import-backup-input" />
@@ -38,7 +40,8 @@
         <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu"><i class="fas fa-times"></i></button>
       </div>
       <nav class="tabs" role="tablist">
-        <button class="tab active" data-tab="dashboard" data-testid="tab-dashboard"><i class="fas fa-chart-line tab-icon"></i><span>Dashboard</span></button>
+        <button class="tab active" data-tab="login" data-auth-exempt="true" data-testid="tab-login"><i class="fas fa-user-lock tab-icon"></i><span>Login</span></button>
+        <button class="tab" data-tab="dashboard" data-testid="tab-dashboard"><i class="fas fa-chart-line tab-icon"></i><span>Dashboard</span></button>
         <button class="tab" data-tab="cadastros" data-testid="tab-cadastros"><i class="fas fa-user-plus tab-icon"></i><span>Cadastros</span></button>
         <button class="tab" data-tab="clientes" data-testid="tab-clientes"><i class="fas fa-users tab-icon"></i><span>Clientes</span></button>
         <button class="tab" data-tab="mensagens" data-testid="tab-mensagens"><i class="fab fa-whatsapp tab-icon"></i><span>Mensagens</span></button>
@@ -47,7 +50,43 @@
       </nav>
     </aside>
 
-    <section id="dashboard" class="panel active">
+    <section id="login" class="panel active">
+      <div class="auth-grid">
+        <div class="card auth-card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-user-shield"></i><h2>Login Firebase</h2><span class="tag">Email e senha</span></div>
+          </div>
+          <p class="card-hint">Entre com seu email e senha para carregar e salvar automaticamente seus dados no Firestore.</p>
+          <form id="firebaseLoginForm" autocomplete="on">
+            <div class="form-grid auth-form-grid">
+              <div class="field"><label for="firebaseEmail">Email</label><input id="firebaseEmail" type="email" placeholder="voce@exemplo.com" required /></div>
+              <div class="field"><label for="firebasePassword">Senha</label><input id="firebasePassword" type="password" placeholder="Sua senha" required /></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" id="firebaseLoginBtn"><i class="fas fa-right-to-bracket"></i> Entrar</button>
+              <button type="button" class="btn-secondary" id="firebaseRegisterBtn"><i class="fas fa-user-plus"></i> Criar conta</button>
+              <button type="button" class="btn-secondary hidden" id="firebaseLogoutBtn"><i class="fas fa-right-from-bracket"></i> Sair</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card auth-card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-cloud"></i><h2>Status da nuvem</h2><span class="tag" id="cloudSyncTag">Offline</span></div>
+          </div>
+          <div class="auth-status-stack">
+            <div class="auth-user-line"><span>Conta conectada</span><strong id="authUserEmail">Nenhuma</strong></div>
+            <p class="card-hint" id="authHelperText">Habilite o método Email/Senha no Firebase Authentication para usar o login.</p>
+          </div>
+          <div class="auth-note">
+            <p>Depois do login, o painel continua com a mesma interface, mas os dados passam a ser sincronizados com o Firestore.</p>
+            <p>Os botões de backup continuam disponíveis para exportar ou importar seus dados manualmente.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="panel">
       <!-- GESTÃO FINANCEIRA -->
       <div class="credit-stats" style="margin-bottom: 18px;">
         <div class="credit-stat-card">
@@ -854,6 +893,9 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
   <script defer src="./app.js"></script>
 </body>
 </html>

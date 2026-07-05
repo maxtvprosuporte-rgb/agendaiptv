@@ -386,3 +386,28 @@
   .message-editor-grid { grid-template-columns: 1fr; }
   .message-template-editor, .template-preview { min-height: 280px; }
 }
+
+
+    .auth-status-chip { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.08); background: #080808; color: var(--warning); font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+    .auth-status-chip.status-ok { color: var(--primary); border-color: rgba(57,255,20,.35); background: rgba(57,255,20,.08); }
+    .auth-status-chip.status-warn { color: var(--warning); border-color: rgba(255,228,92,.32); background: rgba(255,228,92,.08); }
+    .auth-status-chip.status-error { color: #ffb5b5; border-color: rgba(255,92,92,.35); background: rgba(255,92,92,.08); }
+
+    .auth-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr); gap: 18px; }
+    .auth-card { min-height: 100%; }
+    .auth-form-grid { grid-template-columns: 1fr 1fr; }
+    .auth-status-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+    .auth-user-line { display: flex; justify-content: space-between; gap: 12px; align-items: center; background: #070707; border: 1px solid var(--border-faint); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--text-dim); }
+    .auth-user-line strong { color: #fff; font-family: var(--font-mono); font-size: 12.5px; word-break: break-all; text-align: right; }
+    .auth-note { background: #070707; border: 1px dashed var(--border-faint); border-radius: 14px; padding: 14px 16px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .auth-note p { margin: 0; }
+    .auth-note p + p { margin-top: 8px; }
+    .tab.tab-locked { opacity: .55; }
+    .tab.tab-locked:hover { background: transparent; color: var(--text-dim); transform: none; }
+
+    @media (max-width: 980px) {
+      .auth-grid { grid-template-columns: 1fr; }
+      .auth-form-grid { grid-template-columns: 1fr; }
+      .auth-status-chip { width: 100%; }
+    }
+
