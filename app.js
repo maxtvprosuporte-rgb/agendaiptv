@@ -1388,6 +1388,7 @@ let renovacaoClienteAtual = null;
             </div>
             <div class="client-row-actions">
               <button class="btn-pending" onclick="confirmarPagamento('${c.id}')" data-testid="pending-payment-confirm-${c.id}"><i class="fas fa-check-circle"></i> Confirmar que pagou</button>
+              <button class="btn-whatsapp" onclick="enviarWhatsAppPagamentoPendente('${c.id}')" data-testid="pending-payment-whats-${c.id}"><i class="fab fa-whatsapp"></i> Cobrar</button>
               <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
               <button class="btn-info" onclick="editClient('${c.id}')">Editar</button>
             </div>
