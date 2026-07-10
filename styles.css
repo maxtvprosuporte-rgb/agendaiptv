@@ -187,6 +187,7 @@
     .pending-mini-name { font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pending-mini-meta { margin-top: 2px; font-family: var(--font-mono); color: var(--muted); font-size: 11.5px; }
     .pending-mini-action { padding: 7px 10px; min-height: 32px; font-size: 11.5px; }
+    .pending-mini-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 
     .empty-state { text-align: center; color: var(--muted); padding: 38px 20px; font-size: 14px; background: #080808; border: 1px dashed var(--border-faint); border-radius: 12px; }
     .empty-state i { font-size: 40px; opacity: .4; margin-bottom: 10px; display: block; }

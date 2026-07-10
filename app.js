@@ -135,6 +135,21 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
     '',
     '🙏🏻 *Obrigado pela preferência!*'
   ].join('\n'),
+  pagamento_pendente: [
+    '⏳ Olá *{{nome}}*, tudo bem?',
+    '',
+    'Passando para lembrar que o pagamento da sua renovação ainda está *pendente*.',
+    '',
+    '👤 *Usuário*: {{usuario}}',
+    '🔑 *Senha*: {{senha}}',
+    '📦 *Plano*: {{plano}}',
+    '💰 *Valor*: {{valor}}',
+    '🗓️ *Vencimento*: {{data_renovacao}}',
+    '',
+    '🔗 *Link de pagamento*: {{link_renovacao}}',
+    '',
+    '🙏 Assim que confirmar o pagamento, me avise por aqui. Obrigado pela preferência!'
+  ].join('\n'),
   indicacao_teste: [
     '🎰 *Olá {{indicador_nome}}!*',
     '',
@@ -177,6 +192,7 @@ const MESSAGE_TEMPLATE_META = Object.freeze({
   teste_criado: { label: 'Teste criado', variables: ['nome', 'usuario', 'senha', 'link_renovacao', 'duracao_teste'] },
   ativacao: { label: 'Ativação de usuário', variables: ['nome', 'usuario', 'senha', 'data_renovacao'] },
   dias_extras: { label: 'Dias extras', variables: ['dias', 'usuario', 'senha', 'valor_adicional', 'data_renovacao'] },
+  pagamento_pendente: { label: 'Pagamento pendente', variables: ['nome', 'usuario', 'senha', 'plano', 'valor', 'data_renovacao', 'link_renovacao'] },
   indicacao_teste: { label: 'Indicação registrada', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_mes_gratis: { label: 'Indicação convertida', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_ganhador: { label: 'Ganhador do sorteio', variables: ['indicador_nome', 'amigo_nome', 'numero'] }
@@ -277,6 +293,15 @@ function getMessageTemplateSamples() {
       senha: cli.senha || '123456',
       valor_adicional: 'R$ 5,00',
       data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 35)))
+    },
+    pagamento_pendente: {
+      nome: cli.nome || 'Cliente Exemplo',
+      usuario: cli.usuario || 'usuario_teste',
+      senha: cli.senha || '123456',
+      plano: cli.plano || 'Plano Premium',
+      valor: cli.valor ? `R$ ${cli.valor}` : 'R$ 30,00',
+      data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30))),
+      link_renovacao: cli.linkRenovacao || 'https://pagamento.exemplo/renovar'
     },
     indicacao_teste: {
       indicador_nome: ind.indicadorNome || 'Cliente Indicador',
@@ -914,6 +939,30 @@ function copyMessage(id) {
       return isNaN(n) ? 0 : n;
     }
 
+    function buildPagamentoPendenteMessage(client) {
+      const dados = client._renovacaoPendente || {};
+      const valor = Number(dados.valorVenda) || parseValor(client.valor);
+      return renderMessageTemplate('pagamento_pendente', {
+        nome: client.nome || '',
+        usuario: client.usuario || '',
+        senha: client.senha || '',
+        plano: client.plano || '',
+        valor: valor ? `R$ ${valor.toFixed(2).replace('.', ',')}` : '',
+        data_renovacao: formatDate(client.dataRenovacao),
+        link_renovacao: client.linkRenovacao || ''
+      });
+    }
+    function enviarWhatsAppPagamentoPendente(id) {
+      const client = clients.find(c => c.id === id);
+      if (!client) return;
+      const phone = String(client.telefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(buildPagamentoPendenteMessage(client));
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      if (!phone) showToast('Cliente sem telefone cadastrado. Adicione um telefone válido para enviar a mensagem.', true);
+    }
+
     /* === RENOVAÇÃO COM CONFIRMAÇÃO === */
     let renovacaoPendente = null; // { client, dias, novaDataStr, valorVenda, painelId, creditosUsar, taxa }
 
@@ -1390,7 +1439,10 @@ let renovacaoClienteAtual = null;
                 <div class="pending-mini-name">${escapeHtml(c.nome || '—')}</div>
                 <div class="pending-mini-meta">${fmtMoney(valor)} • ${formatCreditos(creditos)} créd. • venc. ${escapeHtml(formatDate(c.dataRenovacao))}</div>
               </div>
-              <button class="btn-pending pending-mini-action" onclick="confirmarPagamento('${c.id}')" data-testid="dash-confirmar-pag-${c.id}"><i class="fas fa-check"></i> Confirmar</button>
+              <div class="pending-mini-actions">
+                <button class="btn-whatsapp pending-mini-action" onclick="enviarWhatsAppPagamentoPendente('${c.id}')" data-testid="dash-whats-pag-${c.id}"><i class="fab fa-whatsapp"></i> Cobrar</button>
+                <button class="btn-pending pending-mini-action" onclick="confirmarPagamento('${c.id}')" data-testid="dash-confirmar-pag-${c.id}"><i class="fas fa-check"></i> Confirmar</button>
+              </div>
             </div>`;
         }).join('') + (pendentes.length > 6 ? `<p class="card-hint" style="margin:2px 0 0;">+${pendentes.length - 6} pendente${pendentes.length - 6 === 1 ? '' : 's'} na lista de clientes.</p>` : '');
       }
