@@ -175,6 +175,7 @@
 
     .pending-dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
     .pending-dashboard-card { position: relative; overflow: hidden; border-color: rgba(255,228,92,.18); }
+    .pending-dashboard-card-wide { grid-column: 1 / -1; overflow: visible; }
     .pending-dashboard-card::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: var(--warning); box-shadow: 0 0 18px rgba(255,228,92,.28); opacity: .8; }
     .pending-stat-value { color: var(--warning) !important; }
     .pending-stat-detail { margin-top: 6px; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.35; color: var(--muted); }
@@ -182,8 +183,8 @@
     .pending-metric-value { font-family: var(--font-mono); font-size: clamp(28px, 5vw, 40px); line-height: 1; font-weight: 800; color: var(--warning); }
     .pending-metric-sub { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding-bottom: 4px; }
     .pending-list-mini { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-    .pending-mini-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: #080808; border: 1px solid rgba(255,228,92,.12); }
-    .pending-mini-main { min-width: 0; }
+    .pending-mini-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 12px; background: #080808; border: 1px solid rgba(255,228,92,.12); }
+    .pending-mini-main { min-width: 0; flex: 1 1 160px; }
     .pending-mini-name { font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pending-mini-meta { margin-top: 2px; font-family: var(--font-mono); color: var(--muted); font-size: 11.5px; }
     .pending-mini-action { padding: 7px 10px; min-height: 32px; font-size: 11.5px; }
