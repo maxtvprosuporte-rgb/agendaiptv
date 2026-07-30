@@ -184,6 +184,18 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
     '',
     'Obrigado por participar e por indicar nossos serviços. 🙏'
   ].join('\n'),
+  instalacao_teste: [
+    '📲 Olá *{{nome}}*, seguem as instruções para instalar o aplicativo *{{aplicativo}}* ({{plataforma}}) do seu teste!',
+    '',
+    '{{passos}}',
+    '',
+    '⬇️ *Link de download*: {{link_download}}',
+    '',
+    '👤 *Usuário*: {{usuario}}',
+    '🔑 *Senha*: {{senha}}',
+    '',
+    '⏳ Aproveite seu teste grátis e qualquer dúvida, estou à disposição!'
+  ].join('\n'),
   aplicativo_instalacao: [
     '📲 Olá *{{nome}}*, seguem as instruções para instalar o aplicativo *{{aplicativo}}* ({{plataforma}})!',
     '',
@@ -209,7 +221,8 @@ const MESSAGE_TEMPLATE_META = Object.freeze({
   indicacao_teste: { label: 'Indicação registrada', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_mes_gratis: { label: 'Indicação convertida', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_ganhador: { label: 'Ganhador do sorteio', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
-  aplicativo_instalacao: { label: 'Aplicativo / Instalação', variables: ['nome', 'aplicativo', 'plataforma', 'passos', 'link_download', 'usuario', 'senha', 'plano'] }
+  instalacao_teste: { label: 'Instalação / Teste', variables: ['nome', 'aplicativo', 'plataforma', 'passos', 'link_download', 'usuario', 'senha'] },
+  aplicativo_instalacao: { label: 'Instalação / Clientes', variables: ['nome', 'aplicativo', 'plataforma', 'passos', 'link_download', 'usuario', 'senha', 'plano'] }
 });
 
 function mergeMessageTemplates(raw) {
@@ -331,6 +344,15 @@ function getMessageTemplateSamples() {
       indicador_nome: ind.indicadorNome || 'Cliente Indicador',
       amigo_nome: ind.amigoNome || 'Amigo Indicado',
       numero: ind.numero || '074'
+    },
+    instalacao_teste: {
+      nome: teste.nome || 'Teste Exemplo',
+      aplicativo: (aplicativos[0] && aplicativos[0].nome) || teste.aplicativo || 'App Exemplo',
+      plataforma: (aplicativos[0] && aplicativos[0].plataformas && aplicativos[0].plataformas[0] && aplicativos[0].plataformas[0].nome) || 'Android / TV Box',
+      passos: (aplicativos[0] && aplicativos[0].plataformas && aplicativos[0].plataformas[0] && aplicativos[0].plataformas[0].passos) || '1️⃣ Baixe e instale o aplicativo.\n2️⃣ Abra o app e faça login com os dados abaixo.\n3️⃣ Pronto! É só aproveitar sua programação. 🎬',
+      link_download: (aplicativos[0] && aplicativos[0].plataformas && aplicativos[0].plataformas[0] && aplicativos[0].plataformas[0].link) || 'https://exemplo.com/download',
+      usuario: teste.usuario || 'teste_demo',
+      senha: teste.senha || '654321'
     },
     aplicativo_instalacao: {
       nome: cli.nome || 'Cliente Exemplo',
@@ -1707,8 +1729,9 @@ let ativacaoClienteAtual = null;
       renderPagination(pagEl, pag.safePage, pag.totalPages, 'changeTestesPage');
     }
 
-    function buildAplicativoMessage(entity, app, plataforma) {
-  return renderMessageTemplate('aplicativo_instalacao', {
+    function buildAplicativoMessage(entity, app, plataforma, origem) {
+  const templateKey = origem === 'teste' ? 'instalacao_teste' : 'aplicativo_instalacao';
+  return renderMessageTemplate(templateKey, {
     nome: entity.nome || '',
     aplicativo: (app && app.nome) || entity.aplicativo || '',
     plataforma: (plataforma && plataforma.nome) || '',
@@ -1743,6 +1766,8 @@ function abrirModalMensagemAplicativo(id, origem) {
   if (!app) { showToast('Nenhum aplicativo cadastrado para este registro. Selecione um aplicativo ou cadastre um na aba Aplicativos.', true); return; }
   if (!app.plataformas || app.plataformas.length === 0) { showToast('Cadastre ao menos uma plataforma de instalação para "' + app.nome + '" na aba Aplicativos.', true); return; }
   aplicativoMsgContext = { entity, origem, app };
+  const tituloEl = document.getElementById('modalMensagemAplicativoTitle');
+  if (tituloEl) tituloEl.innerHTML = `<i class="fas fa-mobile-alt" style="color: var(--primary); margin-right: 6px;"></i> ${origem === 'teste' ? 'Instalação / Teste' : 'Instalação / Cliente'}`;
   const sel = document.getElementById('amPlataformaSelect');
   sel.innerHTML = app.plataformas.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.nome)}</option>`).join('');
   const wrap = document.getElementById('amPlataformaWrap');
@@ -1756,11 +1781,11 @@ function fecharModalMensagemAplicativo() {
 }
 function atualizarPreviewMensagemAplicativo() {
   if (!aplicativoMsgContext) return;
-  const { entity, app } = aplicativoMsgContext;
+  const { entity, app, origem } = aplicativoMsgContext;
   const sel = document.getElementById('amPlataformaSelect');
   const plataforma = app.plataformas.find(p => p.id === sel.value) || app.plataformas[0];
   const box = document.getElementById('amMsgBox');
-  if (box) box.textContent = buildAplicativoMessage(entity, app, plataforma);
+  if (box) box.textContent = buildAplicativoMessage(entity, app, plataforma, origem);
 }
 function enviarAplicativoWhatsApp() {
   if (!aplicativoMsgContext) return;
