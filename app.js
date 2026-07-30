@@ -183,6 +183,21 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
     '🎁 Em breve entraremos em contato para entregar o seu prêmio!',
     '',
     'Obrigado por participar e por indicar nossos serviços. 🙏'
+  ].join('\n'),
+  aplicativo_instalacao: [
+    '📲 Olá *{{nome}}*, seguem as instruções para instalar o aplicativo *{{aplicativo}}*!',
+    '',
+    '1️⃣ Baixe e instale o aplicativo *{{aplicativo}}* na loja do seu dispositivo.',
+    '2️⃣ Abra o aplicativo e faça login com os dados abaixo.',
+    '3️⃣ Pronto! É só aproveitar sua programação. 🎬',
+    '',
+    '👤 *Usuário*: {{usuario}}',
+    '🔑 *Senha*: {{senha}}',
+    '📦 *Plano*: {{plano}}',
+    '',
+    '💳 *Link de pagamento*: {{link_pagamento}}',
+    '',
+    '🙏 Qualquer dúvida, estou à disposição!'
   ].join('\n')
 });
 
@@ -195,7 +210,8 @@ const MESSAGE_TEMPLATE_META = Object.freeze({
   pagamento_pendente: { label: 'Pagamento pendente', variables: ['nome', 'usuario', 'senha', 'plano', 'valor', 'data_renovacao', 'link_renovacao'] },
   indicacao_teste: { label: 'Indicação registrada', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_mes_gratis: { label: 'Indicação convertida', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
-  indicacao_ganhador: { label: 'Ganhador do sorteio', variables: ['indicador_nome', 'amigo_nome', 'numero'] }
+  indicacao_ganhador: { label: 'Ganhador do sorteio', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
+  aplicativo_instalacao: { label: 'Aplicativo / Instalação', variables: ['nome', 'aplicativo', 'usuario', 'senha', 'plano', 'link_pagamento'] }
 });
 
 function mergeMessageTemplates(raw) {
@@ -317,6 +333,14 @@ function getMessageTemplateSamples() {
       indicador_nome: ind.indicadorNome || 'Cliente Indicador',
       amigo_nome: ind.amigoNome || 'Amigo Indicado',
       numero: ind.numero || '074'
+    },
+    aplicativo_instalacao: {
+      nome: cli.nome || 'Cliente Exemplo',
+      aplicativo: cli.aplicativo || 'App Exemplo',
+      usuario: cli.usuario || 'usuario_teste',
+      senha: cli.senha || '123456',
+      plano: cli.plano || 'Plano Premium',
+      link_pagamento: cli.linkRenovacao || 'https://pagamento.exemplo/renovar'
     }
   };
 }
@@ -1569,6 +1593,7 @@ let renovacaoClienteAtual = null;
                 <button class="btn-info" onclick="editClient('${c.id}')" data-testid="edit-cliente-${c.id}">Editar</button>
                 <button class="btn-danger" onclick="deleteClient('${c.id}')">Apagar</button>
                 <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
+                <button class="btn-secondary" onclick="enviarAplicativoWhatsApp('${c.id}','cliente')" title="Enviar instruções do aplicativo" data-testid="btn-app-cliente-${c.id}"><i class="fas fa-mobile-alt"></i> App</button>
                 ${whatsBtnHtml(c)}
               </div>
             </div>`;
@@ -1668,6 +1693,7 @@ let ativacaoClienteAtual = null;
             </div>
             <div class="client-row-actions" style="width:auto;">
               <button class="btn-whatsapp" onclick="whatsAppTeste('${t.id}')" data-testid="btn-whatsapp-teste-${t.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+              <button class="btn-secondary" onclick="enviarAplicativoWhatsApp('${t.id}','teste')" title="Enviar instruções do aplicativo" data-testid="btn-app-teste-${t.id}"><i class="fas fa-mobile-alt"></i> App</button>
               <button class="btn-info" onclick="editClient('${t.id}')" data-testid="btn-editar-teste-${t.id}"><i class="fas fa-pen"></i> Editar</button>
               <button class="btn-primary" onclick="ativarTeste('${t.id}')" data-testid="btn-ativar-teste-${t.id}"><i class="fas fa-bolt"></i> Ativar</button>
               <button class="btn-danger" onclick="excluirTeste('${t.id}')" data-testid="btn-excluir-teste-${t.id}"><i class="fas fa-trash"></i> Excluir</button>
@@ -1677,7 +1703,39 @@ let ativacaoClienteAtual = null;
       renderPagination(pagEl, pag.safePage, pag.totalPages, 'changeTestesPage');
     }
 
-    function whatsAppTeste(id) {
+    function buildAplicativoMessage(entity) {
+  return renderMessageTemplate('aplicativo_instalacao', {
+    nome: entity.nome || '',
+    aplicativo: entity.aplicativo || '',
+    usuario: entity.usuario || '',
+    senha: entity.senha || '',
+    plano: entity.plano || '',
+    link_pagamento: entity.linkRenovacao || ''
+  });
+}
+
+function enviarAplicativoWhatsApp(id, origem) {
+  const entity = origem === 'teste' ? testes.find(x => x.id === id) : clients.find(x => x.id === id);
+  if (!entity) return;
+  const phone = String(entity.telefone || '').replace(/\D/g, '');
+  const text = encodeURIComponent(buildAplicativoMessage(entity));
+  const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+  const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  if (!phone) showToast('Sem telefone cadastrado. Adicione um telefone válido para enviar a mensagem.', true);
+}
+
+function copiarMensagemAplicativo(id, origem) {
+  const entity = origem === 'teste' ? testes.find(x => x.id === id) : clients.find(x => x.id === id);
+  if (!entity) return;
+  const msg = buildAplicativoMessage(entity);
+  const name = entity.nome || '';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${name}`)).catch(() => fallbackCopy(msg, name));
+  } else fallbackCopy(msg, name);
+}
+
+function whatsAppTeste(id) {
       const t = testes.find(x => x.id === id); if (!t) return;
       const phone = String(t.telefone || '').replace(/\D/g, '');
       const text = encodeURIComponent(buildTesteMessage(t));
