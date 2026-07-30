@@ -47,6 +47,7 @@
         <button class="tab active" data-tab="login" data-auth-exempt="true" data-testid="tab-login"><i class="fas fa-user-lock tab-icon"></i><span>Login</span></button>
         <button class="tab" data-tab="dashboard" data-testid="tab-dashboard"><i class="fas fa-chart-line tab-icon"></i><span>Dashboard</span></button>
         <button class="tab" data-tab="cadastros" data-testid="tab-cadastros"><i class="fas fa-user-plus tab-icon"></i><span>Cadastros</span></button>
+        <button class="tab" data-tab="aplicativos" data-testid="tab-aplicativos"><i class="fas fa-mobile-alt tab-icon"></i><span>Aplicativos</span></button>
         <button class="tab" data-tab="clientes" data-testid="tab-clientes"><i class="fas fa-users tab-icon"></i><span>Clientes</span></button>
         <button class="tab" data-tab="mensagens" data-testid="tab-mensagens"><i class="fab fa-whatsapp tab-icon"></i><span>Mensagens</span></button>
         <button class="tab" data-tab="roleta" data-testid="tab-roleta"><i class="fas fa-dharmachakra tab-icon"></i><span>Roleta</span></button>
@@ -240,7 +241,7 @@
           <div class="form-grid">
             <div class="field"><label for="nome">Nome</label><input id="nome" required data-testid="input-nome" /></div>
             <div class="field"><label for="telefone">Telefone</label><input id="telefone" placeholder="Ex.: 41999998888" data-testid="input-telefone" /></div>
-            <div class="field"><label for="aplicativo">Aplicativo</label><input id="aplicativo" placeholder="Ex.: XCIPTV" data-testid="input-aplicativo" /></div>
+            <div class="field"><label for="aplicativo">Aplicativo</label><select id="aplicativo" data-testid="input-aplicativo"><option value="">Selecione um aplicativo</option></select></div>
             <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
             <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
             <div class="field"><label for="plano">Plano</label><select id="plano" data-testid="input-plano"><option value="">Selecione um plano</option></select></div>
@@ -263,6 +264,17 @@
         <p class="card-hint">Clientes que fizeram o teste mas ainda não ativaram a assinatura. 10 por página.</p>
         <div id="listaTestes" data-testid="lista-testes"></div>
         <div class="pagination-bar" id="paginationTestes"></div>
+      </div>
+    </section>
+
+    <section id="aplicativos" class="panel">
+      <div class="form-card">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-mobile-alt"></i><h2>Aplicativos Disponíveis</h2><span class="tag">Cadastro</span></div>
+          <button class="btn-primary" onclick="abrirModalAplicativo()" data-testid="btn-novo-aplicativo"><i class="fas fa-plus"></i> Novo Aplicativo</button>
+        </div>
+        <p class="card-hint">Cadastre aqui os aplicativos usados para assistir (Ex.: XCIPTV, IBO Player, Smarters). Para cada um, adicione as instruções de instalação por plataforma (Android, iOS, Smart TV, Fire TV, etc). Eles aparecerão como lista nos formulários de Teste e Cliente, e poderão ser encaminhados ao cliente junto com usuário e senha.</p>
+        <div id="listaAplicativos" data-testid="lista-aplicativos"></div>
       </div>
     </section>
 
@@ -724,6 +736,41 @@
     </div>
   </div>
 
+  <!-- Modal: Cadastrar/Editar Aplicativo -->
+  <div id="modalAplicativo" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalAplicativoTitle">Adicionar Aplicativo</h3>
+        <button class="modal-close" onclick="fecharModalAplicativo()" data-testid="close-aplicativo"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-tag"></i> Nome do Aplicativo</label>
+        <input type="text" id="apNome" class="form-input" placeholder="Ex: XCIPTV, IBO Player, Smarters" data-testid="ap-nome">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-icons"></i> Ícone</label>
+        <select id="apIcone" class="form-select" data-testid="ap-icone">
+          <option value="fas fa-mobile-alt">Celular</option>
+          <option value="fas fa-tv">TV</option>
+          <option value="fas fa-play-circle">Player</option>
+          <option value="fas fa-satellite-dish">Satélite</option>
+          <option value="fas fa-globe">Web</option>
+          <option value="fas fa-tablet-alt">Tablet</option>
+          <option value="fab fa-android">Android</option>
+          <option value="fab fa-apple">Apple</option>
+          <option value="fab fa-amazon">Amazon</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-layer-group"></i> Instalação por Plataforma</label>
+        <p class="card-hint" style="margin: 0 0 10px;">Adicione uma linha para cada plataforma (Android/TV Box, iOS/iPhone, Smart TV, Fire TV, Windows/PC, etc.), com o link de download e o passo a passo de instalação.</p>
+        <div id="apPlataformasList"></div>
+        <button type="button" class="btn-secondary" onclick="adicionarLinhaPlataformaAplicativo()" data-testid="ap-add-plataforma" style="margin-top:6px;"><i class="fas fa-plus"></i> Adicionar Plataforma</button>
+      </div>
+      <button class="btn-primary btn-block" onclick="salvarAplicativo()" data-testid="save-aplicativo"><i class="fas fa-check"></i> Salvar Aplicativo</button>
+    </div>
+  </div>
+
   <div id="modalEditarMov" class="modal">
     <div class="modal-content sm">
       <div class="modal-header">
@@ -747,7 +794,7 @@
         <div class="form-grid">
           <div class="field"><label for="ec_nome">Nome</label><input id="ec_nome" required data-testid="ec-nome" /></div>
           <div class="field"><label for="ec_telefone">Telefone</label><input id="ec_telefone" placeholder="Ex.: 41999998888" data-testid="ec-telefone" /></div>
-          <div class="field"><label for="ec_aplicativo">Aplicativo</label><input id="ec_aplicativo" data-testid="ec-aplicativo" /></div>
+          <div class="field"><label for="ec_aplicativo">Aplicativo</label><select id="ec_aplicativo" data-testid="ec-aplicativo"><option value="">Selecione um aplicativo</option></select></div>
           <div class="field"><label for="ec_usuario">Usuário</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
           <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
           <div class="field"><label for="ec_plano">Plano</label><select id="ec_plano" data-testid="ec-plano"><option value="">Selecione um plano</option></select></div>
@@ -782,7 +829,7 @@
         <div class="form-grid">
           <div class="field"><label for="nc_nome">Nome</label><input id="nc_nome" required data-testid="nc-nome" /></div>
           <div class="field"><label for="nc_telefone">Telefone</label><input id="nc_telefone" placeholder="Ex.: 41999998888" data-testid="nc-telefone" /></div>
-          <div class="field"><label for="nc_aplicativo">Aplicativo</label><input id="nc_aplicativo" placeholder="Ex.: XCIPTV" data-testid="nc-aplicativo" /></div>
+          <div class="field"><label for="nc_aplicativo">Aplicativo</label><select id="nc_aplicativo" data-testid="nc-aplicativo"><option value="">Selecione um aplicativo</option></select></div>
           <div class="field"><label for="nc_usuario">Usuário</label><input id="nc_usuario" required data-testid="nc-usuario" /></div>
           <div class="field"><label for="nc_senha">Senha</label><input id="nc_senha" required data-testid="nc-senha" /></div>
           <div class="field"><label for="nc_plano">Plano</label><select id="nc_plano" data-testid="nc-plano"><option value="">Selecione um plano</option></select></div>
@@ -900,6 +947,27 @@
         <button type="button" class="btn-success" onclick="copiarMensagemDiasExtras()" data-testid="btn-copiar-msg-dx"><i class="fas fa-copy"></i> Copiar mensagem</button>
         <button type="button" class="btn-whatsapp" onclick="enviarMensagemDiasExtrasWhatsApp()" data-testid="btn-whats-dx"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
         <button type="button" class="btn-secondary" onclick="fecharModalMensagemDiasExtras()" style="margin-left:auto;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Enviar instalação do Aplicativo -->
+  <div id="modalMensagemAplicativo" class="modal">
+    <div class="modal-content sm">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-mobile-alt" style="color: var(--primary); margin-right: 6px;"></i> Instalação do Aplicativo</h3>
+        <button class="modal-close" onclick="fecharModalMensagemAplicativo()" data-testid="close-msg-app"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="form-group" id="amPlataformaWrap">
+        <label class="form-label"><i class="fas fa-layer-group"></i> Plataforma do cliente</label>
+        <select id="amPlataformaSelect" class="form-select" data-testid="am-plataforma-select" onchange="atualizarPreviewMensagemAplicativo()"></select>
+      </div>
+      <p class="card-hint" style="margin: 0 0 6px;">Confira a mensagem abaixo e envie ao cliente com usuário e senha inclusos.</p>
+      <div class="renew-msg-box" id="amMsgBox" data-testid="am-msg-box"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="button" class="btn-success" onclick="copiarMensagemAplicativo()" data-testid="btn-copiar-msg-app"><i class="fas fa-copy"></i> Copiar mensagem</button>
+        <button type="button" class="btn-whatsapp" onclick="enviarAplicativoWhatsApp()" data-testid="btn-whats-app-install"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
+        <button type="button" class="btn-secondary" onclick="fecharModalMensagemAplicativo()" style="margin-left:auto;">Fechar</button>
       </div>
     </div>
   </div>

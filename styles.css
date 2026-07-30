@@ -253,6 +253,13 @@
     .painel-stat-label { margin-top: 4px; font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
     .painel-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--painel-color, var(--primary)); background: color-mix(in srgb, var(--painel-color, var(--primary)) 8%, transparent); }
     .painel-badge.painel-2 { --painel-color: var(--info); }
+
+    .ap-plataforma-row { border: 1px solid var(--border-faint); border-radius: 12px; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,.02); position: relative; }
+    .ap-plataforma-row .form-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+    .ap-plataforma-row textarea { min-height: 90px; }
+    .ap-plataforma-row .ap-remove-plataforma { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #ff8080; cursor: pointer; font-size: 14px; padding: 4px; }
+    .app-platform-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--info); background: rgba(92,240,255,.08); margin: 2px 4px 0 0; }
+    @media (max-width: 640px) { .ap-plataforma-row .form-grid { grid-template-columns: 1fr; } }
     /* Logo + color picker */
     .painel-brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
     .painel-logo { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border-strong); background: rgba(255,255,255,.03); flex-shrink: 0; }

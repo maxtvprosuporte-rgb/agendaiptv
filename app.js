@@ -185,17 +185,15 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
     'Obrigado por participar e por indicar nossos serviços. 🙏'
   ].join('\n'),
   aplicativo_instalacao: [
-    '📲 Olá *{{nome}}*, seguem as instruções para instalar o aplicativo *{{aplicativo}}*!',
+    '📲 Olá *{{nome}}*, seguem as instruções para instalar o aplicativo *{{aplicativo}}* ({{plataforma}})!',
     '',
-    '1️⃣ Baixe e instale o aplicativo *{{aplicativo}}* na loja do seu dispositivo.',
-    '2️⃣ Abra o aplicativo e faça login com os dados abaixo.',
-    '3️⃣ Pronto! É só aproveitar sua programação. 🎬',
+    '{{passos}}',
+    '',
+    '⬇️ *Link de download*: {{link_download}}',
     '',
     '👤 *Usuário*: {{usuario}}',
     '🔑 *Senha*: {{senha}}',
     '📦 *Plano*: {{plano}}',
-    '',
-    '💳 *Link de pagamento*: {{link_pagamento}}',
     '',
     '🙏 Qualquer dúvida, estou à disposição!'
   ].join('\n')
@@ -211,7 +209,7 @@ const MESSAGE_TEMPLATE_META = Object.freeze({
   indicacao_teste: { label: 'Indicação registrada', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_mes_gratis: { label: 'Indicação convertida', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_ganhador: { label: 'Ganhador do sorteio', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
-  aplicativo_instalacao: { label: 'Aplicativo / Instalação', variables: ['nome', 'aplicativo', 'usuario', 'senha', 'plano', 'link_pagamento'] }
+  aplicativo_instalacao: { label: 'Aplicativo / Instalação', variables: ['nome', 'aplicativo', 'plataforma', 'passos', 'link_download', 'usuario', 'senha', 'plano'] }
 });
 
 function mergeMessageTemplates(raw) {
@@ -336,11 +334,13 @@ function getMessageTemplateSamples() {
     },
     aplicativo_instalacao: {
       nome: cli.nome || 'Cliente Exemplo',
-      aplicativo: cli.aplicativo || 'App Exemplo',
+      aplicativo: (aplicativos[0] && aplicativos[0].nome) || cli.aplicativo || 'App Exemplo',
+      plataforma: (aplicativos[0] && aplicativos[0].plataformas && aplicativos[0].plataformas[0] && aplicativos[0].plataformas[0].nome) || 'Android / TV Box',
+      passos: (aplicativos[0] && aplicativos[0].plataformas && aplicativos[0].plataformas[0] && aplicativos[0].plataformas[0].passos) || '1️⃣ Baixe e instale o aplicativo.\n2️⃣ Abra o app e faça login com os dados abaixo.\n3️⃣ Pronto! É só aproveitar sua programação. 🎬',
+      link_download: (aplicativos[0] && aplicativos[0].plataformas && aplicativos[0].plataformas[0] && aplicativos[0].plataformas[0].link) || 'https://exemplo.com/download',
       usuario: cli.usuario || 'usuario_teste',
       senha: cli.senha || '123456',
-      plano: cli.plano || 'Plano Premium',
-      link_pagamento: cli.linkRenovacao || 'https://pagamento.exemplo/renovar'
+      plano: cli.plano || 'Plano Premium'
     }
   };
 }
@@ -514,6 +514,7 @@ function setupMessageEditor() {
         writeJsonCache('iptv_paineis', paineis);
         writeJsonCache('iptv_pacotes', pacotes);
         writeJsonCache('iptv_planos', planos);
+        writeJsonCache('iptv_aplicativos', aplicativos);
         writeJsonCache('iptv_movimentacoes', movimentacoes);
         writeJsonCache('iptv_lucros_custos', lucrosCustos);
       } catch (e) {}
@@ -527,6 +528,7 @@ function setupMessageEditor() {
         paineis,
         pacotes,
         planos,
+        aplicativos,
         movimentacoes,
         lucrosCustos
       };
@@ -571,7 +573,7 @@ function setupMessageEditor() {
     }
     function hasMeaningfulData(payload) {
       if (!payload || typeof payload !== 'object') return false;
-      return [payload.clients, payload.testes, payload.indicacoes, payload.pacotes, payload.planos, payload.movimentacoes, payload.lucrosCustos]
+      return [payload.clients, payload.testes, payload.indicacoes, payload.pacotes, payload.planos, payload.aplicativos, payload.movimentacoes, payload.lucrosCustos]
         .some(arr => Array.isArray(arr) && arr.length > 0);
     }
     function refreshUiAfterCloudLoad() {
@@ -580,6 +582,7 @@ function setupMessageEditor() {
       try { renderAll(); renderTestes(); } catch (e) {}
       try { atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito(); } catch (e) {}
       try { atualizarListaPlanos(); atualizarSelectPlanos(); } catch (e) {}
+      try { atualizarListaAplicativos(); atualizarSelectAplicativos(); } catch (e) {}
       try { atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos(); } catch (e) {}
       try { atualizarListaAssinaturas(); atualizarListaCustos(); } catch (e) {}
       try { atualizarSelectMesGestao(); atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao(); } catch (e) {}
@@ -597,6 +600,7 @@ function setupMessageEditor() {
       paineis = normalizePaineis(data.paineis);
       pacotes = Array.isArray(data.pacotes) ? data.pacotes.map(p => ({ ...p, painelId: p.painelId || paineis[0].id })) : [];
       planos = Array.isArray(data.planos) ? data.planos.map(p => ({ ...p, painelId: p.painelId || paineis[0].id, creditos: Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1, taxaTipo: p.taxaTipo || 'none', taxaValor: p.taxaValor ?? 0 })) : [];
+      aplicativos = Array.isArray(data.aplicativos) ? data.aplicativos.map(normalizeAplicativo) : [];
       movimentacoes = Array.isArray(data.movimentacoes) ? data.movimentacoes.map(m => ({ ...m, painelId: m.painelId || paineis[0].id })) : [];
       lucrosCustos = Array.isArray(data.lucrosCustos) ? data.lucrosCustos : [];
       persistLocalSnapshot();
@@ -1593,7 +1597,7 @@ let renovacaoClienteAtual = null;
                 <button class="btn-info" onclick="editClient('${c.id}')" data-testid="edit-cliente-${c.id}">Editar</button>
                 <button class="btn-danger" onclick="deleteClient('${c.id}')">Apagar</button>
                 <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
-                <button class="btn-secondary" onclick="enviarAplicativoWhatsApp('${c.id}','cliente')" title="Enviar instruções do aplicativo" data-testid="btn-app-cliente-${c.id}"><i class="fas fa-mobile-alt"></i> App</button>
+                <button class="btn-secondary" onclick="abrirModalMensagemAplicativo('${c.id}','cliente')" title="Enviar instruções do aplicativo" data-testid="btn-app-cliente-${c.id}"><i class="fas fa-mobile-alt"></i> App</button>
                 ${whatsBtnHtml(c)}
               </div>
             </div>`;
@@ -1693,7 +1697,7 @@ let ativacaoClienteAtual = null;
             </div>
             <div class="client-row-actions" style="width:auto;">
               <button class="btn-whatsapp" onclick="whatsAppTeste('${t.id}')" data-testid="btn-whatsapp-teste-${t.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-              <button class="btn-secondary" onclick="enviarAplicativoWhatsApp('${t.id}','teste')" title="Enviar instruções do aplicativo" data-testid="btn-app-teste-${t.id}"><i class="fas fa-mobile-alt"></i> App</button>
+              <button class="btn-secondary" onclick="abrirModalMensagemAplicativo('${t.id}','teste')" title="Enviar instruções do aplicativo" data-testid="btn-app-teste-${t.id}"><i class="fas fa-mobile-alt"></i> App</button>
               <button class="btn-info" onclick="editClient('${t.id}')" data-testid="btn-editar-teste-${t.id}"><i class="fas fa-pen"></i> Editar</button>
               <button class="btn-primary" onclick="ativarTeste('${t.id}')" data-testid="btn-ativar-teste-${t.id}"><i class="fas fa-bolt"></i> Ativar</button>
               <button class="btn-danger" onclick="excluirTeste('${t.id}')" data-testid="btn-excluir-teste-${t.id}"><i class="fas fa-trash"></i> Excluir</button>
@@ -1703,10 +1707,13 @@ let ativacaoClienteAtual = null;
       renderPagination(pagEl, pag.safePage, pag.totalPages, 'changeTestesPage');
     }
 
-    function buildAplicativoMessage(entity) {
+    function buildAplicativoMessage(entity, app, plataforma) {
   return renderMessageTemplate('aplicativo_instalacao', {
     nome: entity.nome || '',
-    aplicativo: entity.aplicativo || '',
+    aplicativo: (app && app.nome) || entity.aplicativo || '',
+    plataforma: (plataforma && plataforma.nome) || '',
+    passos: (plataforma && plataforma.passos) || '',
+    link_download: (plataforma && plataforma.link) || '',
     usuario: entity.usuario || '',
     senha: entity.senha || '',
     plano: entity.plano || '',
@@ -1714,26 +1721,70 @@ let ativacaoClienteAtual = null;
   });
 }
 
-function enviarAplicativoWhatsApp(id, origem) {
+let aplicativoMsgContext = null;
+
+function encontrarAplicativoDaEntidade(entity) {
+  if (!entity) return null;
+  if (entity.aplicativoId) {
+    const porId = aplicativos.find(a => a.id === entity.aplicativoId);
+    if (porId) return porId;
+  }
+  if (entity.aplicativo) {
+    const nome = String(entity.aplicativo).trim().toLowerCase();
+    return aplicativos.find(a => String(a.nome).trim().toLowerCase() === nome) || null;
+  }
+  return null;
+}
+
+function abrirModalMensagemAplicativo(id, origem) {
   const entity = origem === 'teste' ? testes.find(x => x.id === id) : clients.find(x => x.id === id);
   if (!entity) return;
+  const app = encontrarAplicativoDaEntidade(entity);
+  if (!app) { showToast('Nenhum aplicativo cadastrado para este registro. Selecione um aplicativo ou cadastre um na aba Aplicativos.', true); return; }
+  if (!app.plataformas || app.plataformas.length === 0) { showToast('Cadastre ao menos uma plataforma de instalação para "' + app.nome + '" na aba Aplicativos.', true); return; }
+  aplicativoMsgContext = { entity, origem, app };
+  const sel = document.getElementById('amPlataformaSelect');
+  sel.innerHTML = app.plataformas.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.nome)}</option>`).join('');
+  const wrap = document.getElementById('amPlataformaWrap');
+  if (wrap) wrap.style.display = app.plataformas.length > 1 ? '' : 'none';
+  atualizarPreviewMensagemAplicativo();
+  document.getElementById('modalMensagemAplicativo').classList.add('active');
+}
+function fecharModalMensagemAplicativo() {
+  document.getElementById('modalMensagemAplicativo').classList.remove('active');
+  aplicativoMsgContext = null;
+}
+function atualizarPreviewMensagemAplicativo() {
+  if (!aplicativoMsgContext) return;
+  const { entity, app } = aplicativoMsgContext;
+  const sel = document.getElementById('amPlataformaSelect');
+  const plataforma = app.plataformas.find(p => p.id === sel.value) || app.plataformas[0];
+  const box = document.getElementById('amMsgBox');
+  if (box) box.textContent = buildAplicativoMessage(entity, app, plataforma);
+}
+function enviarAplicativoWhatsApp() {
+  if (!aplicativoMsgContext) return;
+  const { entity } = aplicativoMsgContext;
   const phone = String(entity.telefone || '').replace(/\D/g, '');
-  const text = encodeURIComponent(buildAplicativoMessage(entity));
+  const text = encodeURIComponent(document.getElementById('amMsgBox').textContent || '');
   const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
   const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   if (!phone) showToast('Sem telefone cadastrado. Adicione um telefone válido para enviar a mensagem.', true);
 }
-
-function copiarMensagemAplicativo(id, origem) {
-  const entity = origem === 'teste' ? testes.find(x => x.id === id) : clients.find(x => x.id === id);
-  if (!entity) return;
-  const msg = buildAplicativoMessage(entity);
-  const name = entity.nome || '';
+function copiarMensagemAplicativo() {
+  if (!aplicativoMsgContext) return;
+  const msg = document.getElementById('amMsgBox').textContent || '';
+  const name = aplicativoMsgContext.entity.nome || '';
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${name}`)).catch(() => fallbackCopy(msg, name));
   } else fallbackCopy(msg, name);
 }
+window.abrirModalMensagemAplicativo = abrirModalMensagemAplicativo;
+window.fecharModalMensagemAplicativo = fecharModalMensagemAplicativo;
+window.atualizarPreviewMensagemAplicativo = atualizarPreviewMensagemAplicativo;
+window.enviarAplicativoWhatsApp = enviarAplicativoWhatsApp;
+window.copiarMensagemAplicativo = copiarMensagemAplicativo;
 
 function whatsAppTeste(id) {
       const t = testes.find(x => x.id === id); if (!t) return;
@@ -1752,7 +1803,7 @@ function whatsAppTeste(id) {
       const creditosUsar = resolverCreditosCliente(t);
       const hoje = todayLocalDate();
       const novoCliente = {
-        id: generateId(), nome: t.nome, telefone: t.telefone, aplicativo: t.aplicativo,
+        id: generateId(), nome: t.nome, telefone: t.telefone, aplicativoId: t.aplicativoId || '', aplicativo: t.aplicativo,
         usuario: t.usuario, senha: t.senha, plano: t.plano, valor: t.valor,
         creditos: creditosUsar,
         dataInicio: toInputDate(hoje), dataPagamento: toInputDate(hoje),
@@ -1806,10 +1857,13 @@ function whatsAppTeste(id) {
       const creditosVal = els.creditos && els.creditos.value !== ''
         ? Math.max(0, parseInt(els.creditos.value) || 0)
         : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
+      const aplicativoId = els.aplicativo ? els.aplicativo.value : '';
+      const aplicativoCad = encontrarAplicativoPorId(aplicativoId);
       return {
         id: els.clientId.value || generateId(),
         nome: els.nome.value.trim(), telefone: els.telefone.value.trim(),
-        aplicativo: els.aplicativo.value.trim(), usuario: els.usuario.value.trim(),
+        aplicativoId: aplicativoId || '', aplicativo: aplicativoCad ? aplicativoCad.nome : '',
+        usuario: els.usuario.value.trim(),
         senha: els.senha.value.trim(), plano: planoNome,
         valor: els.valor.value.trim(), creditos: creditosVal,
         linkRenovacao: els.linkRenovacao.value.trim(),
@@ -1832,7 +1886,7 @@ function whatsAppTeste(id) {
       document.getElementById('ec_id').value = target.id;
       document.getElementById('ec_nome').value = target.nome || '';
       document.getElementById('ec_telefone').value = target.telefone || '';
-      document.getElementById('ec_aplicativo').value = target.aplicativo || '';
+      selecionarAplicativoPorId(document.getElementById('ec_aplicativo'), target.aplicativoId || '');
       document.getElementById('ec_usuario').value = target.usuario || '';
       document.getElementById('ec_senha').value = target.senha || '';
       const ecPlanoSel = document.getElementById('ec_plano');
@@ -1883,10 +1937,12 @@ function whatsAppTeste(id) {
       const ecCredVal = document.getElementById('ec_creditos').value;
       const planoCad = encontrarPlanoPorNome(planoNome);
       const creditosFinal = ecCredVal !== '' ? Math.max(0, parseInt(ecCredVal) || 0) : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
+      const ecAplicativoId = document.getElementById('ec_aplicativo').value;
+      const ecAplicativoCad = encontrarAplicativoPorId(ecAplicativoId);
       const base = {
         nome: document.getElementById('ec_nome').value.trim(),
         telefone: document.getElementById('ec_telefone').value.trim(),
-        aplicativo: document.getElementById('ec_aplicativo').value.trim(),
+        aplicativoId: ecAplicativoId || '', aplicativo: ecAplicativoCad ? ecAplicativoCad.nome : '',
         usuario: document.getElementById('ec_usuario').value.trim(),
         senha: document.getElementById('ec_senha').value.trim(),
         plano: planoNome, valor: document.getElementById('ec_valor').value.trim(),
@@ -1919,6 +1975,7 @@ function whatsAppTeste(id) {
     function abrirModalNovoCliente() {
       const form = document.getElementById('formNovoCliente'); form.reset();
       atualizarSelectPlanos();
+      atualizarSelectAplicativos();
       const hoje = todayLocalDate();
       document.getElementById('nc_dataInicio').value = toInputDate(hoje);
       document.getElementById('nc_dataRenovacao').value = toInputDate(addPlanPeriod(hoje, 30));
@@ -1976,10 +2033,12 @@ function whatsAppTeste(id) {
       const planoNome = ncPlanoSel && ncPlanoSel.tagName === 'SELECT' ? getPlanoNomeDoSelect(ncPlanoSel) : '';
       const ncCredVal = document.getElementById('nc_creditos').value;
       const creditosFinal = ncCredVal !== '' ? Math.max(0, parseInt(ncCredVal) || 0) : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
+      const ncAplicativoId = document.getElementById('nc_aplicativo').value;
+      const ncAplicativoCad = encontrarAplicativoPorId(ncAplicativoId);
       const novo = {
         id: generateId(), nome,
         telefone: document.getElementById('nc_telefone').value.trim(),
-        aplicativo: document.getElementById('nc_aplicativo').value.trim(),
+        aplicativoId: ncAplicativoId || '', aplicativo: ncAplicativoCad ? ncAplicativoCad.nome : '',
         usuario, senha, plano: planoNome, valor, creditos: creditosFinal,
         dataInicio, dataPagamento: dataInicio, dataRenovacao,
         linkRenovacao: document.getElementById('nc_linkRenovacao').value.trim(),
@@ -2081,6 +2140,7 @@ function whatsAppTeste(id) {
        ========================================================= */
     let pacotes = [];
     let planos = [];
+    let aplicativos = [];
     let assinaturas = [];
     let custos = [];
     let movimentacoes = [];
@@ -2187,6 +2247,7 @@ function whatsAppTeste(id) {
 
     function carregarDadosCalc() {
       carregarPaineis();
+      carregarAplicativos();
       const p = readJsonCache('iptv_pacotes', []);
       pacotes = Array.isArray(p) ? p : [];
       if (!p || !Array.isArray(p)) salvarPacotes();
@@ -2370,6 +2431,170 @@ function whatsAppTeste(id) {
       const sel3 = document.getElementById('ec_plano');
       if (sel3) sel3.addEventListener('change', () => aplicarPlanoSelecionado(sel3, 'ec_valor', 'ec_linkRenovacao', 'ec_dataInicio', 'ec_dataRenovacao', 'ec_creditos'));
     })();
+
+    /* ---------- APLICATIVOS (catálogo + instalação por plataforma) ---------- */
+    const PLATAFORMAS_SUGESTAO = ['Android / TV Box', 'iOS / iPhone', 'Smart TV LG / Samsung', 'Fire TV / Amazon Stick', 'Windows / PC', 'MAC OS'];
+    function salvarAplicativos() { writeJsonCache('iptv_aplicativos', aplicativos); queueCloudSave('aplicativos'); }
+    function carregarAplicativos() {
+      const raw = readJsonCache('iptv_aplicativos', []);
+      aplicativos = Array.isArray(raw) ? raw.map(normalizeAplicativo) : [];
+    }
+    function normalizeAplicativo(a) {
+      return {
+        id: a.id || generateId(),
+        nome: a.nome || '',
+        icone: a.icone || 'fas fa-mobile-alt',
+        plataformas: Array.isArray(a.plataformas) ? a.plataformas.map(p => ({
+          id: p.id || generateId(),
+          nome: p.nome || '',
+          link: p.link || '',
+          passos: p.passos || ''
+        })) : []
+      };
+    }
+    function encontrarAplicativoPorId(id) { return aplicativos.find(a => a.id === id) || null; }
+
+    let aplicativoEditandoId = null;
+    function abrirModalAplicativo() {
+      aplicativoEditandoId = null;
+      document.getElementById('modalAplicativoTitle').textContent = 'Adicionar Aplicativo';
+      document.getElementById('apNome').value = '';
+      document.getElementById('apIcone').value = 'fas fa-mobile-alt';
+      document.getElementById('apPlataformasList').innerHTML = '';
+      adicionarLinhaPlataformaAplicativo();
+      document.getElementById('modalAplicativo').classList.add('active');
+    }
+    function fecharModalAplicativo() {
+      document.getElementById('modalAplicativo').classList.remove('active');
+      aplicativoEditandoId = null;
+    }
+    function editarAplicativo(id) {
+      const a = encontrarAplicativoPorId(id); if (!a) return;
+      aplicativoEditandoId = id;
+      document.getElementById('modalAplicativoTitle').textContent = 'Editar Aplicativo';
+      document.getElementById('apNome').value = a.nome;
+      document.getElementById('apIcone').value = a.icone || 'fas fa-mobile-alt';
+      const lista = document.getElementById('apPlataformasList');
+      lista.innerHTML = '';
+      if (a.plataformas.length === 0) adicionarLinhaPlataformaAplicativo();
+      else a.plataformas.forEach(p => adicionarLinhaPlataformaAplicativo(p));
+      document.getElementById('modalAplicativo').classList.add('active');
+    }
+    function adicionarLinhaPlataformaAplicativo(dados) {
+      const lista = document.getElementById('apPlataformasList');
+      const rowId = 'aprow_' + generateId();
+      const nomeVal = dados && dados.nome ? dados.nome : '';
+      const linkVal = dados && dados.link ? dados.link : '';
+      const passosVal = dados && dados.passos ? dados.passos : '';
+      const datalistOpts = PLATAFORMAS_SUGESTAO.map(p => `<option value="${escapeHtml(p)}">`).join('');
+      const row = document.createElement('div');
+      row.className = 'ap-plataforma-row';
+      row.id = rowId;
+      row.innerHTML = `
+        <button type="button" class="ap-remove-plataforma" onclick="document.getElementById('${rowId}').remove()" title="Remover plataforma"><i class="fas fa-times"></i></button>
+        <div class="form-grid">
+          <div class="field"><label>Plataforma</label><input type="text" class="ap-plat-nome" list="apPlataformasSugestoes" placeholder="Ex.: Android / TV Box" value="${escapeHtml(nomeVal)}" /></div>
+          <div class="field"><label>Link de download</label><input type="text" class="ap-plat-link" placeholder="https://..." value="${escapeHtml(linkVal)}" /></div>
+        </div>
+        <div class="field"><label>Passo a passo de instalação</label><textarea class="ap-plat-passos" placeholder="1️⃣ Baixe e instale o aplicativo...&#10;2️⃣ Abra o app e faça login...">${escapeHtml(passosVal)}</textarea></div>
+      `;
+      lista.appendChild(row);
+      if (!document.getElementById('apPlataformasSugestoes')) {
+        const dl = document.createElement('datalist');
+        dl.id = 'apPlataformasSugestoes';
+        dl.innerHTML = datalistOpts;
+        document.body.appendChild(dl);
+      }
+    }
+    function salvarAplicativo() {
+      const nome = document.getElementById('apNome').value.trim();
+      const icone = document.getElementById('apIcone').value || 'fas fa-mobile-alt';
+      if (!nome) { showToast('Informe o nome do aplicativo.', true); return; }
+      const linhas = Array.from(document.querySelectorAll('#apPlataformasList .ap-plataforma-row'));
+      const plataformas = linhas.map(row => ({
+        id: generateId(),
+        nome: row.querySelector('.ap-plat-nome').value.trim(),
+        link: row.querySelector('.ap-plat-link').value.trim(),
+        passos: row.querySelector('.ap-plat-passos').value.trim()
+      })).filter(p => p.nome);
+      if (plataformas.length === 0) { showToast('Adicione ao menos uma plataforma com nome preenchido.', true); return; }
+      if (aplicativoEditandoId) {
+        const idx = aplicativos.findIndex(a => a.id === aplicativoEditandoId);
+        if (idx >= 0) {
+          const anteriores = aplicativos[idx].plataformas || [];
+          // Preserva o id de plataformas já existentes (por nome) para não quebrar histórico
+          plataformas.forEach(p => {
+            const anterior = anteriores.find(x => x.nome.trim().toLowerCase() === p.nome.trim().toLowerCase());
+            if (anterior) p.id = anterior.id;
+          });
+          aplicativos[idx] = { id: aplicativoEditandoId, nome, icone, plataformas };
+        }
+      } else {
+        aplicativos.push({ id: generateId(), nome, icone, plataformas });
+      }
+      salvarAplicativos();
+      atualizarListaAplicativos();
+      atualizarSelectAplicativos();
+      fecharModalAplicativo();
+      showToast(aplicativoEditandoId ? 'Aplicativo atualizado.' : 'Aplicativo adicionado.');
+    }
+    function removerAplicativo(id) {
+      const a = encontrarAplicativoPorId(id); if (!a) return;
+      if (!confirmar('Remover o aplicativo "' + a.nome + '" e suas instruções de instalação?')) return;
+      aplicativos = aplicativos.filter(x => x.id !== id);
+      salvarAplicativos();
+      atualizarListaAplicativos();
+      atualizarSelectAplicativos();
+      showToast('Aplicativo removido.');
+    }
+    function atualizarListaAplicativos() {
+      const lista = document.getElementById('listaAplicativos');
+      if (!lista) return;
+      if (aplicativos.length === 0) { lista.innerHTML = '<div class="empty-state"><i class="fas fa-mobile-alt"></i><p>Nenhum aplicativo cadastrado</p></div>'; return; }
+      lista.innerHTML = aplicativos.map(a => {
+        const chips = (a.plataformas || []).map(p => `<span class="app-platform-chip"><i class="fas fa-check" style="font-size:8px;"></i> ${escapeHtml(p.nome)}</span>`).join('');
+        return `
+        <div class="list-item" data-testid="aplicativo-item-${a.id}" style="align-items:flex-start;">
+          <div class="list-item-content">
+            <div class="list-item-icon"><i class="${escapeHtml(a.icone || 'fas fa-mobile-alt')}"></i></div>
+            <div style="flex:1; min-width:0;">
+              <div class="list-item-text">${escapeHtml(a.nome)}</div>
+              <div class="list-item-sub">${(a.plataformas || []).length} plataforma${(a.plataformas || []).length === 1 ? '' : 's'} cadastrada${(a.plataformas || []).length === 1 ? '' : 's'}</div>
+              <div style="margin-top:6px;">${chips || '<span style="color:var(--muted); font-size:12px;">Nenhuma plataforma</span>'}</div>
+            </div>
+          </div>
+          <button class="btn-info" onclick="editarAplicativo('${a.id}')" data-testid="btn-editar-aplicativo-${a.id}"><i class="fas fa-edit"></i></button>
+          <button class="btn-danger" onclick="removerAplicativo('${a.id}')" data-testid="btn-remover-aplicativo-${a.id}"><i class="fas fa-trash"></i></button>
+        </div>`;
+      }).join('');
+    }
+    function atualizarSelectAplicativos() {
+      const ids = ['aplicativo', 'nc_aplicativo', 'ec_aplicativo'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || el.tagName !== 'SELECT') return;
+        const currentVal = el.value;
+        const opcoes = aplicativos.map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
+        el.innerHTML = '<option value="">Selecione um aplicativo</option>' + opcoes;
+        if (currentVal && aplicativos.some(a => String(a.id) === String(currentVal))) el.value = currentVal;
+      });
+    }
+    function getAplicativoNomeDoSelect(selectEl) {
+      if (!selectEl) return '';
+      const a = encontrarAplicativoPorId(selectEl.value);
+      return a ? a.nome : '';
+    }
+    function selecionarAplicativoPorId(selectEl, id) {
+      if (!selectEl) return;
+      atualizarSelectAplicativos();
+      selectEl.value = id && aplicativos.some(a => a.id === id) ? id : '';
+    }
+    window.abrirModalAplicativo = abrirModalAplicativo;
+    window.fecharModalAplicativo = fecharModalAplicativo;
+    window.editarAplicativo = editarAplicativo;
+    window.removerAplicativo = removerAplicativo;
+    window.salvarAplicativo = salvarAplicativo;
+    window.adicionarLinhaPlataformaAplicativo = adicionarLinhaPlataformaAplicativo;
 
     window.abrirModalPlano = abrirModalPlano; window.fecharModalPlano = fecharModalPlano;
     window.salvarPlano = salvarPlano; window.editarPlano = editarPlano; window.removerPlano = removerPlano;
@@ -4376,6 +4601,7 @@ function renderIndicacoes() {
     renderAll(); renderTestes();
     atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
     atualizarListaPlanos(); atualizarSelectPlanos();
+    atualizarListaAplicativos(); atualizarSelectAplicativos();
     atualizarCreditos(); atualizarHistorico(); atualizarListaLucrosCustos();
     atualizarListaAssinaturas(); atualizarListaCustos();
     atualizarSelectMesGestao(); atualizarStatsFinanceiras();
