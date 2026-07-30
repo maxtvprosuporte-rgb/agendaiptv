@@ -2484,7 +2484,7 @@ function whatsAppTeste(id) {
     })();
 
     /* ---------- APLICATIVOS (catálogo + instalação por plataforma) ---------- */
-    const PLATAFORMAS_SUGESTAO = ['Celular', 'Tablet', 'Computador', 'Smart TV', 'Dispositivo Smart TV'];
+    const PLATAFORMAS_SUGESTAO = ['Celular', 'Tablet/iPad', 'Computador', 'Smart TV', 'Dispositivos Smart TV'];
     function salvarAplicativos() { writeJsonCache('iptv_aplicativos', aplicativos); queueCloudSave('aplicativos'); }
     function carregarAplicativos() {
       const raw = readJsonCache('iptv_aplicativos', []);
