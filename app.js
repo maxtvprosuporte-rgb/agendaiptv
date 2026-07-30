@@ -2484,7 +2484,7 @@ function whatsAppTeste(id) {
     })();
 
     /* ---------- APLICATIVOS (catálogo + instalação por plataforma) ---------- */
-    const PLATAFORMAS_SUGESTAO = ['Android / TV Box', 'iOS / iPhone', 'Smart TV LG / Samsung', 'Fire TV / Amazon Stick', 'Windows / PC', 'MAC OS'];
+    const PLATAFORMAS_SUGESTAO = ['Celular', 'Tablet', 'Computador', 'Smart TV', 'Dispositivo Smart TV'];
     function salvarAplicativos() { writeJsonCache('iptv_aplicativos', aplicativos); queueCloudSave('aplicativos'); }
     function carregarAplicativos() {
       const raw = readJsonCache('iptv_aplicativos', []);
@@ -2527,48 +2527,42 @@ function whatsAppTeste(id) {
       document.getElementById('apIcone').value = a.icone || 'fas fa-mobile-alt';
       const lista = document.getElementById('apPlataformasList');
       lista.innerHTML = '';
-      if (a.plataformas.length === 0) adicionarLinhaPlataformaAplicativo();
-      else a.plataformas.forEach(p => adicionarLinhaPlataformaAplicativo(p));
+      adicionarLinhaPlataformaAplicativo(a.plataformas[0]);
       document.getElementById('modalAplicativo').classList.add('active');
     }
     function adicionarLinhaPlataformaAplicativo(dados) {
+      // Cada aplicativo cadastrado representa uma única plataforma de instalação.
       const lista = document.getElementById('apPlataformasList');
       const rowId = 'aprow_' + generateId();
       const nomeVal = dados && dados.nome ? dados.nome : '';
       const linkVal = dados && dados.link ? dados.link : '';
       const passosVal = dados && dados.passos ? dados.passos : '';
-      const datalistOpts = PLATAFORMAS_SUGESTAO.map(p => `<option value="${escapeHtml(p)}">`).join('');
+      const optionsHtml = PLATAFORMAS_SUGESTAO.map(p => `<option value="${escapeHtml(p)}" ${p === nomeVal ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('');
+      lista.innerHTML = '';
       const row = document.createElement('div');
       row.className = 'ap-plataforma-row';
       row.id = rowId;
       row.innerHTML = `
-        <button type="button" class="ap-remove-plataforma" onclick="document.getElementById('${rowId}').remove()" title="Remover plataforma"><i class="fas fa-times"></i></button>
         <div class="form-grid">
-          <div class="field"><label>Plataforma</label><input type="text" class="ap-plat-nome" list="apPlataformasSugestoes" placeholder="Ex.: Android / TV Box" value="${escapeHtml(nomeVal)}" /></div>
+          <div class="field"><label>Plataforma</label><select class="ap-plat-nome form-select">${optionsHtml}</select></div>
           <div class="field"><label>Link de download</label><input type="text" class="ap-plat-link" placeholder="https://..." value="${escapeHtml(linkVal)}" /></div>
         </div>
         <div class="field"><label>Passo a passo de instalação</label><textarea class="ap-plat-passos" placeholder="1️⃣ Baixe e instale o aplicativo...&#10;2️⃣ Abra o app e faça login...">${escapeHtml(passosVal)}</textarea></div>
       `;
       lista.appendChild(row);
-      if (!document.getElementById('apPlataformasSugestoes')) {
-        const dl = document.createElement('datalist');
-        dl.id = 'apPlataformasSugestoes';
-        dl.innerHTML = datalistOpts;
-        document.body.appendChild(dl);
-      }
     }
     function salvarAplicativo() {
       const nome = document.getElementById('apNome').value.trim();
       const icone = document.getElementById('apIcone').value || 'fas fa-mobile-alt';
       if (!nome) { showToast('Informe o nome do aplicativo.', true); return; }
-      const linhas = Array.from(document.querySelectorAll('#apPlataformasList .ap-plataforma-row'));
-      const plataformas = linhas.map(row => ({
+      const row = document.querySelector('#apPlataformasList .ap-plataforma-row');
+      const plataformas = row ? [{
         id: generateId(),
         nome: row.querySelector('.ap-plat-nome').value.trim(),
         link: row.querySelector('.ap-plat-link').value.trim(),
         passos: row.querySelector('.ap-plat-passos').value.trim()
-      })).filter(p => p.nome);
-      if (plataformas.length === 0) { showToast('Adicione ao menos uma plataforma com nome preenchido.', true); return; }
+      }].filter(p => p.nome) : [];
+      if (plataformas.length === 0) { showToast('Selecione a plataforma deste aplicativo.', true); return; }
       if (aplicativoEditandoId) {
         const idx = aplicativos.findIndex(a => a.id === aplicativoEditandoId);
         if (idx >= 0) {
