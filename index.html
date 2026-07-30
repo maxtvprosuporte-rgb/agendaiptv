@@ -759,8 +759,18 @@
       </div>
       <div class="form-group">
         <label class="form-label"><i class="fas fa-layer-group"></i> Instalação</label>
-        <p class="card-hint" style="margin: 0 0 10px;">Informe a plataforma deste aplicativo, o link de download e o passo a passo de instalação. Se o mesmo app tiver instruções diferentes para outra plataforma, cadastre-o novamente com outro nome.</p>
+        <p class="card-hint" style="margin: 0 0 10px;">Informe a plataforma deste aplicativo e, se necessário, o link de download (alguns apps não precisam de link — nesse caso deixe em branco). Se o mesmo app tiver instruções diferentes para outra plataforma, cadastre-o novamente com outro nome.</p>
         <div id="apPlataformasList"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-comment-dots"></i> Mensagem para Teste</label>
+        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um teste. Use as variáveis: {{nome}}, {{aplicativo}}, {{plataforma}}, {{link_download}}, {{usuario}}, {{senha}}.</p>
+        <textarea id="apMsgTeste" class="form-input" style="min-height:160px;" data-testid="ap-msg-teste"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-comment-dots"></i> Mensagem para Cliente</label>
+        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um cliente ativo. Use as variáveis: {{nome}}, {{aplicativo}}, {{plataforma}}, {{link_download}}, {{usuario}}, {{senha}}, {{plano}}.</p>
+        <textarea id="apMsgCliente" class="form-input" style="min-height:160px;" data-testid="ap-msg-cliente"></textarea>
       </div>
       <button class="btn-primary btn-block" onclick="salvarAplicativo()" data-testid="save-aplicativo"><i class="fas fa-check"></i> Salvar Aplicativo</button>
     </div>
