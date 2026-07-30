@@ -1746,6 +1746,56 @@ let ativacaoClienteAtual = null;
         return value == null ? '' : String(value);
       });
     }
+    const APLICATIVO_MSG_VARIAVEIS = ['nome', 'aplicativo', 'plataforma', 'link_download', 'usuario', 'senha', 'duracao_teste', 'plano', 'link_pagamento'];
+    function renderAplicativoMsgVars() {
+      [['apMsgTesteVars', 'apMsgTeste', 'teste'], ['apMsgClienteVars', 'apMsgCliente', 'cliente']].forEach(([wrapId, textareaId, origem]) => {
+        const el = document.getElementById(wrapId);
+        if (!el || el.dataset.loaded) return;
+        el.innerHTML = APLICATIVO_MSG_VARIAVEIS.map(v =>
+          `<button type="button" class="var-chip" onclick="insertVariavelAplicativo('${v}','${textareaId}','${origem}')" title="Clique para inserir">{{${v}}}</button>`
+        ).join('');
+        el.dataset.loaded = '1';
+      });
+    }
+    function insertVariavelAplicativo(varName, textareaId, origem) {
+      const editor = document.getElementById(textareaId);
+      if (!editor) return;
+      const token = `{{${varName}}}`;
+      const start = editor.selectionStart ?? editor.value.length;
+      const end = editor.selectionEnd ?? editor.value.length;
+      editor.value = editor.value.slice(0, start) + token + editor.value.slice(end);
+      const newPos = start + token.length;
+      editor.focus();
+      editor.setSelectionRange(newPos, newPos);
+      atualizarPreviewMsgAplicativoCadastro(origem);
+    }
+    window.insertVariavelAplicativo = insertVariavelAplicativo;
+    function amostraVariaveisAplicativoCadastro(origem) {
+      const row = document.querySelector('#apPlataformasList .ap-plataforma-row');
+      const plataformaNome = row ? row.querySelector('.ap-plat-nome').value : '';
+      const linkDownload = row ? row.querySelector('.ap-plat-link').value.trim() : '';
+      const nomeApp = (document.getElementById('apNome').value || '').trim();
+      return {
+        nome: origem === 'teste' ? 'Teste Exemplo' : 'Cliente Exemplo',
+        aplicativo: nomeApp || 'Nome do Aplicativo',
+        plataforma: plataformaNome || 'Android',
+        link_download: linkDownload || 'https://exemplo.com/download',
+        usuario: origem === 'teste' ? 'teste_demo' : 'usuario_teste',
+        senha: origem === 'teste' ? '654321' : '123456',
+        duracao_teste: '3 Horas de Teste Grátis!',
+        plano: 'Plano Premium',
+        link_pagamento: 'https://pagamento.exemplo/renovar'
+      };
+    }
+    function atualizarPreviewMsgAplicativoCadastro(origem) {
+      const textareaId = origem === 'teste' ? 'apMsgTeste' : 'apMsgCliente';
+      const previewId = origem === 'teste' ? 'apMsgTestePreview' : 'apMsgClientePreview';
+      const editor = document.getElementById(textareaId);
+      const preview = document.getElementById(previewId);
+      if (!editor || !preview) return;
+      preview.textContent = renderTemplateString(editor.value, amostraVariaveisAplicativoCadastro(origem));
+    }
+    window.atualizarPreviewMsgAplicativoCadastro = atualizarPreviewMsgAplicativoCadastro;
     function buildAplicativoMessage(entity, app, plataforma, origem) {
   const template = origem === 'teste'
     ? ((app && app.msgTeste) || APLICATIVO_MSG_TESTE_PADRAO)
@@ -2514,6 +2564,9 @@ function whatsAppTeste(id) {
       adicionarLinhaPlataformaAplicativo();
       document.getElementById('apMsgTeste').value = APLICATIVO_MSG_TESTE_PADRAO;
       document.getElementById('apMsgCliente').value = APLICATIVO_MSG_CLIENTE_PADRAO;
+      renderAplicativoMsgVars();
+      atualizarPreviewMsgAplicativoCadastro('teste');
+      atualizarPreviewMsgAplicativoCadastro('cliente');
       document.getElementById('modalAplicativo').classList.add('active');
     }
     function fecharModalAplicativo() {
@@ -2531,6 +2584,9 @@ function whatsAppTeste(id) {
       adicionarLinhaPlataformaAplicativo(a.plataformas[0]);
       document.getElementById('apMsgTeste').value = a.msgTeste || APLICATIVO_MSG_TESTE_PADRAO;
       document.getElementById('apMsgCliente').value = a.msgCliente || APLICATIVO_MSG_CLIENTE_PADRAO;
+      renderAplicativoMsgVars();
+      atualizarPreviewMsgAplicativoCadastro('teste');
+      atualizarPreviewMsgAplicativoCadastro('cliente');
       document.getElementById('modalAplicativo').classList.add('active');
     }
     function adicionarLinhaPlataformaAplicativo(dados) {
@@ -2546,11 +2602,13 @@ function whatsAppTeste(id) {
       row.id = rowId;
       row.innerHTML = `
         <div class="form-grid">
-          <div class="field"><label>Plataforma</label><select class="ap-plat-nome form-select">${optionsHtml}</select></div>
-          <div class="field"><label>Link de download (opcional)</label><input type="text" class="ap-plat-link" placeholder="Deixe em branco se este app não precisar de link" value="${escapeHtml(linkVal)}" /></div>
+          <div class="field"><label>Plataforma</label><select class="ap-plat-nome form-select" onchange="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');">${optionsHtml}</select></div>
+          <div class="field"><label>Link de download (opcional)</label><input type="text" class="ap-plat-link" placeholder="Deixe em branco se este app não precisar de link" value="${escapeHtml(linkVal)}" oninput="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');" /></div>
         </div>
       `;
       lista.appendChild(row);
+      atualizarPreviewMsgAplicativoCadastro('teste');
+      atualizarPreviewMsgAplicativoCadastro('cliente');
     }
     function salvarAplicativo() {
       const nome = document.getElementById('apNome').value.trim();

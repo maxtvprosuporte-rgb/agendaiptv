@@ -746,7 +746,7 @@
       </div>
       <div class="form-group">
         <label class="form-label"><i class="fas fa-tag"></i> Nome do Aplicativo</label>
-        <input type="text" id="apNome" class="form-input" placeholder="Ex: XCIPTV, IBO Player, Smarters" data-testid="ap-nome">
+        <input type="text" id="apNome" class="form-input" placeholder="Ex: XCIPTV, IBO Player, Smarters" data-testid="ap-nome" oninput="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');">
       </div>
       <div class="form-group">
         <label class="form-label"><i class="fas fa-icons"></i> Ícone</label>
@@ -765,13 +765,29 @@
       </div>
       <div class="form-group">
         <label class="form-label"><i class="fas fa-comment-dots"></i> Mensagem para Teste</label>
-        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um teste. Use as variáveis: {{nome}}, {{aplicativo}}, {{plataforma}}, {{link_download}}, {{usuario}}, {{senha}}, {{duracao_teste}}.</p>
-        <textarea id="apMsgTeste" class="form-input" style="min-height:160px;" data-testid="ap-msg-teste"></textarea>
+        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um teste.</p>
+        <textarea id="apMsgTeste" class="form-input" style="min-height:160px;" data-testid="ap-msg-teste" oninput="atualizarPreviewMsgAplicativoCadastro('teste')"></textarea>
+        <div class="template-vars-wrap" style="margin-top:8px;">
+          <span class="form-label"><i class="fas fa-code"></i> Variáveis disponíveis</span>
+          <div id="apMsgTesteVars" class="template-vars"></div>
+        </div>
+        <div style="margin-top:8px;">
+          <span class="form-label"><i class="fas fa-eye"></i> Prévia</span>
+          <div id="apMsgTestePreview" class="template-preview" style="min-height:120px;"></div>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label"><i class="fas fa-comment-dots"></i> Mensagem para Cliente</label>
-        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um cliente ativo. Use as variáveis: {{nome}}, {{aplicativo}}, {{plataforma}}, {{link_download}}, {{usuario}}, {{senha}}, {{plano}}.</p>
-        <textarea id="apMsgCliente" class="form-input" style="min-height:160px;" data-testid="ap-msg-cliente"></textarea>
+        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um cliente ativo.</p>
+        <textarea id="apMsgCliente" class="form-input" style="min-height:160px;" data-testid="ap-msg-cliente" oninput="atualizarPreviewMsgAplicativoCadastro('cliente')"></textarea>
+        <div class="template-vars-wrap" style="margin-top:8px;">
+          <span class="form-label"><i class="fas fa-code"></i> Variáveis disponíveis</span>
+          <div id="apMsgClienteVars" class="template-vars"></div>
+        </div>
+        <div style="margin-top:8px;">
+          <span class="form-label"><i class="fas fa-eye"></i> Prévia</span>
+          <div id="apMsgClientePreview" class="template-preview" style="min-height:120px;"></div>
+        </div>
       </div>
       <button class="btn-primary btn-block" onclick="salvarAplicativo()" data-testid="save-aplicativo"><i class="fas fa-check"></i> Salvar Aplicativo</button>
     </div>
