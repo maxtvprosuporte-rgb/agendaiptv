@@ -241,7 +241,7 @@
           <div class="form-grid">
             <div class="field"><label for="nome">Nome</label><input id="nome" required data-testid="input-nome" /></div>
             <div class="field"><label for="telefone">Telefone</label><input id="telefone" placeholder="Ex.: 41999998888" data-testid="input-telefone" /></div>
-            <div class="field"><label for="aplicativo">Aplicativo</label><select id="aplicativo" data-testid="input-aplicativo"><option value="">Selecione um aplicativo</option></select></div>
+            <div class="field"><label for="aplicativo">Aplicativo</label><select id="aplicativo" data-testid="input-aplicativo" onchange="atualizarInfoAplicativoSelecionado('aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="aplicativoInfo" data-testid="aplicativo-info" style="margin-top:6px;"></div></div>
             <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
             <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
             <div class="field"><label for="duracaoTeste">Duração do teste</label><input id="duracaoTeste" placeholder="Ex.: 3 horas, 6 horas, 1 dia" data-testid="input-duracao-teste" /></div>
@@ -745,6 +745,11 @@
         <button class="modal-close" onclick="fecharModalAplicativo()" data-testid="close-aplicativo"><i class="fas fa-times"></i></button>
       </div>
       <div class="form-group">
+        <label class="form-label"><i class="fas fa-layer-group"></i> Painel</label>
+        <p class="card-hint" style="margin: 0 0 10px;">Selecione a qual painel cadastrado este aplicativo pertence.</p>
+        <select id="apPainel" class="form-select" data-testid="ap-painel"></select>
+      </div>
+      <div class="form-group">
         <label class="form-label"><i class="fas fa-tag"></i> Nome do Aplicativo</label>
         <input type="text" id="apNome" class="form-input" placeholder="Ex: XCIPTV, IBO Player, Smarters" data-testid="ap-nome" oninput="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');">
       </div>
@@ -816,7 +821,7 @@
         <div class="form-grid">
           <div class="field"><label for="ec_nome">Nome</label><input id="ec_nome" required data-testid="ec-nome" /></div>
           <div class="field"><label for="ec_telefone">Telefone</label><input id="ec_telefone" placeholder="Ex.: 41999998888" data-testid="ec-telefone" /></div>
-          <div class="field"><label for="ec_aplicativo">Aplicativo</label><select id="ec_aplicativo" data-testid="ec-aplicativo"><option value="">Selecione um aplicativo</option></select></div>
+          <div class="field"><label for="ec_aplicativo">Aplicativo</label><select id="ec_aplicativo" data-testid="ec-aplicativo" onchange="atualizarInfoAplicativoSelecionado('ec_aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="ecAplicativoInfo" data-testid="ec-aplicativo-info" style="margin-top:6px;"></div></div>
           <div class="field"><label for="ec_usuario">Usuário</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
           <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
           <div class="field" id="ec_duracaoTeste_wrap"><label for="ec_duracaoTeste">Duração do teste</label><input id="ec_duracaoTeste" placeholder="Ex.: 3 horas, 6 horas, 1 dia" data-testid="ec-duracao-teste" /></div>
@@ -852,7 +857,7 @@
         <div class="form-grid">
           <div class="field"><label for="nc_nome">Nome</label><input id="nc_nome" required data-testid="nc-nome" /></div>
           <div class="field"><label for="nc_telefone">Telefone</label><input id="nc_telefone" placeholder="Ex.: 41999998888" data-testid="nc-telefone" /></div>
-          <div class="field"><label for="nc_aplicativo">Aplicativo</label><select id="nc_aplicativo" data-testid="nc-aplicativo"><option value="">Selecione um aplicativo</option></select></div>
+          <div class="field"><label for="nc_aplicativo">Aplicativo</label><select id="nc_aplicativo" data-testid="nc-aplicativo" onchange="atualizarInfoAplicativoSelecionado('nc_aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="ncAplicativoInfo" data-testid="nc-aplicativo-info" style="margin-top:6px;"></div></div>
           <div class="field"><label for="nc_usuario">Usuário</label><input id="nc_usuario" required data-testid="nc-usuario" /></div>
           <div class="field"><label for="nc_senha">Senha</label><input id="nc_senha" required data-testid="nc-senha" /></div>
           <div class="field"><label for="nc_plano">Plano</label><select id="nc_plano" data-testid="nc-plano"><option value="">Selecione um plano</option></select></div>
