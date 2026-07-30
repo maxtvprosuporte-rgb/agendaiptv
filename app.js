@@ -367,10 +367,28 @@ function getMessageTemplateSamples() {
   };
 }
 
+const ALL_MESSAGE_VARIABLES = Array.from(new Set(
+  Object.values(MESSAGE_TEMPLATE_META).flatMap(meta => meta.variables)
+)).sort();
+
 function getCurrentMessageTemplateKey() {
   const select = document.getElementById('messageTemplateSelect');
   return (select && select.value) || 'cobranca';
 }
+
+function insertVariableAtCursor(varName) {
+  const editor = document.getElementById('messageTemplateEditor');
+  if (!editor) return;
+  const token = `{{${varName}}}`;
+  const start = editor.selectionStart ?? editor.value.length;
+  const end = editor.selectionEnd ?? editor.value.length;
+  editor.value = editor.value.slice(0, start) + token + editor.value.slice(end);
+  const newPos = start + token.length;
+  editor.focus();
+  editor.setSelectionRange(newPos, newPos);
+  updateMessageTemplatePreview();
+}
+window.insertVariableAtCursor = insertVariableAtCursor;
 
 function updateMessageEditorInfo() {
   const key = getCurrentMessageTemplateKey();
@@ -378,11 +396,19 @@ function updateMessageEditorInfo() {
   const varsEl = document.getElementById('messageTemplateVariables');
   const helpEl = document.getElementById('messageTemplateHelp');
   if (varsEl && meta) {
-    varsEl.innerHTML = meta.variables.map(v => `<code>{{${escapeHtml(v)}}}</code>`).join('');
+    const relevantes = new Set(meta.variables);
+    varsEl.innerHTML = ALL_MESSAGE_VARIABLES.map(v => {
+      const ativa = relevantes.has(v);
+      return `<button type="button" class="var-chip${ativa ? ' active' : ''}" onclick="insertVariableAtCursor('${v}')" title="${ativa ? 'Usada neste modelo' : 'Disponível em todos os modelos'} • clique para inserir">{{${escapeHtml(v)}}}</button>`;
+    }).join('');
   }
   if (helpEl && meta) {
-    helpEl.textContent = `Prévia com dados de exemplo para "${meta.label}". Você pode usar as variáveis acima em qualquer parte do texto.`;
+    helpEl.textContent = `Prévia com dados de exemplo para "${meta.label}". Clique em qualquer variável para inserir no texto — as destacadas são as mais usadas neste modelo, mas todas funcionam em qualquer mensagem.`;
   }
+}
+
+function getMergedMessageVariableSamples() {
+  return Object.assign({}, ...Object.values(getMessageTemplateSamples()));
 }
 
 function updateMessageTemplatePreview() {
@@ -393,7 +419,7 @@ function updateMessageTemplatePreview() {
   const tempTemplates = { ...messageTemplates, [key]: editor.value };
   const current = messageTemplates;
   messageTemplates = tempTemplates;
-  preview.textContent = renderMessageTemplate(key, getMessageTemplateSamples()[key] || {});
+  preview.textContent = renderMessageTemplate(key, getMergedMessageVariableSamples());
   messageTemplates = current;
 }
 

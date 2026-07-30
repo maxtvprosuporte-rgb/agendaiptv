@@ -421,7 +421,9 @@
 .message-template-editor { min-height: 360px; font-family: var(--font-mono); line-height: 1.55; width: 100%; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; }
 .template-vars-wrap { margin-top: 18px; }
 .template-vars { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-width: 100%; }
-.template-vars code { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--border-faint); color: var(--primary-soft); font-family: var(--font-mono); font-size: 12px; max-width: 100%; overflow-wrap: anywhere; }
+.template-vars .var-chip { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--border-faint); color: var(--muted); font-family: var(--font-mono); font-size: 12px; max-width: 100%; overflow-wrap: anywhere; cursor: pointer; transition: all .15s ease; }
+.template-vars .var-chip:hover { border-color: rgba(57,255,20,.4); color: #fff; background: rgba(57,255,20,.08); transform: translateY(-1px); }
+.template-vars .var-chip.active { color: var(--primary-soft); border-color: rgba(57,255,20,.3); background: rgba(57,255,20,.06); }
 .template-help { margin: 10px 0 12px; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
 .template-preview { min-height: 360px; white-space: pre-wrap; overflow-wrap: anywhere; width: 100%; max-width: 100%; box-sizing: border-box; background: rgba(0,0,0,.2); backdrop-filter: blur(var(--glass-blur-sm)); -webkit-backdrop-filter: blur(var(--glass-blur-sm)); border: 1px dashed var(--border-strong); border-radius: 14px; padding: 16px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; color: var(--text); }
 @media (max-width: 980px) {
