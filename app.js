@@ -1004,9 +1004,10 @@ function copyMessage(id) {
       const dias = planoCadastrado ? planoCadastrado.dias : 30;
       const creditosUsar = resolverCreditosCliente(client);
       const today = todayLocalDate();
-      // Calcula sempre a partir de HOJE (dia da renovação), não do vencimento antigo
       const dueDate = parseDate(client.dataRenovacao);
-      const baseDate = today;
+      // Renovação antecipada (ainda não venceu): soma os dias do plano à data de vencimento atual,
+      // preservando os dias restantes. Vencido ou vencendo hoje: conta a partir de hoje (data da renovação).
+      const baseDate = (dueDate && dueDate > today) ? dueDate : today;
       const nd = addPlanPeriod(baseDate, dias);
       const novaDataStr = toInputDate(nd);
       const valorVenda = parseValor(client.valor);
@@ -1020,7 +1021,7 @@ function copyMessage(id) {
       const diasRestantes = (dueDate && dueDate > today) ? diffInDays(dueDate, today) : 0;
       let baseInfo;
       if (diasRestantes > 0) {
-        baseInfo = `<span style="color:var(--primary);">${diasRestantes} dia${diasRestantes === 1 ? '' : 's'} restantes</span> — contando ${dias} dias a partir de hoje (renovação antecipada)`;
+        baseInfo = `<span style="color:var(--primary);">${diasRestantes} dia${diasRestantes === 1 ? '' : 's'} restantes</span> — contando ${dias} dias a partir do vencimento atual (renovação antecipada, dias restantes preservados)`;
       } else if (venceuHa > 0) {
         baseInfo = `<span style="color:#ff9b9b;">Venceu há ${venceuHa} dia${venceuHa === 1 ? '' : 's'}</span> — contando ${dias} dias a partir de hoje`;
       } else {
