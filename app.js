@@ -279,7 +279,7 @@ function getMessageTemplateSamples() {
       usuario: teste.usuario || 'teste_demo',
       senha: teste.senha || '654321',
       link_renovacao: teste.linkRenovacao || 'https://pagamento.exemplo/teste',
-      duracao_teste: '3 Horas de Teste Grátis!'
+      duracao_teste: (teste.duracaoTeste && teste.duracaoTeste.trim()) || '3 Horas de Teste Grátis!'
     },
     ativacao: {
       nome: cli.nome || 'Cliente Exemplo',
@@ -470,6 +470,7 @@ function setupMessageEditor() {
       aplicativo: document.getElementById('aplicativo'),
       usuario: document.getElementById('usuario'),
       senha: document.getElementById('senha'),
+      duracaoTeste: document.getElementById('duracaoTeste'),
       plano: document.getElementById('plano'),
       valor: document.getElementById('valor'),
       creditos: document.getElementById('creditos'),
@@ -1626,7 +1627,7 @@ function buildTesteMessage(t) {
     usuario: t.usuario || '',
     senha: t.senha || '',
     link_renovacao: link || '[informe o link de ativação no cadastro]',
-    duracao_teste: '3 Horas de Teste Grátis!'
+    duracao_teste: (t.duracaoTeste && t.duracaoTeste.trim()) || '3 Horas de Teste Grátis!'
   });
 }
 
@@ -1720,6 +1721,7 @@ let ativacaoClienteAtual = null;
       '',
       '👤 *Usuário*: {{usuario}}',
       '🔑 *Senha*: {{senha}}',
+      '⏰ *Duração do teste*: {{duracao_teste}}',
       '',
       '⏳ Aproveite seu teste grátis e qualquer dúvida, estou à disposição!'
     ].join('\n');
@@ -1756,6 +1758,7 @@ let ativacaoClienteAtual = null;
     usuario: entity.usuario || '',
     senha: entity.senha || '',
     plano: entity.plano || '',
+    duracao_teste: (entity.duracaoTeste && entity.duracaoTeste.trim()) || '3 Horas de Teste Grátis!',
     link_pagamento: entity.linkRenovacao || ''
   });
 }
@@ -1906,6 +1909,7 @@ function whatsAppTeste(id) {
         aplicativoId: aplicativoId || '', aplicativo: aplicativoCad ? aplicativoCad.nome : '',
         usuario: els.usuario.value.trim(),
         senha: els.senha.value.trim(), plano: planoNome,
+        duracaoTeste: els.duracaoTeste ? els.duracaoTeste.value.trim() : '',
         valor: els.valor.value.trim(), creditos: creditosVal,
         linkRenovacao: els.linkRenovacao.value.trim(),
         observacoes: els.observacoes.value.trim(),
@@ -1939,6 +1943,9 @@ function whatsAppTeste(id) {
       document.getElementById('ec_observacoes').value = target.observacoes || '';
       const inicioWrap = document.getElementById('ec_inicio_wrap');
       const renovWrap = document.getElementById('ec_renovacao_wrap');
+      const duracaoTesteWrap = document.getElementById('ec_duracaoTeste_wrap');
+      document.getElementById('ec_duracaoTeste').value = target.duracaoTeste || '';
+      if (duracaoTesteWrap) duracaoTesteWrap.style.display = editKind === 'teste' ? '' : 'none';
       if (editKind === 'client') {
         inicioWrap.style.display = ''; renovWrap.style.display = '';
         document.getElementById('ec_dataInicio').value = target.dataInicio || target.dataPagamento || '';
@@ -2005,7 +2012,8 @@ function whatsAppTeste(id) {
       } else {
         const idx = testes.findIndex(x => x.id === id);
         if (idx < 0) { showToast('Teste não encontrado.', true); return; }
-        testes[idx] = { ...testes[idx], ...base, updatedAt: new Date().toISOString() };
+        const duracaoTeste = document.getElementById('ec_duracaoTeste').value.trim();
+        testes[idx] = { ...testes[idx], ...base, duracaoTeste, updatedAt: new Date().toISOString() };
         salvarTestes(); renderTestes();
       }
       fecharModalEditarCliente();

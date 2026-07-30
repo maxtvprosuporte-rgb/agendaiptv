@@ -244,6 +244,7 @@
             <div class="field"><label for="aplicativo">Aplicativo</label><select id="aplicativo" data-testid="input-aplicativo"><option value="">Selecione um aplicativo</option></select></div>
             <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
             <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
+            <div class="field"><label for="duracaoTeste">Duração do teste</label><input id="duracaoTeste" placeholder="Ex.: 3 horas, 6 horas, 1 dia" data-testid="input-duracao-teste" /></div>
             <div class="field"><label for="plano">Plano</label><select id="plano" data-testid="input-plano"><option value="">Selecione um plano</option></select></div>
             <div class="field"><label for="valor">Valor</label><input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" /></div>
             <div class="field"><label for="creditos">Créditos a descontar</label><input type="number" id="creditos" min="0" step="1" placeholder="Ex.: 1" data-testid="input-creditos" /></div>
@@ -764,7 +765,7 @@
       </div>
       <div class="form-group">
         <label class="form-label"><i class="fas fa-comment-dots"></i> Mensagem para Teste</label>
-        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um teste. Use as variáveis: {{nome}}, {{aplicativo}}, {{plataforma}}, {{link_download}}, {{usuario}}, {{senha}}.</p>
+        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um teste. Use as variáveis: {{nome}}, {{aplicativo}}, {{plataforma}}, {{link_download}}, {{usuario}}, {{senha}}, {{duracao_teste}}.</p>
         <textarea id="apMsgTeste" class="form-input" style="min-height:160px;" data-testid="ap-msg-teste"></textarea>
       </div>
       <div class="form-group">
@@ -802,6 +803,7 @@
           <div class="field"><label for="ec_aplicativo">Aplicativo</label><select id="ec_aplicativo" data-testid="ec-aplicativo"><option value="">Selecione um aplicativo</option></select></div>
           <div class="field"><label for="ec_usuario">Usuário</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
           <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
+          <div class="field" id="ec_duracaoTeste_wrap"><label for="ec_duracaoTeste">Duração do teste</label><input id="ec_duracaoTeste" placeholder="Ex.: 3 horas, 6 horas, 1 dia" data-testid="ec-duracao-teste" /></div>
           <div class="field"><label for="ec_plano">Plano</label><select id="ec_plano" data-testid="ec-plano"><option value="">Selecione um plano</option></select></div>
           <div class="field"><label for="ec_valor">Valor</label><input id="ec_valor" placeholder="Ex.: 30,00" data-testid="ec-valor" /></div>
           <div class="field"><label for="ec_creditos">Créditos a descontar</label><input type="number" id="ec_creditos" min="0" step="1" placeholder="Ex.: 1" data-testid="ec-creditos" /></div>
