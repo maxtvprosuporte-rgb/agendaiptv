@@ -75,6 +75,14 @@ function diasRestantes(ms) {
   if (!ms) return null;
   return Math.ceil((ms - Date.now()) / (24 * 60 * 60 * 1000));
 }
+// Diferença em DIAS DE CALENDÁRIO (não em horas) entre o vencimento e hoje.
+// 0 = vence hoje, 1 = vence amanhã, negativo = já venceu há N dias.
+function diaCalendarioDiff(ms) {
+  if (!ms) return null;
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const fim = new Date(ms); fim.setHours(0, 0, 0, 0);
+  return Math.round((fim.getTime() - hoje.getTime()) / (24 * 60 * 60 * 1000));
+}
 function calcularStatus(dados) {
   const agora = Date.now();
   const assinaturaFimMs = dados.assinaturaFim && dados.assinaturaFim.toMillis ? dados.assinaturaFim.toMillis() : null;
@@ -145,35 +153,84 @@ function pararSincronizacao() {
 }
 
 /* ---------- DASHBOARD ---------- */
+let vencFiltroAtivo = '7dias';
+let dashListas = { sete: [], amanha: [], hoje: [], vencidos: [] };
+
 function renderDashboard() {
   const total = clientesCache.length;
-  let teste = 0, ativa = 0, expirada = 0, vencendo = 0;
-  const vencendoLista = [];
+  let teste = 0, ativa = 0, expirada = 0;
+  const sete = [], amanha = [], hoje = [], vencidos = [];
+
   clientesCache.forEach(c => {
     const { status, fimMs } = calcularStatus(c);
     if (status === 'teste') teste++;
     if (status === 'ativa') ativa++;
     if (status === 'expirada') expirada++;
-    if ((status === 'teste' || status === 'ativa') && fimMs) {
-      const dias = diasRestantes(fimMs);
-      if (dias !== null && dias <= 3) { vencendo++; vencendoLista.push({ ...c, _status: status, _fimMs: fimMs, _dias: dias }); }
+
+    if (!fimMs) return;
+    const diff = diaCalendarioDiff(fimMs);
+    const item = { ...c, _status: status, _fimMs: fimMs, _diff: diff };
+
+    if (status === 'expirada') {
+      vencidos.push(item);
+    } else if (status === 'teste' || status === 'ativa') {
+      if (diff !== null && diff >= 0 && diff <= 7) sete.push(item);
+      if (diff === 1) amanha.push(item);
+      if (diff === 0) hoje.push(item);
     }
   });
+
+  dashListas = { sete, amanha, hoje, vencidos };
+
   document.getElementById('statTotal').textContent = total;
   document.getElementById('statTeste').textContent = teste;
   document.getElementById('statAtiva').textContent = ativa;
   document.getElementById('statExpirada').textContent = expirada;
-  document.getElementById('statVencendo').textContent = vencendo;
+  document.getElementById('statVencendo').textContent = sete.length;
   document.getElementById('statAssinaturasAtivas').textContent = ativa;
 
+  document.getElementById('cnt7dias').textContent = sete.length;
+  document.getElementById('cntAmanha').textContent = amanha.length;
+  document.getElementById('cntHoje').textContent = hoje.length;
+  document.getElementById('cntVencidos').textContent = vencidos.length;
+
+  renderVencLista();
+}
+
+function badgeVencimento(item) {
+  if (item._status === 'expirada') {
+    const atraso = Math.abs(item._diff);
+    return atraso === 0 ? 'vencido hoje' : `vencido há ${atraso} dia(s)`;
+  }
+  if (item._diff === 0) return 'vence hoje';
+  if (item._diff === 1) return 'vence amanhã';
+  return `${item._diff} dia(s)`;
+}
+
+const VENC_EMPTY_MSG = {
+  '7dias': 'Nenhum vencimento nos próximos 7 dias.',
+  amanha: 'Ninguém vence amanhã.',
+  hoje: 'Ninguém vence hoje.',
+  vencidos: 'Nenhum cliente com vencimento em atraso.'
+};
+
+function renderVencLista() {
   const cont = document.getElementById('dashVencendoLista');
   if (!cont) return;
-  if (!vencendoLista.length) {
-    cont.innerHTML = '<div class="empty-state"><i class="fas fa-circle-check"></i><p>Nenhum vencimento nos próximos 3 dias.</p></div>';
+
+  const mapa = { '7dias': dashListas.sete, amanha: dashListas.amanha, hoje: dashListas.hoje, vencidos: dashListas.vencidos };
+  const lista = (mapa[vencFiltroAtivo] || []).slice().sort((a, b) => a._fimMs - b._fimMs);
+
+  document.querySelectorAll('#vencFiltros .venc-filtro-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.filtro === vencFiltroAtivo);
+  });
+
+  if (!lista.length) {
+    cont.innerHTML = `<div class="empty-state"><i class="fas fa-circle-check"></i><p>${VENC_EMPTY_MSG[vencFiltroAtivo] || 'Nada por aqui.'}</p></div>`;
     return;
   }
-  vencendoLista.sort((a, b) => a._fimMs - b._fimMs);
-  cont.innerHTML = vencendoLista.map(c => `
+
+  cont.innerHTML = lista.map(c => `
     <div class="list-item">
       <div class="list-item-content">
         <div class="list-item-icon"><i class="fas fa-user-clock"></i></div>
@@ -182,9 +239,21 @@ function renderDashboard() {
           <div class="list-item-sub">${escapeHtml(c.email || '')} • ${escapeHtml(c.whatsapp || 'sem WhatsApp')}</div>
         </div>
       </div>
-      <span class="list-item-badge">${c._dias <= 0 ? 'vence hoje' : c._dias + ' dia(s)'}</span>
+      <div class="client-row-actions">
+        <span class="list-item-badge">${badgeVencimento(c)}</span>
+        <button class="btn-whatsapp" onclick="enviarLembreteRenovacao('${c.id}')" title="Cobrar renovação com link de pagamento"><i class="fab fa-whatsapp"></i> Cobrar</button>
+      </div>
     </div>
   `).join('');
+}
+
+function wireVencFiltros() {
+  document.getElementById('vencFiltros')?.addEventListener('click', (event) => {
+    const chip = event.target.closest('.venc-filtro-chip');
+    if (!chip) return;
+    vencFiltroAtivo = chip.dataset.filtro;
+    renderVencLista();
+  });
 }
 
 /* ---------- CLIENTES ---------- */
@@ -240,8 +309,9 @@ function renderClientes() {
       </div>
       <div class="client-row-actions">
         <button class="btn-whatsapp" onclick="window.open('https://api.whatsapp.com/send?phone=${encodeURIComponent(String(c.whatsapp||'').replace(/\\D/g,''))}','_blank')" title="Abrir WhatsApp"><i class="fab fa-whatsapp"></i></button>
+        ${c._status === 'teste' ? `<button class="btn-teste-info" onclick="enviarBoasVindasTeste('${c.id}')" title="Avisar até quando vai o teste, com link de renovação"><i class="fab fa-whatsapp"></i> Info teste</button>` : ''}
         <button class="btn-whatsapp" onclick="enviarLembreteRenovacao('${c.id}')" title="Cobrar renovação com link de pagamento"><i class="fab fa-whatsapp"></i> Cobrar</button>
-        <button class="btn-primary" onclick="liberarAssinatura('${c.id}')" title="Liberar 30 dias de acesso"><i class="fas fa-unlock"></i> 30 dias</button>
+        <button class="btn-primary" onclick="abrirRenovacao('${c.id}')" title="Renovar 30 dias e avisar o cliente"><i class="fas fa-unlock"></i> 30 dias</button>
         <button class="btn-info" onclick="abrirEdicao('${c.id}')" title="Editar"><i class="fas fa-pen"></i></button>
         <button class="btn-danger" onclick="excluirCliente('${c.id}')" title="Excluir"><i class="fas fa-trash"></i></button>
       </div>
@@ -249,28 +319,67 @@ function renderClientes() {
   }).join('');
 }
 
-async function liberarAssinatura(id) {
+/* ---------- RENOVAÇÃO COM CONFIRMAÇÃO ---------- */
+let _renewTargetId = null;
+
+function abrirRenovacao(id) {
+  const c = clientesCache.find(x => x.id === id);
+  if (!c) return;
+  _renewTargetId = id;
+  const { fimMs } = calcularStatus(c);
+  const agora = Date.now();
+  const baseMs = (fimMs && fimMs > agora) ? fimMs : agora;
+  const novoFimMs = baseMs + 30 * 24 * 60 * 60 * 1000;
+
+  document.getElementById('renewNome').textContent = c.nome || c.email || 'Cliente';
+  document.getElementById('renewFimAtual').textContent = fimMs ? formatarData(fimMs) : 'sem vencimento definido';
+  document.getElementById('renewFimNovo').textContent = formatarData(novoFimMs);
+  document.getElementById('renewModal').classList.remove('hidden');
+}
+window.abrirRenovacao = abrirRenovacao;
+
+function fecharRenovacao() {
+  document.getElementById('renewModal').classList.add('hidden');
+  _renewTargetId = null;
+}
+
+async function confirmarRenovacao() {
+  const id = _renewTargetId;
+  if (!id) return;
+  const c = clientesCache.find(x => x.id === id);
+  if (!c) { fecharRenovacao(); return; }
   try {
     const ref = db.collection('clientesAdmin').doc(id);
     const snap = await ref.get();
-    if (!snap.exists) return;
+    if (!snap.exists) { fecharRenovacao(); return; }
     const dados = snap.data();
     const agora = Date.now();
     const assinaturaFimAtualMs = dados.assinaturaFim && dados.assinaturaFim.toMillis ? dados.assinaturaFim.toMillis() : 0;
     const baseMs = assinaturaFimAtualMs > agora ? assinaturaFimAtualMs : agora;
-    const novoFim = firebase.firestore.Timestamp.fromMillis(baseMs + 30 * 24 * 60 * 60 * 1000);
+    const novoFimMs = baseMs + 30 * 24 * 60 * 60 * 1000;
+    const novoFim = firebase.firestore.Timestamp.fromMillis(novoFimMs);
     await ref.update({
       statusConta: 'ativa',
       assinaturaFim: novoFim,
       ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
     });
     showToast('30 dias liberados com sucesso.');
+    enviarConfirmacaoRenovacao(c, novoFimMs);
+    fecharRenovacao();
   } catch (error) {
     console.error(error);
     showToast('Não foi possível liberar a assinatura.', true);
   }
 }
-window.liberarAssinatura = liberarAssinatura;
+
+function enviarConfirmacaoRenovacao(c, novoFimMs) {
+  const numero = String(c.whatsapp || '').replace(/\D/g, '');
+  if (!numero) { showToast('Este cliente não tem WhatsApp cadastrado, mas a renovação foi salva.', true); return; }
+  const dataFormatada = new Date(novoFimMs).toLocaleDateString('pt-BR');
+  const texto = `Olá *${c.nome || ''}*! Sua renovação foi confirmada com sucesso. ✅\n\nSeu novo vencimento é *${dataFormatada}*.\n\nQualquer dúvida, estou à disposição!`;
+  const url = `https://api.whatsapp.com/send?phone=${encodeURIComponent(numero)}&text=${encodeURIComponent(texto)}`;
+  window.open(url, '_blank');
+}
 
 function abrirEdicao(id) {
   const c = clientesCache.find(x => x.id === id);
@@ -352,6 +461,27 @@ function enviarLembreteRenovacao(id) {
 }
 window.enviarLembreteRenovacao = enviarLembreteRenovacao;
 
+// Mensagem para novos usuários (em teste): avisa até quando vai o teste grátis
+// e já envia o link de renovação/pagamento.
+function enviarBoasVindasTeste(id) {
+  const c = clientesCache.find(x => x.id === id);
+  if (!c) return;
+  const numero = String(c.whatsapp || '').replace(/\D/g, '');
+  if (!numero) { showToast('Este cliente não tem WhatsApp cadastrado.', true); return; }
+  const { fimMs } = calcularStatus(c);
+  const link = configGeral.linkPagamento || '';
+  const dataFormatada = fimMs ? new Date(fimMs).toLocaleDateString('pt-BR') : 'em breve';
+
+  let texto = `Olá *${c.nome || ''}*! Seja bem-vindo(a) à Agenda IPTV. 🎉`;
+  texto += `\n\nSeu período de teste grátis vai até *${dataFormatada}*.`;
+  if (link) texto += `\n\nPara continuar aproveitando depois do teste, é só renovar pelo link abaixo:\n${link}`;
+  texto += `\n\nQualquer dúvida, estou à disposição!`;
+
+  const url = `https://api.whatsapp.com/send?phone=${encodeURIComponent(numero)}&text=${encodeURIComponent(texto)}`;
+  window.open(url, '_blank');
+}
+window.enviarBoasVindasTeste = enviarBoasVindasTeste;
+
 /* ---------- CONFIGURAÇÕES ---------- */
 async function carregarConfig() {
   try {
@@ -384,10 +514,13 @@ function wireUi() {
   document.getElementById('headerLogoutBtn')?.addEventListener('click', handleLogout);
   document.getElementById('editClientForm')?.addEventListener('submit', salvarEdicao);
   document.getElementById('cancelEditBtn')?.addEventListener('click', fecharEdicao);
+  document.getElementById('cancelRenewBtn')?.addEventListener('click', fecharRenovacao);
+  document.getElementById('confirmRenewBtn')?.addEventListener('click', confirmarRenovacao);
   document.getElementById('configForm')?.addEventListener('submit', salvarConfig);
   document.getElementById('buscaClientes')?.addEventListener('input', renderClientes);
   document.getElementById('ordenarClientes')?.addEventListener('change', renderClientes);
   document.getElementById('filtroStatus')?.addEventListener('change', renderClientes);
+  wireVencFiltros();
 
   document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
     const isFree = tab.dataset.authExempt === 'true';

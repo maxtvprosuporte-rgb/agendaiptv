@@ -77,12 +77,18 @@
         <div class="credit-stat-card"><div class="credit-stat-value" id="statTeste" style="color: var(--warning);">0</div><div class="credit-stat-label">Em período de teste</div></div>
         <div class="credit-stat-card"><div class="credit-stat-value" id="statAtiva" style="color:#1f8a4c;">0</div><div class="credit-stat-label">Assinatura ativa</div></div>
         <div class="credit-stat-card"><div class="credit-stat-value" id="statExpirada" style="color: var(--danger);">0</div><div class="credit-stat-label">Teste / assinatura expirados</div></div>
-        <div class="credit-stat-card"><div class="credit-stat-value" id="statVencendo" style="color: var(--warning);">0</div><div class="credit-stat-label">Vencendo em até 3 dias</div></div>
+        <div class="credit-stat-card"><div class="credit-stat-value" id="statVencendo" style="color: var(--warning);">0</div><div class="credit-stat-label">Vencendo em até 7 dias</div></div>
         <div class="credit-stat-card"><div class="credit-stat-value" id="statAssinaturasAtivas" style="color:#1f8a4c;">0</div><div class="credit-stat-label">Total de assinaturas ativas</div></div>
       </div>
 
       <div class="card" style="margin-top:18px;">
-        <div class="card-header"><div class="card-title"><i class="fas fa-triangle-exclamation" style="color:var(--warning);"></i><h2>Vencendo em breve</h2></div></div>
+        <div class="card-header"><div class="card-title"><i class="fas fa-triangle-exclamation" style="color:var(--warning);"></i><h2>Vencimentos</h2></div></div>
+        <div class="venc-filtros" id="vencFiltros">
+          <button type="button" class="venc-filtro-chip active" data-filtro="7dias">Até 7 dias <span class="venc-filtro-count" id="cnt7dias">0</span></button>
+          <button type="button" class="venc-filtro-chip" data-filtro="amanha">Vence amanhã <span class="venc-filtro-count" id="cntAmanha">0</span></button>
+          <button type="button" class="venc-filtro-chip" data-filtro="hoje">Vence hoje <span class="venc-filtro-count" id="cntHoje">0</span></button>
+          <button type="button" class="venc-filtro-chip" data-filtro="vencidos">Vencidos <span class="venc-filtro-count" id="cntVencidos">0</span></button>
+        </div>
         <div id="dashVencendoLista" class="list"></div>
       </div>
     </section>
@@ -148,6 +154,22 @@
           <button type="submit" class="btn-primary" id="saveEditBtn"><i class="fas fa-save"></i> Salvar alterações</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="renewModal">
+    <div class="card" style="max-width:460px; margin:8vh auto;">
+      <div class="card-header"><div class="card-title"><i class="fas fa-rotate"></i><h2>Renovar assinatura</h2></div></div>
+      <div class="renew-modal-body">
+        <div class="renew-modal-row"><span class="renew-modal-label">Cliente</span><span class="renew-modal-value" id="renewNome">—</span></div>
+        <div class="renew-modal-row"><span class="renew-modal-label">Vencimento atual</span><span class="renew-modal-value" id="renewFimAtual">—</span></div>
+        <div class="renew-modal-row"><span class="renew-modal-label">Novo vencimento</span><span class="renew-modal-value is-new" id="renewFimNovo">—</span></div>
+        <p class="card-hint" style="margin-top:10px;"><i class="fas fa-circle-info"></i> Ao confirmar, são liberados +30 dias de acesso e uma mensagem é aberta no WhatsApp do cliente informando a nova data de vencimento.</p>
+      </div>
+      <div class="form-actions" style="justify-content:space-between; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" id="cancelRenewBtn"><i class="fas fa-xmark"></i> Cancelar</button>
+        <button type="button" class="btn-primary" id="confirmRenewBtn"><i class="fab fa-whatsapp"></i> Confirmar e enviar WhatsApp</button>
+      </div>
     </div>
   </div>
 
