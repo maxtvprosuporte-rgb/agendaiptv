@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+
+    // Dados internos de cada cliente (Painel 1) — cada usuário só acessa os seus.
+    match /users/{uid}/app/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Cadastro compartilhado usado pelo Painel Administrativo.
+    match /clientesAdmin/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+
+      // Criação: só o próprio usuário, e apenas com status inicial de teste.
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.statusConta == 'teste'
+        && request.resource.data.assinaturaFim == null;
+
+      // Atualização: o admin pode alterar tudo (liberar assinatura, editar, etc).
+      // O próprio cliente só pode editar nome/whatsapp/email (nunca datas ou status).
+      allow update: if isAdmin() || (
+        request.auth != null && request.auth.uid == uid &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['nome', 'whatsapp', 'email', 'ultimaAtualizacao'])
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Configurações globais (link de pagamento, dias de teste).
+    match /configAdmin/{docId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Lista de administradores autorizados. Cadastre manualmente pelo
+    // Console do Firebase: coleção "admins", documento com ID = e-mail
+    // do administrador (ex: admin@exemplo.com), com qualquer campo, ex: { allowed: true }.
+    match /admins/{email} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+  }
+}

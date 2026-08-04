@@ -1,0 +1,13 @@
+.admin-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 820px) { .admin-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .admin-stats-grid { grid-template-columns: 1fr; } }
+
+.status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; font-family: var(--font-mono); border: 1px solid transparent; }
+.status-pill-teste { color: var(--warning); background: rgba(165,105,15,.1); border-color: rgba(165,105,15,.3); }
+.status-pill-ativa { color: #1f8a4c; background: rgba(31,138,76,.1); border-color: rgba(31,138,76,.3); }
+.status-pill-expirada { color: var(--danger); background: rgba(207,46,46,.1); border-color: rgba(207,46,46,.3); }
+
+.client-row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.list-item-content { flex-wrap: wrap; }
+
+.admin-empty-note { font-size: 12.5px; color: var(--muted); margin-top: 10px; }

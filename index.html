@@ -32,10 +32,24 @@
         </div>
       </div>
       <div class="actions">
+        <div class="auth-status-chip hidden" id="trialStatusChip"></div>
         <div class="auth-status-chip" id="authStatusBadge">Aguardando login</div>
         <button class="icon-action hidden" id="headerLogoutBtn" type="button" aria-label="Sair" title="Sair"><i class="fas fa-right-from-bracket"></i></button>
       </div>
     </header>
+
+    <div class="modal-overlay hidden" id="trialExpiredOverlay">
+      <div class="card" style="max-width:420px; margin:10vh auto; text-align:center;">
+        <div class="card-header" style="justify-content:center;">
+          <div class="card-title" style="justify-content:center;"><i class="fas fa-triangle-exclamation" style="color:var(--danger);"></i><h2>Acesso expirado</h2></div>
+        </div>
+        <p class="card-hint" id="trialExpiredMessage">Seu período de teste expirou. Para continuar utilizando a Agenda IPTV, realize o pagamento pelo link abaixo.</p>
+        <div class="form-actions" style="justify-content:center; flex-wrap:wrap;">
+          <a href="#" target="_blank" rel="noopener" class="btn-primary" id="trialExpiredPaymentLink"><i class="fab fa-whatsapp"></i> Realizar pagamento</a>
+          <button type="button" class="btn-secondary" id="trialExpiredLogoutBtn"><i class="fas fa-right-from-bracket"></i> Sair</button>
+        </div>
+      </div>
+    </div>
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <aside class="sidebar" id="sidebar">
@@ -67,6 +81,10 @@
           </div>
           <p class="card-hint">Acesse com seu email e senha para abrir o dashboard e sincronizar automaticamente seus dados.</p>
           <form id="firebaseLoginForm" autocomplete="on">
+            <div class="form-grid auth-form-grid" id="registerOnlyFields" style="display:none;">
+              <div class="field"><label for="firebaseNome">Nome</label><input id="firebaseNome" type="text" placeholder="Seu nome" /></div>
+              <div class="field"><label for="firebaseWhatsapp">WhatsApp</label><input id="firebaseWhatsapp" type="tel" placeholder="(DDD) 90000-0000" /></div>
+            </div>
             <div class="form-grid auth-form-grid">
               <div class="field"><label for="firebaseEmail">Email</label><input id="firebaseEmail" type="email" placeholder="voce@exemplo.com" required /></div>
               <div class="field"><label for="firebasePassword">Senha</label><input id="firebasePassword" type="password" placeholder="Sua senha" required /></div>
@@ -74,6 +92,7 @@
             <div class="form-actions auth-form-actions">
               <button type="submit" class="btn-primary" id="firebaseLoginBtn"><i class="fas fa-right-to-bracket"></i> Entrar</button>
               <button type="button" class="btn-secondary" id="firebaseRegisterBtn"><i class="fas fa-user-plus"></i> Criar conta</button>
+              <button type="button" class="btn-secondary hidden" id="firebaseCancelRegisterBtn"><i class="fas fa-arrow-left"></i> Voltar ao login</button>
             </div>
           </form>
           <div class="auth-status-stack">

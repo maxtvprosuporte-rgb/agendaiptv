@@ -706,16 +706,56 @@ function setupMessageEditor() {
         showToast(getFirebaseErrorMessage(error, 'Não foi possível entrar.'), true);
       }
     }
+    const TRIAL_DIAS_PADRAO = 7;
+    let registerStep = false;
+    function setRegisterStep(active) {
+      registerStep = active;
+      const wrap = document.getElementById('registerOnlyFields');
+      const registerBtn = document.getElementById('firebaseRegisterBtn');
+      const cancelBtn = document.getElementById('firebaseCancelRegisterBtn');
+      const loginBtn = document.getElementById('firebaseLoginBtn');
+      if (wrap) wrap.style.display = active ? '' : 'none';
+      if (registerBtn) registerBtn.innerHTML = active ? '<i class="fas fa-check"></i> Confirmar cadastro' : '<i class="fas fa-user-plus"></i> Criar conta';
+      if (cancelBtn) cancelBtn.classList.toggle('hidden', !active);
+      if (loginBtn) loginBtn.classList.toggle('hidden', active);
+      if (active) document.getElementById('firebaseNome')?.focus();
+    }
+    async function buscarDiasTesteConfigurado() {
+      try {
+        if (!firebaseDbInstance) return TRIAL_DIAS_PADRAO;
+        const snap = await firebaseDbInstance.collection('configAdmin').doc('geral').get();
+        const dias = snap.exists ? Number(snap.data().diasTeste) : NaN;
+        return Number.isFinite(dias) && dias > 0 ? dias : TRIAL_DIAS_PADRAO;
+      } catch (e) { return TRIAL_DIAS_PADRAO; }
+    }
     async function handleFirebaseRegister() {
       if (!firebaseAuthInstance) { showToast('Firebase Authentication não foi inicializado.', true); return; }
+      if (!registerStep) { setRegisterStep(true); return; }
+      const nome = String(document.getElementById('firebaseNome')?.value || '').trim();
+      const whatsapp = String(document.getElementById('firebaseWhatsapp')?.value || '').trim();
       const email = String(document.getElementById('firebaseEmail')?.value || '').trim();
       const password = String(document.getElementById('firebasePassword')?.value || '').trim();
+      if (!nome || !whatsapp) { showToast('Preencha nome e WhatsApp para criar a conta.', true); return; }
       if (!email || !password) { showToast('Preencha email e senha para criar a conta.', true); return; }
       try {
         setCloudStatus('Criando conta...', 'warn', 'Criando o usuário no Firebase Authentication.');
-        await firebaseAuthInstance.createUserWithEmailAndPassword(email, password);
+        const cred = await firebaseAuthInstance.createUserWithEmailAndPassword(email, password);
+        const uid = cred.user.uid;
+        const diasTeste = await buscarDiasTesteConfigurado();
+        const agora = firebase.firestore.Timestamp.now();
+        const testeFim = firebase.firestore.Timestamp.fromMillis(Date.now() + diasTeste * 24 * 60 * 60 * 1000);
+        await firebaseDbInstance.collection('clientesAdmin').doc(uid).set({
+          nome, whatsapp, email,
+          criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+          statusConta: 'teste',
+          testeInicio: agora,
+          testeFim: testeFim,
+          assinaturaFim: null,
+          ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+        });
         document.getElementById('firebasePassword').value = '';
-        showToast('Conta criada com sucesso.');
+        setRegisterStep(false);
+        showToast('Conta criada com sucesso. Teste grátis iniciado!');
       } catch (error) {
         console.error(error);
         setCloudStatus('Falha no cadastro', 'error', 'Não foi possível criar o usuário no Firebase Authentication.');
@@ -726,6 +766,8 @@ function setupMessageEditor() {
       if (!firebaseAuthInstance) return;
       try {
         await firebaseAuthInstance.signOut();
+        setRegisterStep(false);
+        document.getElementById('trialExpiredOverlay')?.classList.add('hidden');
         showToast('Sessão encerrada.');
       } catch (error) {
         console.error(error);
@@ -754,6 +796,76 @@ function setupMessageEditor() {
         showToast('Não foi possível carregar os dados do Firebase.', true);
       }
     }
+    function calcularStatusConta(dados) {
+      const agora = Date.now();
+      const assinaturaFimMs = dados.assinaturaFim && dados.assinaturaFim.toMillis ? dados.assinaturaFim.toMillis() : null;
+      const testeFimMs = dados.testeFim && dados.testeFim.toMillis ? dados.testeFim.toMillis() : null;
+      if (assinaturaFimMs) return assinaturaFimMs > agora ? { status: 'ativa', fimMs: assinaturaFimMs } : { status: 'expirada', fimMs: assinaturaFimMs };
+      if (testeFimMs) return testeFimMs > agora ? { status: 'teste', fimMs: testeFimMs } : { status: 'expirada', fimMs: testeFimMs };
+      return { status: 'ativa', fimMs: null };
+    }
+    function formatarDiasRestantes(fimMs) {
+      if (!fimMs) return '';
+      const diffMs = fimMs - Date.now();
+      if (diffMs <= 0) return 'expirado';
+      const dias = Math.ceil(diffMs / (24 * 60 * 60 * 1000));
+      return dias <= 1 ? 'menos de 1 dia restante' : `${dias} dias restantes`;
+    }
+    async function verificarStatusConta() {
+      const chip = document.getElementById('trialStatusChip');
+      const overlay = document.getElementById('trialExpiredOverlay');
+      if (!firebaseDbInstance || !currentFirebaseUser) return true;
+      try {
+        const ref = firebaseDbInstance.collection('clientesAdmin').doc(currentFirebaseUser.uid);
+        const snap = await ref.get();
+        if (!snap.exists) {
+          // Conta criada antes deste recurso: liberar automaticamente por 30 dias.
+          const assinaturaFim = firebase.firestore.Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          await ref.set({
+            nome: currentFirebaseUser.email || '', whatsapp: '', email: currentFirebaseUser.email || '',
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+            statusConta: 'ativa', testeInicio: null, testeFim: null,
+            assinaturaFim, ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          if (chip) { chip.textContent = 'Assinatura ativa'; chip.className = 'auth-status-chip trial-chip-ativa'; }
+          overlay?.classList.add('hidden');
+          return true;
+        }
+        const dados = snap.data() || {};
+        const { status, fimMs } = calcularStatusConta(dados);
+        if (status === 'expirada') {
+          overlay?.classList.remove('hidden');
+          chip?.classList.add('hidden');
+          const linkEl = document.getElementById('trialExpiredPaymentLink');
+          const msgEl = document.getElementById('trialExpiredMessage');
+          try {
+            const cfgSnap = await firebaseDbInstance.collection('configAdmin').doc('geral').get();
+            const link = cfgSnap.exists ? String(cfgSnap.data().linkPagamento || '') : '';
+            if (linkEl) { linkEl.href = link || '#'; linkEl.classList.toggle('hidden', !link); }
+            if (msgEl) msgEl.textContent = dados.assinaturaFim
+              ? 'Sua assinatura venceu. Para continuar utilizando a Agenda IPTV, realize o pagamento pelo link abaixo.'
+              : 'Seu período de teste expirou. Para continuar utilizando a Agenda IPTV, realize o pagamento pelo link abaixo.';
+          } catch (e) { /* segue sem link */ }
+          document.body.classList.add('auth-screen');
+          switchTab('login');
+          document.getElementById('login')?.classList.remove('active');
+          return false;
+        }
+        overlay?.classList.add('hidden');
+        if (chip) {
+          chip.classList.remove('hidden');
+          chip.className = `auth-status-chip trial-chip-${status}`;
+          chip.textContent = status === 'teste'
+            ? `Teste grátis — ${formatarDiasRestantes(fimMs)}`
+            : `Assinatura ativa — ${fimMs ? formatarDiasRestantes(fimMs) : 'sem vencimento'}`;
+        }
+        return true;
+      } catch (error) {
+        console.error(error);
+        return true; // não bloquear o acesso por falha de leitura pontual
+      }
+    }
+
     function setupFirebaseAuth() {
       if (firebaseWired) return;
       firebaseWired = true;
@@ -767,14 +879,24 @@ function setupMessageEditor() {
         firebaseDbInstance = firebase.firestore();
         const form = document.getElementById('firebaseLoginForm');
         const registerBtn = document.getElementById('firebaseRegisterBtn');
+        const cancelRegisterBtn = document.getElementById('firebaseCancelRegisterBtn');
         const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+        const trialExpiredLogoutBtn = document.getElementById('trialExpiredLogoutBtn');
         if (form) form.addEventListener('submit', handleFirebaseLogin);
         if (registerBtn) registerBtn.addEventListener('click', handleFirebaseRegister);
+        if (cancelRegisterBtn) cancelRegisterBtn.addEventListener('click', () => setRegisterStep(false));
         if (headerLogoutBtn) headerLogoutBtn.addEventListener('click', handleFirebaseLogout);
+        if (trialExpiredLogoutBtn) trialExpiredLogoutBtn.addEventListener('click', handleFirebaseLogout);
         firebaseAuthInstance.onAuthStateChanged(async (user) => {
           currentFirebaseUser = user || null;
           updateAuthUi();
-          if (currentFirebaseUser) await loadCloudDataForUser();
+          if (currentFirebaseUser) {
+            const liberado = await verificarStatusConta();
+            if (liberado) await loadCloudDataForUser();
+          } else {
+            document.getElementById('trialExpiredOverlay')?.classList.add('hidden');
+            document.getElementById('trialStatusChip')?.classList.add('hidden');
+          }
         });
       } catch (error) {
         console.error(error);
