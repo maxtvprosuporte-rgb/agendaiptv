@@ -9,7 +9,7 @@
 // "admins" no Firestore (veja README/firestore.rules) para que as
 // regras de segurança liberem leitura/escrita de todos os clientes.
 const ADMIN_EMAILS = [
-  'seuemail@exemplo.com'
+  'ssantosmattheuss@gmail.com'
 ];
 
 const FIREBASE_CONFIG = {
