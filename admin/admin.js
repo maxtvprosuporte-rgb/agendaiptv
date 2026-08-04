@@ -9,7 +9,7 @@
 // "admins" no Firestore (veja README/firestore.rules) para que as
 // regras de segurança liberem leitura/escrita de todos os clientes.
 const ADMIN_EMAILS = [
-  'ssantosmattheuss@gmail.com'
+  'seuemail@exemplo.com'
 ];
 
 const FIREBASE_CONFIG = {
@@ -240,6 +240,7 @@ function renderClientes() {
       </div>
       <div class="client-row-actions">
         <button class="btn-whatsapp" onclick="window.open('https://api.whatsapp.com/send?phone=${encodeURIComponent(String(c.whatsapp||'').replace(/\\D/g,''))}','_blank')" title="Abrir WhatsApp"><i class="fab fa-whatsapp"></i></button>
+        <button class="btn-whatsapp" onclick="enviarLembreteRenovacao('${c.id}')" title="Cobrar renovação com link de pagamento"><i class="fab fa-whatsapp"></i> Cobrar</button>
         <button class="btn-primary" onclick="liberarAssinatura('${c.id}')" title="Liberar 30 dias de acesso"><i class="fas fa-unlock"></i> 30 dias</button>
         <button class="btn-info" onclick="abrirEdicao('${c.id}')" title="Editar"><i class="fas fa-pen"></i></button>
         <button class="btn-danger" onclick="excluirCliente('${c.id}')" title="Excluir"><i class="fas fa-trash"></i></button>
@@ -324,13 +325,42 @@ async function excluirCliente(id) {
 }
 window.excluirCliente = excluirCliente;
 
+/* ---------- COBRANÇA / RENOVAÇÃO VIA WHATSAPP ---------- */
+let configGeral = { linkPagamento: '', diasTeste: 7 };
+
+function enviarLembreteRenovacao(id) {
+  const c = clientesCache.find(x => x.id === id);
+  if (!c) return;
+  const numero = String(c.whatsapp || '').replace(/\D/g, '');
+  if (!numero) { showToast('Este cliente não tem WhatsApp cadastrado.', true); return; }
+  const { status, fimMs } = calcularStatus(c);
+  const dias = fimMs ? diasRestantes(fimMs) : null;
+  const link = configGeral.linkPagamento || '';
+
+  let situacao;
+  if (status === 'expirada') situacao = 'seu acesso está *vencido*';
+  else if (status === 'teste' && dias !== null) situacao = `seu *teste grátis* termina em *${dias <= 0 ? 'menos de 1 dia' : dias + ' dia(s)'}*`;
+  else if (status === 'ativa' && dias !== null) situacao = `sua *assinatura* vence em *${dias <= 0 ? 'menos de 1 dia' : dias + ' dia(s)'}*`;
+  else situacao = 'sua assinatura precisa ser renovada';
+
+  let texto = `Olá *${c.nome || ''}*! Passando para lembrar que ${situacao} na Agenda IPTV.`;
+  if (link) texto += `\n\nPara renovar/ativar, é só acessar o link abaixo:\n${link}`;
+  texto += `\n\nQualquer dúvida, estou à disposição!`;
+
+  const url = `https://api.whatsapp.com/send?phone=${encodeURIComponent(numero)}&text=${encodeURIComponent(texto)}`;
+  window.open(url, '_blank');
+}
+window.enviarLembreteRenovacao = enviarLembreteRenovacao;
+
 /* ---------- CONFIGURAÇÕES ---------- */
 async function carregarConfig() {
   try {
     const snap = await db.collection('configAdmin').doc('geral').get();
     const data = snap.exists ? snap.data() : {};
-    document.getElementById('cfgLinkPagamento').value = data.linkPagamento || '';
-    document.getElementById('cfgDiasTeste').value = data.diasTeste || 7;
+    configGeral.linkPagamento = data.linkPagamento || '';
+    configGeral.diasTeste = data.diasTeste || 7;
+    document.getElementById('cfgLinkPagamento').value = configGeral.linkPagamento;
+    document.getElementById('cfgDiasTeste').value = configGeral.diasTeste;
   } catch (error) { console.error(error); }
 }
 async function salvarConfig(event) {
@@ -339,6 +369,8 @@ async function salvarConfig(event) {
   const diasTeste = Number(document.getElementById('cfgDiasTeste').value) || 7;
   try {
     await db.collection('configAdmin').doc('geral').set({ linkPagamento, diasTeste }, { merge: true });
+    configGeral.linkPagamento = linkPagamento;
+    configGeral.diasTeste = diasTeste;
     showToast('Configurações salvas.');
   } catch (error) {
     console.error(error);
