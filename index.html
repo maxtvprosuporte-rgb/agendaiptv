@@ -19,6 +19,20 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .client-row-clickable { cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background-color .15s ease, transform .1s ease; }
+    .client-row-clickable:hover { background-color: rgba(255,255,255,0.04); }
+    .client-row-clickable:active { transform: scale(0.998); }
+    .client-row-chevron { flex: 0 0 auto; opacity: .45; font-size: 14px; padding: 0 4px; }
+    .pill-blocked { background: rgba(220, 38, 38, 0.18); color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
+    .detalhe-cliente-header { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .detalhe-bloqueio-aviso { background: rgba(220, 38, 38, 0.12); border: 1px solid rgba(248,113,113,0.3); color: #f87171; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 13px; line-height: 1.4; }
+    .detalhe-cliente-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .detalhe-cliente-field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .detalhe-cliente-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; opacity: .55; }
+    .detalhe-cliente-value { font-size: 14px; word-break: break-word; }
+    .detalhe-cliente-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+  </style>
 </head>
 <body class="auth-screen">
   <div class="container">
@@ -313,6 +327,8 @@
               <option value="semana">Vence em até 7 dias</option>
               <option value="mais-7">Mais de 7 dias</option>
               <option value="sem-data">Sem data</option>
+              <option value="pendentes">Pagamento pendente</option>
+              <option value="bloqueados">Bloqueados</option>
             </select>
             <button class="btn-primary" id="btnAbrirNovoCliente" onclick="abrirModalNovoCliente()" data-testid="btn-abrir-novo-cliente" style="margin-left:auto;">
               <i class="fas fa-user-plus"></i> Cadastrar Cliente
@@ -912,6 +928,68 @@
           <button type="button" class="btn-secondary" onclick="fecharModalNovoCliente()">Cancelar</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: Detalhe completo do cliente (aberto ao clicar na linha da lista) -->
+  <div id="modalDetalheCliente" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalDetalheClienteTitle">Cliente</h3>
+        <button class="modal-close" onclick="fecharModalDetalheCliente()" data-testid="close-detalhe-cliente"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="detalheClienteBody" data-testid="detalhe-cliente-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirmar Pagamento (valor total ou outro valor) -->
+  <div id="modalConfirmarPagamento" class="modal">
+    <div class="modal-content sm">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-check-circle" style="color: var(--primary); margin-right: 6px;"></i> Confirmar Pagamento</h3>
+        <button class="modal-close" onclick="fecharModalConfirmarPagamento()" data-testid="close-confirm-pagamento"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="card-hint" style="margin: 0 0 6px;">Cliente: <b id="cpClienteNome">—</b></p>
+      <div class="form-group" style="margin: 14px 0;">
+        <label class="form-label"><i class="fas fa-money-bill-wave"></i> Valor recebido</label>
+        <div class="radio-group" role="radiogroup" aria-label="Valor do pagamento">
+          <label class="radio-option active" id="cp_opt_total" data-testid="cp-opt-total">
+            <input type="radio" name="cp_valor_opcao" value="total" checked onchange="toggleCpValorOutro()">
+            <i class="fas fa-check-circle"></i> <span id="cpValorTotalLabel">Pagou o valor total</span>
+          </label>
+          <label class="radio-option" id="cp_opt_outro" data-testid="cp-opt-outro">
+            <input type="radio" name="cp_valor_opcao" value="outro" onchange="toggleCpValorOutro()">
+            <i class="fas fa-coins"></i> Pagou outro valor
+          </label>
+        </div>
+        <div class="field" id="cp_valorOutro_wrap" style="margin-top:10px; display:none;">
+          <label for="cp_valorOutro">Valor pago (R$)</label>
+          <input type="text" inputmode="decimal" id="cp_valorOutro" placeholder="Ex.: 20,00" data-testid="cp-valor-outro" />
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button type="button" class="btn-secondary" onclick="fecharModalConfirmarPagamento()" data-testid="cancel-confirm-pagamento">Cancelar</button>
+        <button type="button" class="btn-primary" onclick="processarConfirmarPagamento()" data-testid="confirm-confirm-pagamento"><i class="fas fa-check"></i> Confirmar Pagamento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Bloquear cliente -->
+  <div id="modalBloquearCliente" class="modal">
+    <div class="modal-content sm">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-ban" style="color: var(--danger); margin-right: 6px;"></i> Bloquear Cliente</h3>
+        <button class="modal-close" onclick="fecharModalBloquearCliente()" data-testid="close-bloquear-cliente"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="card-hint" style="margin: 0 0 6px;">Cliente: <b id="bcClienteNome">—</b></p>
+      <div class="field">
+        <label for="bc_motivo">Motivo do bloqueio</label>
+        <textarea id="bc_motivo" rows="3" placeholder="Ex.: Inadimplência, compartilhamento indevido, comportamento abusivo..." data-testid="bc-motivo" style="width:100%; resize:vertical; font-family:inherit;"></textarea>
+      </div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px;">
+        <button type="button" class="btn-secondary" onclick="fecharModalBloquearCliente()" data-testid="cancel-bloquear-cliente">Cancelar</button>
+        <button type="button" class="btn-danger" onclick="confirmarBloqueioCliente()" data-testid="confirm-bloquear-cliente"><i class="fas fa-ban"></i> Bloquear Cliente</button>
+      </div>
     </div>
   </div>
 

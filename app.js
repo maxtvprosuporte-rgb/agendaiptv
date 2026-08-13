@@ -991,6 +991,7 @@ function setupMessageEditor() {
     }
     function getDaysUntil(client) { const due = parseDate(client.dataRenovacao); if (!due) return null; return diffInDays(due, todayLocalDate()); }
     function getStatus(client) {
+      if (client.bloqueado) return { label: 'Bloqueado', cls: 'pill-blocked' };
       if (client.pagamentoPendente) return { label: 'Pagamento pendente', cls: 'pill-pending' };
       const diff = getDaysUntil(client);
       if (diff === null) return { label: 'Sem data', cls: 'pill-week' };
@@ -1250,27 +1251,97 @@ function copyMessage(id) {
       }
     }
 
-    function confirmarPagamento(id) {
+    function confirmarPagamento(id, valorPago = null) {
       const client = clients.find(c => c.id === id);
       if (!client || !client.pagamentoPendente) return;
       const dados = client._renovacaoPendente || {};
-      const valorVenda = Number(dados.valorVenda) || parseValor(client.valor);
+      const valorEsperado = Number(dados.valorVenda) || parseValor(client.valor);
+      const valorFinal = (valorPago !== null && Number.isFinite(Number(valorPago))) ? Number(valorPago) : valorEsperado;
       const painelId = dados.painelId || ((encontrarPlanoPorNome(client.plano) || {}).painelId) || paineis[0].id;
       const creditosUsar = Number(dados.creditosUsar) || resolverCreditosCliente(client);
       const taxa = Number(dados.taxa) || 0;
       client.pagamentoPendente = false;
       delete client._renovacaoPendente;
       client.updatedAt = new Date().toISOString();
-      converterReservaEmUso(client, { valorVenda, painelId, creditosUsar, taxa, reservaId: dados.reservaId });
+      client.ultimoPagamentoValor = valorFinal;
+      client.ultimoPagamentoEsperado = valorEsperado;
+      client.ultimoPagamentoDivergente = Math.abs(valorFinal - valorEsperado) > 0.001;
+      converterReservaEmUso(client, { valorVenda: valorFinal, painelId, creditosUsar, taxa, reservaId: dados.reservaId });
       salvarMovimentacoes();
       saveClients();
       renderAll();
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
-      showToast(`Pagamento confirmado de ${client.nome} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} (${getPainelNome(painelId)})${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}`);
+      const fmtMoney = v => `R$ ${(Number(v) || 0).toFixed(2).replace('.', ',')}`;
+      const divergenciaMsg = client.ultimoPagamentoDivergente
+        ? ` • Valor pago: ${fmtMoney(valorFinal)} (esperado ${fmtMoney(valorEsperado)})`
+        : '';
+      showToast(`Pagamento confirmado de ${client.nome} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} (${getPainelNome(painelId)})${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}${divergenciaMsg}`);
     }
     window.confirmarPagamento = confirmarPagamento;
+
+    /* === Modal: confirmar pagamento (valor total ou outro valor) === */
+    let pagamentoConfirmAtualId = null;
+    function abrirModalConfirmarPagamento(id) {
+      const client = clients.find(c => c.id === id);
+      if (!client || !client.pagamentoPendente) return;
+      pagamentoConfirmAtualId = id;
+      const dados = client._renovacaoPendente || {};
+      const valorEsperado = Number(dados.valorVenda) || parseValor(client.valor);
+      const fmtMoney = v => `R$ ${(Number(v) || 0).toFixed(2).replace('.', ',')}`;
+      const nomeEl = document.getElementById('cpClienteNome');
+      const totalLabelEl = document.getElementById('cpValorTotalLabel');
+      const outroInput = document.getElementById('cp_valorOutro');
+      if (nomeEl) nomeEl.textContent = client.nome || '—';
+      if (totalLabelEl) totalLabelEl.textContent = `Pagou o valor total (${fmtMoney(valorEsperado)})`;
+      if (outroInput) outroInput.value = '';
+      const radioTotal = document.querySelector('input[name="cp_valor_opcao"][value="total"]');
+      if (radioTotal) radioTotal.checked = true;
+      atualizarRadioCp();
+      toggleCpValorOutro();
+      const modal = document.getElementById('modalConfirmarPagamento');
+      if (modal) modal.classList.add('active');
+    }
+    function fecharModalConfirmarPagamento() {
+      const modal = document.getElementById('modalConfirmarPagamento');
+      if (modal) modal.classList.remove('active');
+      pagamentoConfirmAtualId = null;
+    }
+    function atualizarRadioCp() {
+      const optTotal = document.getElementById('cp_opt_total');
+      const optOutro = document.getElementById('cp_opt_outro');
+      if (!optTotal || !optOutro) return;
+      const checked = document.querySelector('input[name="cp_valor_opcao"]:checked');
+      const v = checked ? checked.value : 'total';
+      optTotal.classList.toggle('active', v === 'total');
+      optOutro.classList.toggle('active', v === 'outro');
+    }
+    function toggleCpValorOutro() {
+      const checked = document.querySelector('input[name="cp_valor_opcao"]:checked');
+      const v = checked ? checked.value : 'total';
+      const wrap = document.getElementById('cp_valorOutro_wrap');
+      if (wrap) wrap.style.display = v === 'outro' ? '' : 'none';
+      atualizarRadioCp();
+    }
+    function processarConfirmarPagamento() {
+      if (!pagamentoConfirmAtualId) return;
+      const checked = document.querySelector('input[name="cp_valor_opcao"]:checked');
+      const opcao = checked ? checked.value : 'total';
+      let valorPago = null;
+      if (opcao === 'outro') {
+        const raw = String(document.getElementById('cp_valorOutro').value || '').trim().replace(',', '.');
+        const v = parseFloat(raw);
+        if (!Number.isFinite(v) || v < 0) { showToast('Informe um valor válido para o pagamento.', true); return; }
+        valorPago = v;
+      }
+      confirmarPagamento(pagamentoConfirmAtualId, valorPago);
+      fecharModalConfirmarPagamento();
+    }
+    window.abrirModalConfirmarPagamento = abrirModalConfirmarPagamento;
+    window.fecharModalConfirmarPagamento = fecharModalConfirmarPagamento;
+    window.toggleCpValorOutro = toggleCpValorOutro;
+    window.processarConfirmarPagamento = processarConfirmarPagamento;
 
     function formatCreditos(qtd) {
       const n = Number(qtd) || 0;
@@ -1502,7 +1573,7 @@ let renovacaoClienteAtual = null;
               ${whatsBtnHtml(c)}
               <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
               ${c.pagamentoPendente
-                ? `<button class="btn-pending" onclick="confirmarPagamento('${c.id}')" data-testid="btn-confirmar-pag-${c.id}"><i class="fas fa-check-circle"></i> Confirmar Pagamento</button>`
+                ? `<button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="btn-confirmar-pag-${c.id}"><i class="fas fa-check-circle"></i> Confirmar Pagamento</button>`
                 : `<button class="btn-primary" onclick="renewClient('${c.id}')" data-testid="btn-renovar-${c.id}">Renovar</button>`}
               <button class="btn-info" onclick="editClient('${c.id}')">Editar</button>
             </div>
@@ -1541,7 +1612,7 @@ let renovacaoClienteAtual = null;
               </div>
             </div>
             <div class="client-row-actions">
-              <button class="btn-pending" onclick="confirmarPagamento('${c.id}')" data-testid="pending-payment-confirm-${c.id}"><i class="fas fa-check-circle"></i> Confirmar que pagou</button>
+              <button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="pending-payment-confirm-${c.id}"><i class="fas fa-check-circle"></i> Confirmar que pagou</button>
               <button class="btn-whatsapp" onclick="enviarWhatsAppPagamentoPendente('${c.id}')" data-testid="pending-payment-whats-${c.id}"><i class="fab fa-whatsapp"></i> Cobrar</button>
               <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
               <button class="btn-info" onclick="editClient('${c.id}')">Editar</button>
@@ -1596,7 +1667,7 @@ let renovacaoClienteAtual = null;
               </div>
               <div class="pending-mini-actions">
                 <button class="btn-whatsapp pending-mini-action" onclick="enviarWhatsAppPagamentoPendente('${c.id}')" data-testid="dash-whats-pag-${c.id}"><i class="fab fa-whatsapp"></i> Cobrar</button>
-                <button class="btn-pending pending-mini-action" onclick="confirmarPagamento('${c.id}')" data-testid="dash-confirmar-pag-${c.id}"><i class="fas fa-check"></i> Confirmar</button>
+                <button class="btn-pending pending-mini-action" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="dash-confirmar-pag-${c.id}"><i class="fas fa-check"></i> Confirmar</button>
               </div>
             </div>`;
         }).join('') + (pendentes.length > 6 ? `<p class="card-hint" style="margin:2px 0 0;">+${pendentes.length - 6} pendente${pendentes.length - 6 === 1 ? '' : 's'} na lista de clientes.</p>` : '');
@@ -1665,6 +1736,8 @@ let renovacaoClienteAtual = null;
           if (!matches) return false;
         }
         if (filtro === 'all') return true;
+        if (filtro === 'bloqueados') return !!c.bloqueado;
+        if (filtro === 'pendentes') return !!c.pagamentoPendente;
         const due = parseDate(c.dataRenovacao);
         if (!due) return filtro === 'sem-data';
         const d = diffInDays(due, today);
@@ -1699,7 +1772,7 @@ let renovacaoClienteAtual = null;
           const painelCls = getPainelIdxClass(painelId);
           const painelNome = getPainelNome(painelId);
           return `
-            <div class="client-row" data-testid="cliente-row-${c.id}">
+            <div class="client-row client-row-clickable" data-testid="cliente-row-${c.id}" onclick="abrirDetalheCliente('${c.id}')" role="button" tabindex="0">
               <div class="client-row-main">
                 <div class="client-row-name">
                   ${escapeHtml(c.nome || '—')}
@@ -1716,21 +1789,122 @@ let renovacaoClienteAtual = null;
                   <span><b>Renovação:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
                 </div>
               </div>
-              <div class="client-row-actions">
-                ${c.pagamentoPendente
-                  ? `<button class="btn-pending" onclick="confirmarPagamento('${c.id}')" data-testid="btn-confirmar-pag-${c.id}"><i class="fas fa-check-circle"></i> Confirmar Pagamento</button>`
-                  : `<button class="btn-primary" onclick="renewClient('${c.id}')" data-testid="btn-renovar-${c.id}">Renovar</button>`}
-                <button class="btn-info" onclick="editClient('${c.id}')" data-testid="edit-cliente-${c.id}">Editar</button>
-                <button class="btn-danger" onclick="deleteClient('${c.id}')">Apagar</button>
-                <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
-                <button class="btn-secondary" onclick="abrirModalMensagemAplicativo('${c.id}','cliente')" title="Enviar instruções do aplicativo" data-testid="btn-app-cliente-${c.id}"><i class="fas fa-mobile-alt"></i> App</button>
-                ${whatsBtnHtml(c)}
-              </div>
+              <div class="client-row-chevron"><i class="fas fa-chevron-right"></i></div>
             </div>`;
         }).join('');
       }
       renderPagination(els.paginationClientes, pag.safePage, pag.totalPages, 'changeClientesPage');
     }
+
+    /* === Detalhe do cliente (abre ao clicar na linha da lista) === */
+    function abrirDetalheCliente(id) {
+      const c = clients.find(x => x.id === id);
+      if (!c) return;
+      const modal = document.getElementById('modalDetalheCliente');
+      const body = document.getElementById('detalheClienteBody');
+      const title = document.getElementById('modalDetalheClienteTitle');
+      if (!modal || !body) return;
+      const st = getStatus(c);
+      const planoCad = encontrarPlanoPorNome(c.plano);
+      const painelId = planoCad && planoCad.painelId ? planoCad.painelId : (paineis[0] ? paineis[0].id : '');
+      const painelNome = getPainelNome(painelId);
+      if (title) title.textContent = c.nome || 'Cliente';
+
+      const infoRows = [
+        ['Nome', c.nome], ['Telefone', c.telefone], ['Aplicativo', c.aplicativo],
+        ['Usuário', c.usuario], ['Senha', c.senha], ['Plano', c.plano],
+        ['Valor', c.valor], ['Painel', painelNome],
+        ['Início', formatDate(c.dataInicio || c.dataPagamento)],
+        ['Renovação', formatDate(c.dataRenovacao)],
+        ['Link de renovação', c.linkRenovacao], ['Observações', c.observacoes]
+      ];
+
+      const bloqueioHtml = c.bloqueado
+        ? `<div class="detalhe-bloqueio-aviso"><i class="fas fa-ban"></i> <b>Cliente bloqueado</b>${c.motivoBloqueio ? `: ${escapeHtml(c.motivoBloqueio)}` : ' (sem motivo informado)'}</div>`
+        : '';
+
+      body.innerHTML = `
+        <div class="detalhe-cliente-header">
+          <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
+          <span class="painel-badge ${getPainelIdxClass(painelId)}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span>
+        </div>
+        ${bloqueioHtml}
+        <div class="detalhe-cliente-grid">
+          ${infoRows.map(([label, value]) => `
+            <div class="detalhe-cliente-field">
+              <span class="detalhe-cliente-label">${escapeHtml(label)}</span>
+              <span class="detalhe-cliente-value">${escapeHtml(value || '—')}</span>
+            </div>`).join('')}
+        </div>
+        <div class="detalhe-cliente-actions">
+          ${c.pagamentoPendente
+            ? `<button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="detalhe-confirmar-pag-${c.id}"><i class="fas fa-check-circle"></i> Confirmar Pagamento</button>`
+            : `<button class="btn-primary" onclick="renewClient('${c.id}')" data-testid="detalhe-renovar-${c.id}">Renovar</button>`}
+          <button class="btn-info" onclick="editClient('${c.id}')" data-testid="detalhe-editar-${c.id}">Editar</button>
+          ${whatsBtnHtml(c)}
+          <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar mensagem</button>
+          <button class="btn-secondary" onclick="abrirModalMensagemAplicativo('${c.id}','cliente')" data-testid="detalhe-app-${c.id}"><i class="fas fa-mobile-alt"></i> App</button>
+          ${c.bloqueado
+            ? `<button class="btn-secondary" onclick="desbloquearCliente('${c.id}')" data-testid="detalhe-desbloquear-${c.id}"><i class="fas fa-lock-open"></i> Desbloquear</button>`
+            : `<button class="btn-danger" onclick="abrirModalBloquearCliente('${c.id}')" data-testid="detalhe-bloquear-${c.id}"><i class="fas fa-ban"></i> Bloquear cliente</button>`}
+          <button class="btn-danger" onclick="deleteClient('${c.id}')" data-testid="detalhe-apagar-${c.id}">Apagar</button>
+        </div>`;
+      modal.classList.add('active');
+    }
+    function fecharModalDetalheCliente() {
+      const modal = document.getElementById('modalDetalheCliente');
+      if (modal) modal.classList.remove('active');
+    }
+    window.abrirDetalheCliente = abrirDetalheCliente;
+    window.fecharModalDetalheCliente = fecharModalDetalheCliente;
+
+    /* === Bloqueio de cliente === */
+    let bloqueioClienteAtualId = null;
+    function abrirModalBloquearCliente(id) {
+      const c = clients.find(x => x.id === id);
+      if (!c) return;
+      bloqueioClienteAtualId = id;
+      const nomeEl = document.getElementById('bcClienteNome');
+      const motivoEl = document.getElementById('bc_motivo');
+      if (nomeEl) nomeEl.textContent = c.nome || '—';
+      if (motivoEl) motivoEl.value = '';
+      const modal = document.getElementById('modalBloquearCliente');
+      if (modal) modal.classList.add('active');
+    }
+    function fecharModalBloquearCliente() {
+      const modal = document.getElementById('modalBloquearCliente');
+      if (modal) modal.classList.remove('active');
+      bloqueioClienteAtualId = null;
+    }
+    function confirmarBloqueioCliente() {
+      if (!bloqueioClienteAtualId) return;
+      const c = clients.find(x => x.id === bloqueioClienteAtualId);
+      if (!c) { fecharModalBloquearCliente(); return; }
+      const motivo = (document.getElementById('bc_motivo').value || '').trim();
+      c.bloqueado = true;
+      c.motivoBloqueio = motivo;
+      c.bloqueadoEm = new Date().toISOString();
+      c.updatedAt = new Date().toISOString();
+      renderAll();
+      fecharModalBloquearCliente();
+      fecharModalDetalheCliente();
+      showToast(`${c.nome} foi bloqueado${motivo ? ` • Motivo: ${motivo}` : ''}.`);
+    }
+    function desbloquearCliente(id) {
+      const c = clients.find(x => x.id === id);
+      if (!c) return;
+      if (!confirmar(`Desbloquear ${c.nome}?`)) return;
+      c.bloqueado = false;
+      c.motivoBloqueio = '';
+      c.updatedAt = new Date().toISOString();
+      renderAll();
+      fecharModalDetalheCliente();
+      showToast(`${c.nome} foi desbloqueado.`);
+    }
+    window.abrirModalBloquearCliente = abrirModalBloquearCliente;
+    window.fecharModalBloquearCliente = fecharModalBloquearCliente;
+    window.confirmarBloqueioCliente = confirmarBloqueioCliente;
+    window.desbloquearCliente = desbloquearCliente;
 
     window.changeTodayPage = p => { state.todayPage = p; renderDashboard(); };
     window.changeTomorrowPage = p => { state.tomorrowPage = p; renderDashboard(); };
@@ -2099,6 +2273,7 @@ function whatsAppTeste(id) {
     function editClient(id) {
       const c = clients.find(x => x.id === id); const t = testes.find(x => x.id === id);
       const target = c || t; if (!target) return;
+      if (typeof fecharModalDetalheCliente === 'function') fecharModalDetalheCliente();
       editKind = c ? 'client' : 'teste';
       document.getElementById('ec_kind').value = editKind;
       document.getElementById('ec_id').value = target.id;
@@ -2299,6 +2474,7 @@ function whatsAppTeste(id) {
       clients = clients.filter(x => x.id !== id);
       renderAll(); atualizarCreditos(); atualizarHistorico(); atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
+      if (typeof fecharModalDetalheCliente === 'function') fecharModalDetalheCliente();
       showToast('Cliente excluído.');
     };
 
