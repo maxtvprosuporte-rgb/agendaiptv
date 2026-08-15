@@ -1571,7 +1571,6 @@ let renovacaoClienteAtual = null;
             </div>
             <div class="client-row-actions">
               ${whatsBtnHtml(c)}
-              <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
               ${c.pagamentoPendente
                 ? `<button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="btn-confirmar-pag-${c.id}"><i class="fas fa-check-circle"></i> Confirmar Pagamento</button>`
                 : `<button class="btn-primary" onclick="renewClient('${c.id}')" data-testid="btn-renovar-${c.id}">Renovar</button>`}
@@ -1614,7 +1613,6 @@ let renovacaoClienteAtual = null;
             <div class="client-row-actions">
               <button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="pending-payment-confirm-${c.id}"><i class="fas fa-check-circle"></i> Confirmar que pagou</button>
               <button class="btn-whatsapp" onclick="enviarWhatsAppPagamentoPendente('${c.id}')" data-testid="pending-payment-whats-${c.id}"><i class="fab fa-whatsapp"></i> Cobrar</button>
-              <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar</button>
               <button class="btn-info" onclick="editClient('${c.id}')">Editar</button>
             </div>
           </div>`;
@@ -1840,13 +1838,17 @@ let renovacaoClienteAtual = null;
           ${c.pagamentoPendente
             ? `<button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="detalhe-confirmar-pag-${c.id}"><i class="fas fa-check-circle"></i> Confirmar Pagamento</button>`
             : `<button class="btn-primary" onclick="renewClient('${c.id}')" data-testid="detalhe-renovar-${c.id}">Renovar</button>`}
-          <button class="btn-info" onclick="editClient('${c.id}')" data-testid="detalhe-editar-${c.id}">Editar</button>
-          ${whatsBtnHtml(c)}
-          <button class="btn-secondary" onclick="copyMessage('${c.id}')">Copiar mensagem</button>
-          <button class="btn-secondary" onclick="abrirModalMensagemAplicativo('${c.id}','cliente')" data-testid="detalhe-app-${c.id}"><i class="fas fa-mobile-alt"></i> App</button>
+          <div class="whats-dropdown">
+            <button class="btn-whatsapp" onclick="toggleWhatsDropdown('${c.id}')" data-testid="detalhe-whats-${c.id}"><i class="fab fa-whatsapp"></i> WhatsApp <i class="fas fa-chevron-down" style="font-size:10px; margin-left:2px;"></i></button>
+            <div class="whats-dropdown-menu" id="whatsDropdownMenu-${c.id}">
+              <button type="button" onclick="enviarWhatsRenovacao('${c.id}')" data-testid="detalhe-whats-renovacao-${c.id}"><i class="fas fa-rotate"></i> Renovação</button>
+              <button type="button" onclick="enviarWhatsApp_App('${c.id}')" data-testid="detalhe-whats-app-${c.id}"><i class="fas fa-mobile-alt"></i> APP</button>
+            </div>
+          </div>
           ${c.bloqueado
             ? `<button class="btn-secondary" onclick="desbloquearCliente('${c.id}')" data-testid="detalhe-desbloquear-${c.id}"><i class="fas fa-lock-open"></i> Desbloquear</button>`
             : `<button class="btn-danger" onclick="abrirModalBloquearCliente('${c.id}')" data-testid="detalhe-bloquear-${c.id}"><i class="fas fa-ban"></i> Bloquear cliente</button>`}
+          <button class="btn-info" onclick="editClient('${c.id}')" data-testid="detalhe-editar-${c.id}">Editar</button>
           <button class="btn-danger" onclick="deleteClient('${c.id}')" data-testid="detalhe-apagar-${c.id}">Apagar</button>
         </div>`;
       modal.classList.add('active');
@@ -1855,8 +1857,36 @@ let renovacaoClienteAtual = null;
       const modal = document.getElementById('modalDetalheCliente');
       if (modal) modal.classList.remove('active');
     }
+    function toggleWhatsDropdown(id) {
+      const menu = document.getElementById(`whatsDropdownMenu-${id}`);
+      if (!menu) return;
+      const isOpen = menu.classList.contains('open');
+      document.querySelectorAll('.whats-dropdown-menu.open').forEach(el => el.classList.remove('open'));
+      if (!isOpen) menu.classList.add('open');
+    }
+    function fecharWhatsDropdown(id) {
+      const menu = document.getElementById(`whatsDropdownMenu-${id}`);
+      if (menu) menu.classList.remove('open');
+    }
+    function enviarWhatsRenovacao(id) {
+      fecharWhatsDropdown(id);
+      openWhatsApp(id);
+    }
+    function enviarWhatsApp_App(id) {
+      fecharWhatsDropdown(id);
+      abrirModalMensagemAplicativo(id, 'cliente');
+    }
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.whats-dropdown')) {
+        document.querySelectorAll('.whats-dropdown-menu.open').forEach(el => el.classList.remove('open'));
+      }
+    });
     window.abrirDetalheCliente = abrirDetalheCliente;
     window.fecharModalDetalheCliente = fecharModalDetalheCliente;
+    window.toggleWhatsDropdown = toggleWhatsDropdown;
+    window.fecharWhatsDropdown = fecharWhatsDropdown;
+    window.enviarWhatsRenovacao = enviarWhatsRenovacao;
+    window.enviarWhatsApp_App = enviarWhatsApp_App;
 
     /* === Bloqueio de cliente === */
     let bloqueioClienteAtualId = null;
