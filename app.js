@@ -2287,7 +2287,8 @@ function whatsAppTeste(id) {
       salvarTestes(); salvarMovimentacoes();
 
       // Se este teste veio de uma indicação (aba Sorteio) ainda ativa na roleta, conclui automaticamente:
-      // marca a indicação como assinada, tira o número da roleta, dá +30 dias e -1 crédito ao indicador.
+      // marca a indicação como assinada, tira o número da roleta, dá +30 dias ao indicador e desconta
+      // o crédito do bônus do painel ATUAL do próprio indicador (não do painel do amigo).
       let indContext = null;
       const indLinked = indicacoes.find(i => i.testeId === id && i.status === 'teste');
       let bonusMsg = '';
@@ -2297,10 +2298,10 @@ function whatsAppTeste(id) {
         indLinked.amigoClientId = novoCliente.id;
         indLinked.updatedAt = new Date().toISOString();
         salvarIndicacoes();
-        const indicador = concederMesGratisIndicador(indLinked);
-        if (indicador) {
-          indContext = { ind: indLinked, indicador };
-          bonusMsg = ` • Indicação: +30 dias e -1 crédito (mês grátis) para ${indicador.nome}`;
+        const bonus = concederMesGratisIndicador(indLinked);
+        if (bonus) {
+          indContext = { ind: indLinked, indicador: bonus.indicador };
+          bonusMsg = ` • Indicação: +30 dias para ${bonus.indicador.nome} • -${bonus.creditosBonus} crédito${bonus.creditosBonus === 1 ? '' : 's'} (${getPainelNome(bonus.painelIdBonus)})`;
         } else {
           bonusMsg = ` • Indicação: número ${indLinked.numero} convertido, mas o indicador (${indLinked.indicadorNome}) não foi encontrado como cliente`;
         }
@@ -4692,7 +4693,9 @@ function aplicarDiasExtras() {
       showToast('Indicação removida.');
     }
 
-    // Concede o bônus de indicação ao indicador: +30 dias no vencimento e -1 crédito (custo do mês grátis).
+    // Concede o bônus de indicação ao indicador: +30 dias no vencimento e desconta o crédito do mês grátis
+    // do painel ATUAL do próprio indicador (não do painel do amigo). A quantidade de créditos debitada
+    // segue o cadastro do indicador (campo créditos do cliente/plano), igual a qualquer outro consumo.
     // Retorna o cliente indicador atualizado, ou null se ele não for encontrado.
     function concederMesGratisIndicador(ind) {
       const indicador = clients.find(c => c.id === ind.indicadorId);
@@ -4701,16 +4704,18 @@ function aplicarDiasExtras() {
       const novaData = addPlanPeriod(baseDate, 30);
       indicador.dataRenovacao = toInputDate(novaData);
       indicador.updatedAt = new Date().toISOString();
-      const painelIdBonus = ((encontrarPlanoPorNome(indicador.plano) || {}).painelId) || paineis[0].id;
+      const planoIndicador = encontrarPlanoPorNome(indicador.plano);
+      const painelIdBonus = (planoIndicador && planoIndicador.painelId) ? planoIndicador.painelId : paineis[0].id;
+      const creditosBonus = resolverCreditosCliente(indicador);
       movimentacoes.push({
         data: new Date().toISOString(), tipo: 'use', tipoCliente: 'indicacao_bonus',
-        valor: 0, quantidade: 1, taxa: 0,
+        valor: 0, quantidade: creditosBonus, taxa: 0,
         planoNome: 'Mês grátis (indicação)', clientId: indicador.id, clientNome: indicador.nome,
         painelId: painelIdBonus
       });
       saveClients();
       salvarMovimentacoes();
-      return indicador;
+      return { indicador, creditosBonus, painelIdBonus };
     }
 
     function marcarAssinou(id) {
@@ -4718,20 +4723,21 @@ function aplicarDiasExtras() {
       if (!ind) return;
       if (ind.status === 'ganhou') { showToast('Esta indicação já foi sorteada.', true); return; }
       if (ind.status === 'assinou') { showToast('Esta indicação já foi convertida.', true); return; }
-      if (!confirmar(`Confirmar assinatura de ${ind.amigoNome}? O número ${ind.numero} sai da roleta, ${ind.indicadorNome} ganha +30 dias (mês grátis) e serão descontados 2 créditos no total (1 da ativação do amigo + 1 do mês grátis).`)) return;
+      if (!confirmar(`Confirmar assinatura de ${ind.amigoNome}? O número ${ind.numero} sai da roleta, ${ind.indicadorNome} ganha +30 dias (mês grátis) e o crédito correspondente será descontado do painel dele.`)) return;
       ind.status = 'assinou';
       ind.assinouEm = new Date().toISOString();
       ind.updatedAt = new Date().toISOString();
       salvarIndicacoes();
 
-      const indicador = concederMesGratisIndicador(ind);
+      const bonus = concederMesGratisIndicador(ind);
       renderIndicacoes();
       renderAll();
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras();
 
-      if (indicador) {
-        showToast(`Mês grátis concedido a ${ind.indicadorNome} • novo vencimento: ${formatDate(indicador.dataRenovacao)} • -1 crédito (bônus)`);
+      if (bonus) {
+        const { indicador, creditosBonus, painelIdBonus } = bonus;
+        showToast(`Mês grátis concedido a ${ind.indicadorNome} • novo vencimento: ${formatDate(indicador.dataRenovacao)} • -${creditosBonus} crédito${creditosBonus === 1 ? '' : 's'} (${getPainelNome(painelIdBonus)})`);
       } else {
         showToast(`${ind.indicadorNome} não foi encontrado como cliente cadastrado — ajuste o vencimento manualmente.`, true);
       }
