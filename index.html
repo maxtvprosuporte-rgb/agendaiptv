@@ -560,7 +560,7 @@
           <div class="card-title"><h2>Indicações ativas (na roleta)</h2><span class="tag">Aguardando sorteio</span></div>
           <span class="count-badge" id="countIndAtivas">0</span>
         </div>
-        <p class="card-hint">Amigos indicados que realizaram o teste grátis e ainda não fecharam assinatura. Cada um vale <b style="color:var(--primary);">1 número da sorte</b> no sorteio mensal. Marque "Fechou assinatura" para conceder 1 mês grátis ao indicador (o número sai automaticamente da roleta).</p>
+        <p class="card-hint">Amigos indicados que realizaram o teste grátis e ainda não fecharam assinatura. Cada um vale <b style="color:var(--primary);">1 número da sorte</b> no sorteio mensal. Ao <b>ativar o teste do amigo</b> na aba Testes, o sistema conclui tudo automaticamente: vencimento do amigo, <b style="color:var(--primary);">+30 dias</b> para o indicador, desconto de <b style="color:var(--warning);">2 créditos</b> (1 do amigo + 1 do mês grátis) e as mensagens prontas para os dois. O botão "Fechou assinatura" abaixo faz o mesmo ajuste manualmente, caso a ativação já tenha sido feita de outra forma.</p>
         <div id="listaIndAtivas" data-testid="lista-ind-ativas"></div>
         <div class="pagination-bar" id="paginationIndAtivas"></div>
       </div>
@@ -1034,6 +1034,19 @@
       <div class="renew-msg-box" id="ativacaoMsgBox" data-testid="ativacao-msg-box"></div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button type="button" class="btn-whatsapp" onclick="enviarMensagemAtivacaoWhatsApp()" data-testid="btn-whats-ativacao"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
+        <button type="button" class="btn-secondary" onclick="copiarMensagemAtivacao()" data-testid="btn-copy-ativacao">Copiar</button>
+      </div>
+
+      <div id="ativacaoIndicadorMsgWrap" style="display:none; margin-top:16px; padding-top:14px; border-top:1px dashed rgba(255,255,255,.12);">
+        <p class="card-hint" style="margin: 0 0 6px;"><i class="fas fa-gift" style="color: var(--warning); margin-right:6px;"></i>Este amigo veio de uma indicação! Mensagem de mês grátis pronta para o indicador:</p>
+        <div class="renew-msg-box" id="ativacaoIndicadorMsgBox" data-testid="ativacao-indicador-msg-box"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" class="btn-whatsapp" onclick="enviarMensagemIndicadorWhatsApp()" data-testid="btn-whats-indicador"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
+          <button type="button" class="btn-secondary" onclick="copiarMensagemIndicador()" data-testid="btn-copy-indicador">Copiar</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
         <button type="button" class="btn-secondary" onclick="fecharModalMensagemAtivacao()" style="margin-left:auto;">Fechar</button>
       </div>
     </div>

@@ -1967,16 +1967,37 @@ function buildAtivacaoMessage(client) {
   });
 }
 
+function buildIndicacaoMesGratisMessage(ind, indicador, amigoNome) {
+  return renderMessageTemplate('indicacao_mes_gratis', {
+    indicador_nome: (indicador && indicador.nome) || ind.indicadorNome || '',
+    amigo_nome: amigoNome || ind.amigoNome || '',
+    numero: ind.numero || ''
+  });
+}
+
 let ativacaoClienteAtual = null;
-    function abrirModalMensagemAtivacao(client) {
+    let ativacaoIndicacaoContext = null; // { ind, indicador } quando a ativação veio de uma indicação
+    function abrirModalMensagemAtivacao(client, indContext) {
       ativacaoClienteAtual = client;
       const box = document.getElementById('ativacaoMsgBox');
       if (box) box.textContent = buildAtivacaoMessage(client);
+
+      const wrap = document.getElementById('ativacaoIndicadorMsgWrap');
+      const boxInd = document.getElementById('ativacaoIndicadorMsgBox');
+      if (indContext && indContext.indicador) {
+        ativacaoIndicacaoContext = indContext;
+        if (boxInd) boxInd.textContent = buildIndicacaoMesGratisMessage(indContext.ind, indContext.indicador, client.nome);
+        if (wrap) wrap.style.display = '';
+      } else {
+        ativacaoIndicacaoContext = null;
+        if (wrap) wrap.style.display = 'none';
+      }
       document.getElementById('modalMensagemAtivacao').classList.add('active');
     }
     function fecharModalMensagemAtivacao() {
       document.getElementById('modalMensagemAtivacao').classList.remove('active');
       ativacaoClienteAtual = null;
+      ativacaoIndicacaoContext = null;
     }
     function copiarMensagemAtivacao() {
       if (!ativacaoClienteAtual) return;
@@ -1995,9 +2016,29 @@ let ativacaoClienteAtual = null;
       const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
+    function copiarMensagemIndicador() {
+      if (!ativacaoIndicacaoContext) return;
+      const { ind, indicador } = ativacaoIndicacaoContext;
+      const msg = buildIndicacaoMesGratisMessage(ind, indicador, ativacaoClienteAtual ? ativacaoClienteAtual.nome : '');
+      const name = indicador.nome || '';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${name}`)).catch(() => fallbackCopy(msg, name));
+      } else fallbackCopy(msg, name);
+    }
+    function enviarMensagemIndicadorWhatsApp() {
+      if (!ativacaoIndicacaoContext) return;
+      const { ind, indicador } = ativacaoIndicacaoContext;
+      const phone = String(indicador.telefone || ind.indicadorTelefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(buildIndicacaoMesGratisMessage(ind, indicador, ativacaoClienteAtual ? ativacaoClienteAtual.nome : ''));
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
     window.fecharModalMensagemAtivacao = fecharModalMensagemAtivacao;
     window.copiarMensagemAtivacao = copiarMensagemAtivacao;
     window.enviarMensagemAtivacaoWhatsApp = enviarMensagemAtivacaoWhatsApp;
+    window.copiarMensagemIndicador = copiarMensagemIndicador;
+    window.enviarMensagemIndicadorWhatsApp = enviarMensagemIndicadorWhatsApp;
 
     function renderTestes() {
       const cont = document.getElementById('listaTestes');
@@ -2244,13 +2285,35 @@ function whatsAppTeste(id) {
       });
       testes.splice(idx, 1);
       salvarTestes(); salvarMovimentacoes();
+
+      // Se este teste veio de uma indicação (aba Sorteio) ainda ativa na roleta, conclui automaticamente:
+      // marca a indicação como assinada, tira o número da roleta, dá +30 dias e -1 crédito ao indicador.
+      let indContext = null;
+      const indLinked = indicacoes.find(i => i.testeId === id && i.status === 'teste');
+      let bonusMsg = '';
+      if (indLinked) {
+        indLinked.status = 'assinou';
+        indLinked.assinouEm = new Date().toISOString();
+        indLinked.amigoClientId = novoCliente.id;
+        indLinked.updatedAt = new Date().toISOString();
+        salvarIndicacoes();
+        const indicador = concederMesGratisIndicador(indLinked);
+        if (indicador) {
+          indContext = { ind: indLinked, indicador };
+          bonusMsg = ` • Indicação: +30 dias e -1 crédito (mês grátis) para ${indicador.nome}`;
+        } else {
+          bonusMsg = ` • Indicação: número ${indLinked.numero} convertido, mas o indicador (${indLinked.indicadorNome}) não foi encontrado como cliente`;
+        }
+        renderIndicacoes();
+      }
+
       renderAll(); renderTestes();
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
       atualizarSelectMesGestao();
       switchTab('clientes');
-      showToast(`${novoCliente.nome} ativado • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} • Vence em ${formatDate(novoCliente.dataRenovacao)}${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}`);
-      abrirModalMensagemAtivacao(novoCliente);
+      showToast(`${novoCliente.nome} ativado • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} • Vence em ${formatDate(novoCliente.dataRenovacao)}${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}${bonusMsg}`);
+      abrirModalMensagemAtivacao(novoCliente, indContext);
     }
 
     function excluirTeste(id) {
@@ -4553,6 +4616,7 @@ function aplicarDiasExtras() {
         ind.amigoNome = amigoNome;
         ind.amigoTelefone = amigoTelefone;
         ind.observacoes = obs;
+        ind.testeId = testeIdSel || ind.testeId || '';
         ind.updatedAt = new Date().toISOString();
         salvarIndicacoes();
         limparFormIndicacao();
@@ -4569,6 +4633,8 @@ function aplicarDiasExtras() {
           amigoNome,
           amigoTelefone,
           observacoes: obs,
+          testeId: testeIdSel || '',   // vincula ao teste do amigo indicado, para automatizar o bônus ao ativar
+          amigoClientId: null,          // preenchido quando o teste vinculado vira cliente (assinatura)
           status: 'teste',       // 'teste' = na roleta | 'assinou' = mês grátis concedido | 'ganhou' = sorteado
           fezTesteEm: new Date().toISOString(),
           assinouEm: null,
@@ -4626,30 +4692,61 @@ function aplicarDiasExtras() {
       showToast('Indicação removida.');
     }
 
+    // Concede o bônus de indicação ao indicador: +30 dias no vencimento e -1 crédito (custo do mês grátis).
+    // Retorna o cliente indicador atualizado, ou null se ele não for encontrado.
+    function concederMesGratisIndicador(ind) {
+      const indicador = clients.find(c => c.id === ind.indicadorId);
+      if (!indicador) return null;
+      const baseDate = parseDate(indicador.dataRenovacao) || todayLocalDate();
+      const novaData = addPlanPeriod(baseDate, 30);
+      indicador.dataRenovacao = toInputDate(novaData);
+      indicador.updatedAt = new Date().toISOString();
+      const painelIdBonus = ((encontrarPlanoPorNome(indicador.plano) || {}).painelId) || paineis[0].id;
+      movimentacoes.push({
+        data: new Date().toISOString(), tipo: 'use', tipoCliente: 'indicacao_bonus',
+        valor: 0, quantidade: 1, taxa: 0,
+        planoNome: 'Mês grátis (indicação)', clientId: indicador.id, clientNome: indicador.nome,
+        painelId: painelIdBonus
+      });
+      saveClients();
+      salvarMovimentacoes();
+      return indicador;
+    }
+
     function marcarAssinou(id) {
       const ind = indicacoes.find(i => i.id === id);
       if (!ind) return;
       if (ind.status === 'ganhou') { showToast('Esta indicação já foi sorteada.', true); return; }
       if (ind.status === 'assinou') { showToast('Esta indicação já foi convertida.', true); return; }
-      if (!confirmar(`Confirmar assinatura de ${ind.amigoNome}? O número ${ind.numero} sai da roleta e ${ind.indicadorNome} ganha 1 mês grátis.`)) return;
+      if (!confirmar(`Confirmar assinatura de ${ind.amigoNome}? O número ${ind.numero} sai da roleta, ${ind.indicadorNome} ganha +30 dias (mês grátis) e serão descontados 2 créditos no total (1 da ativação do amigo + 1 do mês grátis).`)) return;
       ind.status = 'assinou';
       ind.assinouEm = new Date().toISOString();
       ind.updatedAt = new Date().toISOString();
       salvarIndicacoes();
+
+      const indicador = concederMesGratisIndicador(ind);
       renderIndicacoes();
-      showToast(`Mês grátis concedido a ${ind.indicadorNome}!`);
+      renderAll();
+      atualizarCreditos(); atualizarHistorico();
+      atualizarGraficoClientes(); atualizarStatsFinanceiras();
+
+      if (indicador) {
+        showToast(`Mês grátis concedido a ${ind.indicadorNome} • novo vencimento: ${formatDate(indicador.dataRenovacao)} • -1 crédito (bônus)`);
+      } else {
+        showToast(`${ind.indicadorNome} não foi encontrado como cliente cadastrado — ajuste o vencimento manualmente.`, true);
+      }
     }
 
     function reverterAssinou(id) {
       const ind = indicacoes.find(i => i.id === id);
       if (!ind || ind.status !== 'assinou') return;
-      if (!confirmar('Reverter? O número volta para a roleta.')) return;
+      if (!confirmar('Reverter? O número volta para a roleta. Isso NÃO desfaz automaticamente os +30 dias e o crédito já concedidos ao indicador — ajuste manualmente se necessário.')) return;
       ind.status = 'teste';
       ind.assinouEm = null;
       ind.updatedAt = new Date().toISOString();
       salvarIndicacoes();
       renderIndicacoes();
-      showToast('Status revertido para teste.');
+      showToast('Status revertido para teste. Vencimento/crédito do indicador não foram alterados automaticamente.');
     }
 
     function whatsappIndicador(id, msg) {
