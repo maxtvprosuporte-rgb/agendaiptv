@@ -2586,7 +2586,11 @@ function whatsAppTeste(id) {
       showToast('Teste cadastrado com sucesso.');
     });
     els.clearFormBtn.addEventListener('click', resetForm);
-    els.searchClientesInput.addEventListener('input', () => { state.clientesPage = 1; renderClientes(); });
+    let searchClientesDebounce = null;
+    els.searchClientesInput.addEventListener('input', () => {
+      clearTimeout(searchClientesDebounce);
+      searchClientesDebounce = setTimeout(() => { state.clientesPage = 1; renderClientes(); }, 180);
+    });
     (function wireFiltroClientes() {
       const f = document.getElementById('filtroClientesStatus');
       if (f) f.addEventListener('change', () => { state.clientesPage = 1; renderClientes(); });
@@ -4865,10 +4869,10 @@ function renderIndicacoes() {
                   ${pill}
                 </div>
                 <div class="list-item-sub" style="margin-top:6px;">
-                  <i class="fas fa-user-tag"></i> Indicador: <b style="color:#fff;">${escapeHtml(ind.indicadorNome)}</b>${ind.indicadorTelefone ? ' • ' + escapeHtml(ind.indicadorTelefone) : ''}
+                  <i class="fas fa-user-tag"></i> Indicador: <b style="color:var(--text);">${escapeHtml(ind.indicadorNome)}</b>${ind.indicadorTelefone ? ' • ' + escapeHtml(ind.indicadorTelefone) : ''}
                 </div>
                 <div class="list-item-sub" style="margin-top:3px;">
-                  <i class="fas fa-user-friends"></i> Amigo: <b style="color:#fff;">${escapeHtml(ind.amigoNome)}</b>${ind.amigoTelefone ? ' • ' + escapeHtml(ind.amigoTelefone) : ''}
+                  <i class="fas fa-user-friends"></i> Amigo: <b style="color:var(--text);">${escapeHtml(ind.amigoNome)}</b>${ind.amigoTelefone ? ' • ' + escapeHtml(ind.amigoTelefone) : ''}
                 </div>
                 <div class="list-item-sub" style="margin-top:3px; color: var(--muted);">
                   <i class="far fa-clock"></i> ${dataInfo}${ind.observacoes ? ' • ' + escapeHtml(ind.observacoes) : ''}
@@ -4939,10 +4943,10 @@ function renderIndicacoes() {
                     <span class="lucky-code lg">${ind.numero}</span>
                   </div>
                   <div class="list-item-sub" style="margin-top:6px;">
-                    <i class="fas fa-user-tag"></i> Indicador: <b style="color:#fff;">${escapeHtml(ind.indicadorNome)}</b>
+                    <i class="fas fa-user-tag"></i> Indicador: <b style="color:var(--text);">${escapeHtml(ind.indicadorNome)}</b>
                   </div>
                   <div class="list-item-sub" style="margin-top:3px;">
-                    <i class="fas fa-user-friends"></i> Amigo: <b style="color:#fff;">${escapeHtml(ind.amigoNome)}</b>
+                    <i class="fas fa-user-friends"></i> Amigo: <b style="color:var(--text);">${escapeHtml(ind.amigoNome)}</b>
                   </div>
                 </div>
               </div>

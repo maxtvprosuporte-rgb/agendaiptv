@@ -94,7 +94,7 @@
     .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
     .icon-action { width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 14px; font-size: 16px; }
 
-    button, .btn { font-family: var(--font-body); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 16px; font-size: 13.5px; font-weight: 600; letter-spacing: .01em; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease; min-height: 42px; background: rgba(0,0,0,.045); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--text); display: inline-flex; align-items: center; justify-content: center; gap: 8px; user-select: none; }
+    button, .btn { font-family: var(--font-body); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 16px; font-size: 13.5px; font-weight: 600; letter-spacing: .01em; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease; min-height: 42px; background: rgba(15,15,17,.06); color: var(--text); display: inline-flex; align-items: center; justify-content: center; gap: 8px; user-select: none; }
     button:hover, .btn:hover { transform: translateY(-1px); }
     button:active, .btn:active { transform: translateY(0); }
     button:focus-visible, .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(15,15,17,.35); }
@@ -438,7 +438,7 @@
 .message-template-editor { min-height: 360px; font-family: var(--font-mono); line-height: 1.55; width: 100%; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; }
 .template-vars-wrap { margin-top: 18px; }
 .template-vars { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-width: 100%; }
-.template-vars .var-chip { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border-radius: 10px; background: rgba(0,0,0,.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--border-faint); color: var(--muted); font-family: var(--font-mono); font-size: 12px; max-width: 100%; overflow-wrap: anywhere; cursor: pointer; transition: all .15s ease; }
+.template-vars .var-chip { display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border-radius: 10px; background: rgba(15,15,17,.07); border: 1px solid var(--border-faint); color: var(--muted); font-family: var(--font-mono); font-size: 12px; max-width: 100%; overflow-wrap: anywhere; cursor: pointer; transition: all .15s ease; }
 .template-vars .var-chip:hover { border-color: rgba(15,15,17,.35); color: var(--text); background: rgba(15,15,17,.06); transform: translateY(-1px); }
 .template-vars .var-chip.active { color: var(--primary-soft); border-color: rgba(15,15,17,.3); background: rgba(15,15,17,.06); }
 .template-help { margin: 10px 0 12px; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
