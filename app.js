@@ -4362,9 +4362,20 @@ function aplicarDiasExtras() {
       const parent = document.querySelector('#dashboard .chart-container');
       if (!parent) return;
       const { labels, dataNovos, dataRenov, dataTestes, isYearView, tickLabel } = getDashboardChartSeries();
-      if (!document.getElementById('dashGraficoMes')) parent.innerHTML = '<canvas id="dashGraficoMes"></canvas>';
+      if (!document.getElementById('dashGraficoMes')) { parent.innerHTML = '<canvas id="dashGraficoMes"></canvas>'; dashGraficoMes = null; }
       const canvas = document.getElementById('dashGraficoMes');
-      if (dashGraficoMes) dashGraficoMes.destroy();
+      // Se o gráfico já existe, só atualiza os dados (sem destruir/recriar) — evita travamentos
+      // causados por recalcular e reanimar o gráfico inteiro a cada render (que acontece com muita frequência).
+      if (dashGraficoMes) {
+        dashGraficoMes.data.labels = labels;
+        dashGraficoMes.data.datasets[0].data = dataNovos;
+        dashGraficoMes.data.datasets[1].data = dataRenov;
+        dashGraficoMes.data.datasets[2].data = dataTestes;
+        dashGraficoMes.options.scales.x.ticks.autoSkip = isYearView;
+        dashGraficoMes.options.scales.x.title.text = tickLabel;
+        dashGraficoMes.update('none');
+        return;
+      }
       dashGraficoMes = new Chart(canvas, {
         type: 'line',
         data: {
@@ -4377,6 +4388,7 @@ function aplicarDiasExtras() {
         },
         options: {
           responsive: true, maintainAspectRatio: false,
+          animation: { duration: 250 },
           interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { position: 'top', labels: { color: '#f5f5f5', font: { size: 11, weight: '600' }, padding: 10, usePointStyle: true } },
@@ -4440,7 +4452,6 @@ function aplicarDiasExtras() {
 
     function atualizarGraficoClientes() {
       const parent = document.querySelector('#gestao .chart-container');
-      if (graficoClientes) { graficoClientes.destroy(); graficoClientes = null; }
       if (!parent) return;
       const porMes = {};
       const ensure = k => { if (!porMes[k]) porMes[k] = { novos: 0, renovacoes: 0, naoRenovou: 0, vencidos: 0, testes: 0 }; };
@@ -4470,17 +4481,31 @@ function aplicarDiasExtras() {
         }
       });
       if (Object.keys(porMes).length === 0) {
+        if (graficoClientes) { graficoClientes.destroy(); graficoClientes = null; }
         parent.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>Sem dados para o filtro selecionado</p></div>';
         return;
       }
-      if (!document.getElementById('graficoClientes')) parent.innerHTML = '<canvas id="graficoClientes"></canvas>';
+      if (!document.getElementById('graficoClientes')) { parent.innerHTML = '<canvas id="graficoClientes"></canvas>'; graficoClientes = null; }
       const canvas = document.getElementById('graficoClientes');
       const meses = Object.keys(porMes).sort();
       const labels = meses.map(m => {
         const [y, mo] = m.split('-');
         return new Date(y, mo - 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
       });
-      if (graficoClientes) graficoClientes.destroy();
+      const tituloTexto = state.filtroMes === 'all' ? 'Movimentação mensal de clientes' : `Movimentação em ${monthLabel(state.filtroMes)}`;
+      // Se o gráfico já existe, só atualiza os dados (sem destruir/recriar) — evita travamentos
+      // causados por recalcular e reanimar o gráfico inteiro a cada ação (renovação, crédito, etc).
+      if (graficoClientes) {
+        graficoClientes.data.labels = labels;
+        graficoClientes.data.datasets[0].data = meses.map(m => porMes[m].testes);
+        graficoClientes.data.datasets[1].data = meses.map(m => porMes[m].novos);
+        graficoClientes.data.datasets[2].data = meses.map(m => porMes[m].renovacoes);
+        graficoClientes.data.datasets[3].data = meses.map(m => porMes[m].naoRenovou);
+        graficoClientes.data.datasets[4].data = meses.map(m => porMes[m].vencidos);
+        graficoClientes.options.plugins.title.text = tituloTexto;
+        graficoClientes.update('none');
+        return;
+      }
       graficoClientes = new Chart(canvas, {
         type: 'line',
         data: {
@@ -4495,10 +4520,11 @@ function aplicarDiasExtras() {
         },
         options: {
           responsive: true, maintainAspectRatio: false,
+          animation: { duration: 250 },
           interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { position: 'top', labels: { color: '#f5f5f5', font: { size: 12, weight: '600' }, padding: 12, usePointStyle: true } },
-            title: { display: true, text: state.filtroMes === 'all' ? 'Movimentação mensal de clientes' : `Movimentação em ${monthLabel(state.filtroMes)}`, color: '#f5f5f5', font: { size: 14, weight: '700' }, padding: 12 },
+            title: { display: true, text: tituloTexto, color: '#f5f5f5', font: { size: 14, weight: '700' }, padding: 12 },
             tooltip: { backgroundColor: '#0a0a0a', titleColor: '#fff', bodyColor: '#f5f5f5', borderColor: 'rgba(57,255,20,.3)', borderWidth: 1 }
           },
           scales: {
