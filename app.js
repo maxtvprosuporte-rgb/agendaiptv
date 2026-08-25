@@ -4742,14 +4742,28 @@ function aplicarDiasExtras() {
       return null;
     }
 
-    // Ajusta o vencimento do amigo indicado em +30 dias (mesma regra usada para o indicador),
-    // sem descontar crédito — o crédito da assinatura do amigo é tratado normalmente pelas renovações dele.
+    // Ajusta o vencimento do amigo indicado em +30 dias e desconta 1 crédito (real, pago) do painel
+    // dele — o mesmo painel/plano em que ele está sendo ativado. O valor pago por ele nessa renovação
+    // é o que compensa o crédito de "mês grátis" concedido ao indicador.
     function renovarAmigoIndicacao(client) {
       const baseDate = parseDate(client.dataRenovacao) || todayLocalDate();
       const novaData = addPlanPeriod(baseDate, 30);
       client.dataRenovacao = toInputDate(novaData);
       client.updatedAt = new Date().toISOString();
-      return client;
+      const planoAmigo = encontrarPlanoPorNome(client.plano);
+      const painelIdAmigo = (planoAmigo && planoAmigo.painelId) ? planoAmigo.painelId : paineis[0].id;
+      const creditosAmigo = resolverCreditosCliente(client);
+      const valorVenda = parseValor(client.valor);
+      const taxa = calcularTaxaPlano(planoAmigo, valorVenda);
+      movimentacoes.push({
+        data: new Date().toISOString(), tipo: 'use', tipoCliente: 'renovacao',
+        valor: valorVenda, quantidade: creditosAmigo, taxa: taxa,
+        planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
+        painelId: painelIdAmigo
+      });
+      saveClients();
+      salvarMovimentacoes();
+      return { client, creditosAmigo, painelIdAmigo, valorVenda, taxa };
     }
 
     let assinaturaIndPendente = null; // { ind }
@@ -4783,13 +4797,15 @@ function aplicarDiasExtras() {
 
       const linhaIndicador = indicador
         ? `<div class="renew-confirm-item"><div class="lbl">Vencimento atual do indicador</div><div class="val">${escapeHtml(formatDate(indicador.dataRenovacao))}</div></div>
-           <div class="renew-confirm-item highlight"><div class="lbl">Novo vencimento do indicador</div><div class="val">${escapeHtml(formatDate(toInputDate(addPlanPeriod(parseDate(indicador.dataRenovacao) || todayLocalDate(), 30))))}</div></div>`
+           <div class="renew-confirm-item highlight"><div class="lbl">Novo vencimento do indicador</div><div class="val">${escapeHtml(formatDate(toInputDate(addPlanPeriod(parseDate(indicador.dataRenovacao) || todayLocalDate(), 30))))}</div></div>
+           <div class="renew-confirm-item full"><div class="lbl">Cálculo (indicador)</div><div class="val" style="font-size:13px;">Mês grátis — sem cobrança<br><span style="color:var(--muted); font-size:12px;">−${resolverCreditosCliente(indicador)} crédito${resolverCreditosCliente(indicador) === 1 ? '' : 's'} do <b>${escapeHtml(getPainelNome(((encontrarPlanoPorNome(indicador.plano) || {}).painelId) || paineis[0].id))}</b></span></div></div>`
         : `<div class="renew-confirm-item full"><div class="lbl">Indicador</div><div class="val" style="color:var(--danger);">${escapeHtml(ind.indicadorNome)} não encontrado como cliente cadastrado — ajuste o vencimento dele manualmente.</div></div>`;
 
       const linhaAmigo = amigo
         ? `<div class="renew-confirm-item"><div class="lbl">Vencimento atual do amigo</div><div class="val">${escapeHtml(formatDate(amigo.dataRenovacao))}</div></div>
-           <div class="renew-confirm-item highlight"><div class="lbl">Novo vencimento do amigo</div><div class="val">${escapeHtml(formatDate(toInputDate(addPlanPeriod(parseDate(amigo.dataRenovacao) || todayLocalDate(), 30))))}</div></div>`
-        : `<div class="renew-confirm-item full"><div class="lbl">Amigo indicado</div><div class="val" style="color:var(--danger);">Selecione acima o cadastro correspondente para ajustar o vencimento dele.</div></div>`;
+           <div class="renew-confirm-item highlight"><div class="lbl">Novo vencimento do amigo</div><div class="val">${escapeHtml(formatDate(toInputDate(addPlanPeriod(parseDate(amigo.dataRenovacao) || todayLocalDate(), 30))))}</div></div>
+           <div class="renew-confirm-item full"><div class="lbl">Cálculo (amigo)</div><div class="val" style="font-size:13px;">R$ ${parseValor(amigo.valor).toFixed(2)} pago<br><span style="color:var(--muted); font-size:12px;">−${resolverCreditosCliente(amigo)} crédito${resolverCreditosCliente(amigo) === 1 ? '' : 's'} do <b>${escapeHtml(getPainelNome(((encontrarPlanoPorNome(amigo.plano) || {}).painelId) || paineis[0].id))}</b></span></div></div>`
+        : `<div class="renew-confirm-item full"><div class="lbl">Amigo indicado</div><div class="val" style="color:var(--danger);">Selecione acima o cadastro correspondente para ajustar o vencimento e descontar o crédito dele.</div></div>`;
 
       grid.innerHTML = `
         <div class="renew-confirm-item full"><div class="lbl">Indicador</div><div class="val">${escapeHtml(ind.indicadorNome)}</div></div>
@@ -4817,7 +4833,7 @@ function aplicarDiasExtras() {
       salvarIndicacoes();
 
       const bonus = concederMesGratisIndicador(ind);
-      if (amigo) renovarAmigoIndicacao(amigo);
+      const amigoResult = amigo ? renovarAmigoIndicacao(amigo) : null;
 
       renderIndicacoes();
       renderAll();
@@ -4826,12 +4842,20 @@ function aplicarDiasExtras() {
 
       fecharModalConfirmarAssinaturaIndicacao();
 
+      const partes = [];
       if (bonus) {
         const { indicador, creditosBonus, painelIdBonus } = bonus;
-        showToast(`Assinatura confirmada • ${ind.indicadorNome}: +30 dias (${formatDate(indicador.dataRenovacao)}) • -${creditosBonus} crédito${creditosBonus === 1 ? '' : 's'} (${getPainelNome(painelIdBonus)})`);
+        partes.push(`${ind.indicadorNome}: +30 dias (${formatDate(indicador.dataRenovacao)}) • -${creditosBonus} crédito${creditosBonus === 1 ? '' : 's'} (${getPainelNome(painelIdBonus)})`);
       } else {
-        showToast(`${ind.indicadorNome} não foi encontrado como cliente cadastrado — ajuste o vencimento manualmente.`, true);
+        partes.push(`${ind.indicadorNome} não encontrado como cliente — ajuste o vencimento manualmente`);
       }
+      if (amigoResult) {
+        const { creditosAmigo, painelIdAmigo, valorVenda } = amigoResult;
+        partes.push(`${amigo.nome}: +30 dias (${formatDate(amigo.dataRenovacao)}) • -${creditosAmigo} crédito${creditosAmigo === 1 ? '' : 's'} (${getPainelNome(painelIdAmigo)}) • R$ ${valorVenda.toFixed(2)} pago`);
+      } else {
+        partes.push('Amigo indicado sem cadastro vinculado — crédito e vencimento não ajustados');
+      }
+      showToast(`Assinatura confirmada • ${partes.join(' | ')}`, !bonus || !amigoResult);
 
       abrirModalMensagensAssinaturaIndicacao(amigo, ind, bonus ? bonus.indicador : clients.find(c => c.id === ind.indicadorId));
     }
