@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="./styles.css" />
   <style>
     .client-row-clickable { cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background-color .15s ease, transform .1s ease; }
@@ -1023,6 +1023,56 @@
     </div>
   </div>
 
+  <!-- Modal: Confirmar assinatura de indicação (aba Indicações > Fechou assinatura) -->
+  <div id="modalConfirmarAssinaturaIndicacao" class="modal">
+    <div class="modal-content sm">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-ticket-alt" style="color: var(--primary); margin-right: 6px;"></i> Confirmar Assinatura da Indicação</h3>
+        <button class="modal-close" onclick="fecharModalConfirmarAssinaturaIndicacao()" data-testid="close-confirm-assinatura-ind"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="card-hint" style="margin: 0 0 6px;">Confirme abaixo para efetivar a assinatura. O vencimento de ambos será ajustado em +30 dias.</p>
+      <div class="form-group" style="margin: 0 0 14px;">
+        <label class="form-label" for="assinIndAmigoClienteSel"><i class="fas fa-user-friends"></i> Cliente correspondente ao amigo indicado</label>
+        <select id="assinIndAmigoClienteSel" class="form-select" data-testid="assin-ind-amigo-cliente"></select>
+        <p class="card-hint" style="margin: 6px 0 0;">Necessário para saber de qual cadastro atualizar a data de vencimento.</p>
+      </div>
+      <div class="renew-confirm-grid" id="assinIndConfirmGrid"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
+        <button type="button" class="btn-secondary" onclick="fecharModalConfirmarAssinaturaIndicacao()" data-testid="cancel-assinatura-ind">Cancelar</button>
+        <button type="button" class="btn-primary" onclick="confirmarAssinaturaIndicacao()" data-testid="confirm-assinatura-ind"><i class="fas fa-check"></i> Confirmar Assinatura</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mensagens pós-conversão da indicação (amigo + indicador) -->
+  <div id="modalMensagensAssinaturaIndicacao" class="modal">
+    <div class="modal-content sm">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-paper-plane" style="color: var(--primary); margin-right: 6px;"></i> Mensagens da Conversão</h3>
+        <button class="modal-close" onclick="fecharModalMensagensAssinaturaIndicacao()" data-testid="close-msg-assinatura-ind"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="card-hint" style="margin: 0 0 6px;"><i class="fas fa-user-check" style="color: var(--primary); margin-right:6px;"></i>Renovação confirmada — mensagem para o amigo indicado:</p>
+      <div class="renew-msg-box" id="assinIndAmigoMsgBox" data-testid="assin-ind-amigo-msg-box"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="button" class="btn-whatsapp" onclick="enviarMsgAmigoConversaoWhatsApp()" data-testid="btn-whats-assin-amigo"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
+        <button type="button" class="btn-secondary" onclick="copiarMsgAmigoConversao()" data-testid="btn-copy-assin-amigo">Copiar</button>
+      </div>
+
+      <div style="margin-top:16px; padding-top:14px; border-top:1px dashed rgba(255,255,255,.12);">
+        <p class="card-hint" style="margin: 0 0 6px;"><i class="fas fa-gift" style="color: var(--warning); margin-right:6px;"></i>Indicação convertida — mensagem para o indicador:</p>
+        <div class="renew-msg-box" id="assinIndIndicadorMsgBox" data-testid="assin-ind-indicador-msg-box"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" class="btn-whatsapp" onclick="enviarMsgIndicadorConversaoWhatsApp()" data-testid="btn-whats-assin-indicador"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>
+          <button type="button" class="btn-secondary" onclick="copiarMsgIndicadorConversao()" data-testid="btn-copy-assin-indicador">Copiar</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+        <button type="button" class="btn-secondary" onclick="fecharModalMensagensAssinaturaIndicacao()" style="margin-left:auto;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Mensagem pós-ativação (teste -> assinatura) -->
   <div id="modalMensagemAtivacao" class="modal">
     <div class="modal-content sm">
@@ -1090,9 +1140,9 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <script defer src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
   <script defer src="./app.js"></script>
 </body>
 </html>

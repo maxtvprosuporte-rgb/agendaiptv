@@ -4722,30 +4722,182 @@ function aplicarDiasExtras() {
       return { indicador, creditosBonus, painelIdBonus };
     }
 
+    // Tenta achar automaticamente o cliente cadastrado que corresponde ao amigo indicado
+    // (por vínculo já salvo, ou por telefone/nome), para pré-selecionar no modal de confirmação.
+    function encontrarClienteAmigoIndicacao(ind) {
+      if (ind.amigoClientId) {
+        const porId = clients.find(c => c.id === ind.amigoClientId);
+        if (porId) return porId;
+      }
+      const telAmigo = String(ind.amigoTelefone || '').replace(/\D/g, '');
+      if (telAmigo) {
+        const porTel = clients.find(c => String(c.telefone || '').replace(/\D/g, '') === telAmigo);
+        if (porTel) return porTel;
+      }
+      const nomeAmigo = String(ind.amigoNome || '').trim().toLowerCase();
+      if (nomeAmigo) {
+        const porNome = clients.find(c => String(c.nome || '').trim().toLowerCase() === nomeAmigo);
+        if (porNome) return porNome;
+      }
+      return null;
+    }
+
+    // Ajusta o vencimento do amigo indicado em +30 dias (mesma regra usada para o indicador),
+    // sem descontar crédito — o crédito da assinatura do amigo é tratado normalmente pelas renovações dele.
+    function renovarAmigoIndicacao(client) {
+      const baseDate = parseDate(client.dataRenovacao) || todayLocalDate();
+      const novaData = addPlanPeriod(baseDate, 30);
+      client.dataRenovacao = toInputDate(novaData);
+      client.updatedAt = new Date().toISOString();
+      return client;
+    }
+
+    let assinaturaIndPendente = null; // { ind }
     function marcarAssinou(id) {
       const ind = indicacoes.find(i => i.id === id);
       if (!ind) return;
       if (ind.status === 'ganhou') { showToast('Esta indicação já foi sorteada.', true); return; }
       if (ind.status === 'assinou') { showToast('Esta indicação já foi convertida.', true); return; }
-      if (!confirmar(`Confirmar assinatura de ${ind.amigoNome}? O número ${ind.numero} sai da roleta, ${ind.indicadorNome} ganha +30 dias (mês grátis) e o crédito correspondente será descontado do painel dele.`)) return;
+      assinaturaIndPendente = { ind };
+
+      const sel = document.getElementById('assinIndAmigoClienteSel');
+      const amigoAtual = encontrarClienteAmigoIndicacao(ind);
+      const todos = [...clients].sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+      sel.innerHTML = '<option value="">Selecione o cliente cadastrado…</option>' +
+        todos.map(c => `<option value="${c.id}">${escapeHtml(c.nome || '(sem nome)')}${c.telefone ? ' • ' + escapeHtml(c.telefone) : ''}</option>`).join('');
+      sel.value = amigoAtual ? amigoAtual.id : '';
+
+      atualizarGridConfirmarAssinaturaIndicacao();
+      sel.onchange = atualizarGridConfirmarAssinaturaIndicacao;
+
+      document.getElementById('modalConfirmarAssinaturaIndicacao').classList.add('active');
+    }
+
+    function atualizarGridConfirmarAssinaturaIndicacao() {
+      if (!assinaturaIndPendente) return;
+      const { ind } = assinaturaIndPendente;
+      const indicador = clients.find(c => c.id === ind.indicadorId);
+      const selId = document.getElementById('assinIndAmigoClienteSel').value;
+      const amigo = selId ? clients.find(c => c.id === selId) : null;
+      const grid = document.getElementById('assinIndConfirmGrid');
+
+      const linhaIndicador = indicador
+        ? `<div class="renew-confirm-item"><div class="lbl">Vencimento atual do indicador</div><div class="val">${escapeHtml(formatDate(indicador.dataRenovacao))}</div></div>
+           <div class="renew-confirm-item highlight"><div class="lbl">Novo vencimento do indicador</div><div class="val">${escapeHtml(formatDate(toInputDate(addPlanPeriod(parseDate(indicador.dataRenovacao) || todayLocalDate(), 30))))}</div></div>`
+        : `<div class="renew-confirm-item full"><div class="lbl">Indicador</div><div class="val" style="color:var(--danger);">${escapeHtml(ind.indicadorNome)} não encontrado como cliente cadastrado — ajuste o vencimento dele manualmente.</div></div>`;
+
+      const linhaAmigo = amigo
+        ? `<div class="renew-confirm-item"><div class="lbl">Vencimento atual do amigo</div><div class="val">${escapeHtml(formatDate(amigo.dataRenovacao))}</div></div>
+           <div class="renew-confirm-item highlight"><div class="lbl">Novo vencimento do amigo</div><div class="val">${escapeHtml(formatDate(toInputDate(addPlanPeriod(parseDate(amigo.dataRenovacao) || todayLocalDate(), 30))))}</div></div>`
+        : `<div class="renew-confirm-item full"><div class="lbl">Amigo indicado</div><div class="val" style="color:var(--danger);">Selecione acima o cadastro correspondente para ajustar o vencimento dele.</div></div>`;
+
+      grid.innerHTML = `
+        <div class="renew-confirm-item full"><div class="lbl">Indicador</div><div class="val">${escapeHtml(ind.indicadorNome)}</div></div>
+        ${linhaIndicador}
+        <div class="renew-confirm-item full"><div class="lbl">Amigo indicado</div><div class="val">${escapeHtml(ind.amigoNome)}</div></div>
+        ${linhaAmigo}
+      `;
+    }
+
+    function fecharModalConfirmarAssinaturaIndicacao() {
+      document.getElementById('modalConfirmarAssinaturaIndicacao').classList.remove('active');
+      assinaturaIndPendente = null;
+    }
+
+    function confirmarAssinaturaIndicacao() {
+      if (!assinaturaIndPendente) return;
+      const { ind } = assinaturaIndPendente;
+      const selId = document.getElementById('assinIndAmigoClienteSel').value;
+      const amigo = selId ? clients.find(c => c.id === selId) : null;
+
       ind.status = 'assinou';
       ind.assinouEm = new Date().toISOString();
+      if (amigo) ind.amigoClientId = amigo.id;
       ind.updatedAt = new Date().toISOString();
       salvarIndicacoes();
 
       const bonus = concederMesGratisIndicador(ind);
+      if (amigo) renovarAmigoIndicacao(amigo);
+
       renderIndicacoes();
       renderAll();
       atualizarCreditos(); atualizarHistorico();
       atualizarGraficoClientes(); atualizarStatsFinanceiras();
 
+      fecharModalConfirmarAssinaturaIndicacao();
+
       if (bonus) {
         const { indicador, creditosBonus, painelIdBonus } = bonus;
-        showToast(`Mês grátis concedido a ${ind.indicadorNome} • novo vencimento: ${formatDate(indicador.dataRenovacao)} • -${creditosBonus} crédito${creditosBonus === 1 ? '' : 's'} (${getPainelNome(painelIdBonus)})`);
+        showToast(`Assinatura confirmada • ${ind.indicadorNome}: +30 dias (${formatDate(indicador.dataRenovacao)}) • -${creditosBonus} crédito${creditosBonus === 1 ? '' : 's'} (${getPainelNome(painelIdBonus)})`);
       } else {
         showToast(`${ind.indicadorNome} não foi encontrado como cliente cadastrado — ajuste o vencimento manualmente.`, true);
       }
+
+      abrirModalMensagensAssinaturaIndicacao(amigo, ind, bonus ? bonus.indicador : clients.find(c => c.id === ind.indicadorId));
     }
+
+    let assinIndAmigoAtual = null;
+    let assinIndIndicadorCtx = null; // { ind, indicador }
+    function abrirModalMensagensAssinaturaIndicacao(amigo, ind, indicador) {
+      assinIndAmigoAtual = amigo || null;
+      assinIndIndicadorCtx = { ind, indicador: indicador || null };
+
+      const boxAmigo = document.getElementById('assinIndAmigoMsgBox');
+      if (boxAmigo) boxAmigo.textContent = amigo ? buildRenewMessage(amigo) : 'Nenhum cliente vinculado ao amigo indicado — não foi possível montar a mensagem automaticamente.';
+
+      const boxInd = document.getElementById('assinIndIndicadorMsgBox');
+      if (boxInd) boxInd.textContent = buildIndicacaoMesGratisMessage(ind, indicador, amigo ? amigo.nome : ind.amigoNome);
+
+      document.getElementById('modalMensagensAssinaturaIndicacao').classList.add('active');
+    }
+    function fecharModalMensagensAssinaturaIndicacao() {
+      document.getElementById('modalMensagensAssinaturaIndicacao').classList.remove('active');
+      assinIndAmigoAtual = null;
+      assinIndIndicadorCtx = null;
+    }
+    function copiarMsgAmigoConversao() {
+      if (!assinIndAmigoAtual) return;
+      const msg = buildRenewMessage(assinIndAmigoAtual);
+      const name = assinIndAmigoAtual.nome || '';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${name}`)).catch(() => fallbackCopy(msg, name));
+      } else fallbackCopy(msg, name);
+    }
+    function enviarMsgAmigoConversaoWhatsApp() {
+      if (!assinIndAmigoAtual) return;
+      const c = assinIndAmigoAtual;
+      const phone = String(c.telefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(buildRenewMessage(c));
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+    function copiarMsgIndicadorConversao() {
+      if (!assinIndIndicadorCtx) return;
+      const { ind, indicador } = assinIndIndicadorCtx;
+      const msg = buildIndicacaoMesGratisMessage(ind, indicador, assinIndAmigoAtual ? assinIndAmigoAtual.nome : ind.amigoNome);
+      const name = (indicador && indicador.nome) || ind.indicadorNome || '';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${name}`)).catch(() => fallbackCopy(msg, name));
+      } else fallbackCopy(msg, name);
+    }
+    function enviarMsgIndicadorConversaoWhatsApp() {
+      if (!assinIndIndicadorCtx) return;
+      const { ind, indicador } = assinIndIndicadorCtx;
+      const msg = buildIndicacaoMesGratisMessage(ind, indicador, assinIndAmigoAtual ? assinIndAmigoAtual.nome : ind.amigoNome);
+      const phone = String((indicador && indicador.telefone) || ind.indicadorTelefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(msg);
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+    window.fecharModalConfirmarAssinaturaIndicacao = fecharModalConfirmarAssinaturaIndicacao;
+    window.confirmarAssinaturaIndicacao = confirmarAssinaturaIndicacao;
+    window.fecharModalMensagensAssinaturaIndicacao = fecharModalMensagensAssinaturaIndicacao;
+    window.copiarMsgAmigoConversao = copiarMsgAmigoConversao;
+    window.enviarMsgAmigoConversaoWhatsApp = enviarMsgAmigoConversaoWhatsApp;
+    window.copiarMsgIndicadorConversao = copiarMsgIndicadorConversao;
+    window.enviarMsgIndicadorConversaoWhatsApp = enviarMsgIndicadorConversaoWhatsApp;
 
     function reverterAssinou(id) {
       const ind = indicacoes.find(i => i.id === id);
