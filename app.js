@@ -2079,7 +2079,11 @@ let ativacaoClienteAtual = null;
     }
 
     const APLICATIVO_MSG_TESTE_PADRAO = [
-      '📲 Olá *{{nome}}*, seguem as instruções para instalar o aplicativo *{{aplicativo}}* ({{plataforma}}) do seu teste!',
+      '📲 Olá *{{nome}}*, seguem as instruções para instalar o aplicativo do seu teste!',
+      '',
+      '📁 *Aplicativo*: {{aplicativo}}',
+      '🗂️ *Plataforma*: {{plataforma}}',
+      '🗃️ *Sistema*: {{sistema}}',
       '',
       '1️⃣ Baixe e instale o aplicativo.',
       '2️⃣ Abra o app e faça login com os dados abaixo.',
@@ -2094,7 +2098,11 @@ let ativacaoClienteAtual = null;
       '⏳ Aproveite seu teste grátis e qualquer dúvida, estou à disposição!'
     ].join('\n');
     const APLICATIVO_MSG_CLIENTE_PADRAO = [
-      '📲 Olá *{{nome}}*, seguem as instruções para instalar o aplicativo *{{aplicativo}}* ({{plataforma}})!',
+      '📲 Olá *{{nome}}*, seguem as instruções para instalar o aplicativo!',
+      '',
+      '📁 *Aplicativo*: {{aplicativo}}',
+      '🗂️ *Plataforma*: {{plataforma}}',
+      '🗃️ *Sistema*: {{sistema}}',
       '',
       '1️⃣ Baixe e instale o aplicativo.',
       '2️⃣ Abra o app e faça login com os dados abaixo.',
@@ -2114,7 +2122,7 @@ let ativacaoClienteAtual = null;
         return value == null ? '' : String(value);
       });
     }
-    const APLICATIVO_MSG_VARIAVEIS = ['nome', 'aplicativo', 'plataforma', 'link_download', 'usuario', 'senha', 'duracao_teste', 'plano', 'link_pagamento'];
+    const APLICATIVO_MSG_VARIAVEIS = ['nome', 'aplicativo', 'plataforma', 'sistema', 'link_download', 'usuario', 'senha', 'duracao_teste', 'plano', 'link_pagamento'];
     function renderAplicativoMsgVars() {
       [['apMsgTesteVars', 'apMsgTeste', 'teste'], ['apMsgClienteVars', 'apMsgCliente', 'cliente']].forEach(([wrapId, textareaId, origem]) => {
         const el = document.getElementById(wrapId);
@@ -2140,13 +2148,15 @@ let ativacaoClienteAtual = null;
     window.insertVariavelAplicativo = insertVariavelAplicativo;
     function amostraVariaveisAplicativoCadastro(origem) {
       const row = document.querySelector('#apPlataformasList .ap-plataforma-row');
-      const plataformaNome = row ? row.querySelector('.ap-plat-nome').value : '';
+      const dispositivos = row ? Array.from(row.querySelectorAll('.ap-plat-dispositivo:checked')).map(el => el.value) : [];
+      const sistemas = row ? Array.from(row.querySelectorAll('.ap-plat-sistema:checked')).map(el => el.value) : [];
       const linkDownload = row ? row.querySelector('.ap-plat-link').value.trim() : '';
       const nomeApp = (document.getElementById('apNome').value || '').trim();
       return {
         nome: origem === 'teste' ? 'Teste Exemplo' : 'Cliente Exemplo',
         aplicativo: nomeApp || 'Nome do Aplicativo',
-        plataforma: plataformaNome || 'Android',
+        plataforma: labelDispositivos(dispositivos) || 'Celular, Tablet',
+        sistema: labelSistemas(sistemas) || 'Android, iOS',
         link_download: linkDownload || 'https://exemplo.com/download',
         usuario: origem === 'teste' ? 'teste_demo' : 'usuario_teste',
         senha: origem === 'teste' ? '654321' : '123456',
@@ -2171,7 +2181,8 @@ let ativacaoClienteAtual = null;
   return renderTemplateString(template, {
     nome: entity.nome || '',
     aplicativo: (app && app.nome) || entity.aplicativo || '',
-    plataforma: (plataforma && plataforma.nome) || '',
+    plataforma: labelDispositivos(plataforma && plataforma.dispositivos) || '',
+    sistema: labelSistemas(plataforma && plataforma.sistemas) || '',
     link_download: (plataforma && plataforma.link) || '',
     usuario: entity.usuario || '',
     senha: entity.senha || '',
@@ -2206,7 +2217,7 @@ function abrirModalMensagemAplicativo(id, origem) {
   const tituloEl = document.getElementById('modalMensagemAplicativoTitle');
   if (tituloEl) tituloEl.innerHTML = `<i class="fas fa-mobile-alt" style="color: var(--primary); margin-right: 6px;"></i> ${origem === 'teste' ? 'Instalação / Teste' : 'Instalação / Cliente'}`;
   const sel = document.getElementById('amPlataformaSelect');
-  sel.innerHTML = app.plataformas.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.nome)}</option>`).join('');
+  sel.innerHTML = app.plataformas.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(labelDispositivos(p.dispositivos))} — ${escapeHtml(labelSistemas(p.sistemas))}</option>`).join('');
   const wrap = document.getElementById('amPlataformaWrap');
   if (wrap) wrap.style.display = app.plataformas.length > 1 ? '' : 'none';
   atualizarPreviewMensagemAplicativo();
@@ -2929,23 +2940,58 @@ function whatsAppTeste(id) {
     })();
 
     /* ---------- APLICATIVOS (catálogo + instalação por plataforma) ---------- */
-    const PLATAFORMAS_SUGESTAO = ['Android', 'iOS', 'Computador', 'Smart TV', 'Smart TV Android'];
+    const DISPOSITIVOS_OPCOES = [
+      { id: 'celular', nome: 'Celular' },
+      { id: 'tablet', nome: 'Tablet' },
+      { id: 'computador', nome: 'Computador' },
+      { id: 'smarttv', nome: 'SmartTV' },
+      { id: 'dispositivo_smarttv', nome: 'Dispositivo SmartTV' }
+    ];
+    const SISTEMAS_OPCOES = [
+      { id: 'android', nome: 'Android' },
+      { id: 'ios', nome: 'iOS' },
+      { id: 'windows', nome: 'Windows' },
+      { id: 'tizen', nome: 'Tizen' },
+      { id: 'webos', nome: 'webOS' },
+      { id: 'roku', nome: 'Roku' }
+    ];
+    function labelDispositivos(ids) {
+      return (Array.isArray(ids) ? ids : []).map(id => (DISPOSITIVOS_OPCOES.find(o => o.id === id) || {}).nome || id).join(', ');
+    }
+    function labelSistemas(ids) {
+      return (Array.isArray(ids) ? ids : []).map(id => (SISTEMAS_OPCOES.find(o => o.id === id) || {}).nome || id).join(', ');
+    }
     function salvarAplicativos() { writeJsonCache('iptv_aplicativos', aplicativos); queueCloudSave('aplicativos'); }
     function carregarAplicativos() {
       const raw = readJsonCache('iptv_aplicativos', []);
       aplicativos = Array.isArray(raw) ? raw.map(normalizeAplicativo) : [];
     }
+    const LEGACY_PLATAFORMA_MAP = {
+      'android': { dispositivos: ['celular', 'tablet'], sistemas: ['android'] },
+      'ios': { dispositivos: ['celular', 'tablet'], sistemas: ['ios'] },
+      'computador': { dispositivos: ['computador'], sistemas: ['windows'] },
+      'smart tv': { dispositivos: ['smarttv'], sistemas: [] },
+      'smart tv android': { dispositivos: ['smarttv'], sistemas: ['android'] }
+    };
     function normalizeAplicativo(a) {
       return {
         id: a.id || generateId(),
         nome: a.nome || '',
         painelId: (a.painelId && paineis.some(p => p.id === a.painelId)) ? a.painelId : ((paineis[0] && paineis[0].id) || ''),
         icone: a.icone || 'fas fa-mobile-alt',
-        plataformas: Array.isArray(a.plataformas) ? a.plataformas.map(p => ({
-          id: p.id || generateId(),
-          nome: p.nome || '',
-          link: p.link || ''
-        })) : [],
+        plataformas: Array.isArray(a.plataformas) ? a.plataformas.map(p => {
+          if (Array.isArray(p.dispositivos) || Array.isArray(p.sistemas)) {
+            return { id: p.id || generateId(), dispositivos: p.dispositivos || [], sistemas: p.sistemas || [], link: p.link || '' };
+          }
+          // Migração de cadastros antigos (campo único "Plataforma": Android/iOS/Computador/Smart TV/Smart TV Android)
+          const legado = LEGACY_PLATAFORMA_MAP[String(p.nome || '').trim().toLowerCase()];
+          return {
+            id: p.id || generateId(),
+            dispositivos: legado ? legado.dispositivos : [],
+            sistemas: legado ? legado.sistemas : [],
+            link: p.link || ''
+          };
+        }) : [],
         msgTeste: typeof a.msgTeste === 'string' ? a.msgTeste : '',
         msgCliente: typeof a.msgCliente === 'string' ? a.msgCliente : ''
       };
@@ -2956,13 +3002,10 @@ function whatsAppTeste(id) {
     function abrirModalAplicativo() {
       aplicativoEditandoId = null;
       document.getElementById('modalAplicativoTitle').textContent = 'Adicionar Aplicativo';
-      atualizarSelectsPaineis();
-      const apPainelSelNovo = document.getElementById('apPainel');
-      if (apPainelSelNovo) apPainelSelNovo.value = paineis[0] ? paineis[0].id : '';
       document.getElementById('apNome').value = '';
       document.getElementById('apIcone').value = 'fas fa-mobile-alt';
       document.getElementById('apPlataformasList').innerHTML = '';
-      adicionarLinhaPlataformaAplicativo();
+      adicionarLinhaPlataformaAplicativo({ painelId: paineis[0] ? paineis[0].id : '' });
       document.getElementById('apMsgTeste').value = APLICATIVO_MSG_TESTE_PADRAO;
       document.getElementById('apMsgCliente').value = APLICATIVO_MSG_CLIENTE_PADRAO;
       renderAplicativoMsgVars();
@@ -2978,14 +3021,12 @@ function whatsAppTeste(id) {
       const a = encontrarAplicativoPorId(id); if (!a) return;
       aplicativoEditandoId = id;
       document.getElementById('modalAplicativoTitle').textContent = 'Editar Aplicativo';
-      atualizarSelectsPaineis();
-      const apPainelSelEdit = document.getElementById('apPainel');
-      if (apPainelSelEdit) apPainelSelEdit.value = a.painelId || (paineis[0] ? paineis[0].id : '');
       document.getElementById('apNome').value = a.nome;
       document.getElementById('apIcone').value = a.icone || 'fas fa-mobile-alt';
       const lista = document.getElementById('apPlataformasList');
       lista.innerHTML = '';
-      adicionarLinhaPlataformaAplicativo(a.plataformas[0]);
+      const dadosRow = Object.assign({}, a.plataformas[0], { painelId: a.painelId });
+      adicionarLinhaPlataformaAplicativo(dadosRow);
       document.getElementById('apMsgTeste').value = a.msgTeste || APLICATIVO_MSG_TESTE_PADRAO;
       document.getElementById('apMsgCliente').value = a.msgCliente || APLICATIVO_MSG_CLIENTE_PADRAO;
       renderAplicativoMsgVars();
@@ -2994,51 +3035,68 @@ function whatsAppTeste(id) {
       document.getElementById('modalAplicativo').classList.add('active');
     }
     function adicionarLinhaPlataformaAplicativo(dados) {
-      // Cada aplicativo cadastrado representa uma única plataforma de instalação.
+      // Cada aplicativo cadastrado representa uma única instalação (pode ter múltiplas plataformas/sistemas).
       const lista = document.getElementById('apPlataformasList');
       const rowId = 'aprow_' + generateId();
-      const nomeVal = dados && dados.nome ? dados.nome : '';
+      const dispositivosVal = (dados && Array.isArray(dados.dispositivos)) ? dados.dispositivos : [];
+      const sistemasVal = (dados && Array.isArray(dados.sistemas)) ? dados.sistemas : [];
       const linkVal = dados && dados.link ? dados.link : '';
-      const optionsHtml = PLATAFORMAS_SUGESTAO.map(p => `<option value="${escapeHtml(p)}" ${p === nomeVal ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('');
+      const dispositivosHtml = DISPOSITIVOS_OPCOES.map(o => `
+        <label class="ap-check-option"><input type="checkbox" class="ap-plat-dispositivo" value="${o.id}" ${dispositivosVal.includes(o.id) ? 'checked' : ''} onchange="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');"> ${escapeHtml(o.nome)}</label>
+      `).join('');
+      const sistemasHtml = SISTEMAS_OPCOES.map(o => `
+        <label class="ap-check-option"><input type="checkbox" class="ap-plat-sistema" value="${o.id}" ${sistemasVal.includes(o.id) ? 'checked' : ''} onchange="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');"> ${escapeHtml(o.nome)}</label>
+      `).join('');
       lista.innerHTML = '';
       const row = document.createElement('div');
       row.className = 'ap-plataforma-row';
       row.id = rowId;
       row.innerHTML = `
-        <div class="form-grid">
-          <div class="field"><label>Plataforma</label><select class="ap-plat-nome form-select" onchange="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');">${optionsHtml}</select></div>
-          <div class="field"><label>Link de download (opcional)</label><input type="text" class="ap-plat-link" placeholder="Deixe em branco se este app não precisar de link" value="${escapeHtml(linkVal)}" oninput="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');" /></div>
+        <div class="field">
+          <label>🗂️ Plataforma <span class="card-hint" style="font-weight:400;">(marque quantas precisar)</span></label>
+          <div class="ap-check-group">${dispositivosHtml}</div>
         </div>
+        <div class="field" style="margin-top:14px;">
+          <label>🗃️ Sistema</label>
+          <div class="ap-sistema-painel-wrap" style="margin-bottom:8px;">
+            <label class="card-hint" style="display:block; margin-bottom:4px;">Selecionar painel</label>
+            <select id="apPainel" class="form-select" data-testid="ap-painel"></select>
+          </div>
+          <p class="card-hint" style="margin:0 0 6px;">(marque quantos sistemas precisar)</p>
+          <div class="ap-check-group">${sistemasHtml}</div>
+        </div>
+        <div class="field" style="margin-top:14px;"><label>Link de download (opcional)</label><input type="text" class="ap-plat-link" placeholder="Deixe em branco se este app não precisar de link" value="${escapeHtml(linkVal)}" oninput="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');" /></div>
       `;
       lista.appendChild(row);
+      atualizarSelectsPaineis();
+      const apPainelSel = document.getElementById('apPainel');
+      if (apPainelSel) apPainelSel.value = (dados && dados.painelId) || (paineis[0] ? paineis[0].id : '');
       atualizarPreviewMsgAplicativoCadastro('teste');
       atualizarPreviewMsgAplicativoCadastro('cliente');
     }
     function salvarAplicativo() {
       const nome = document.getElementById('apNome').value.trim();
       const icone = document.getElementById('apIcone').value || 'fas fa-mobile-alt';
-      const apPainelSel = document.getElementById('apPainel');
+      const row = document.querySelector('#apPlataformasList .ap-plataforma-row');
+      const apPainelSel = row ? row.querySelector('#apPainel') : null;
       const painelId = (apPainelSel && apPainelSel.value) || (paineis[0] ? paineis[0].id : '');
       if (!nome) { showToast('Informe o nome do aplicativo.', true); return; }
       if (!painelId) { showToast('Cadastre ao menos um painel antes de adicionar um aplicativo.', true); return; }
-      const row = document.querySelector('#apPlataformasList .ap-plataforma-row');
-      const plataformas = row ? [{
-        id: generateId(),
-        nome: row.querySelector('.ap-plat-nome').value.trim(),
-        link: row.querySelector('.ap-plat-link').value.trim()
-      }].filter(p => p.nome) : [];
-      if (plataformas.length === 0) { showToast('Selecione a plataforma deste aplicativo.', true); return; }
+      const dispositivos = row ? Array.from(row.querySelectorAll('.ap-plat-dispositivo:checked')).map(el => el.value) : [];
+      const sistemas = row ? Array.from(row.querySelectorAll('.ap-plat-sistema:checked')).map(el => el.value) : [];
+      if (dispositivos.length === 0) { showToast('Marque ao menos uma plataforma (Celular, Tablet, etc.).', true); return; }
+      if (sistemas.length === 0) { showToast('Marque ao menos um sistema (Android, iOS, etc.).', true); return; }
+      const plataformas = [{
+        id: (aplicativoEditandoId && aplicativos.find(a => a.id === aplicativoEditandoId) && aplicativos.find(a => a.id === aplicativoEditandoId).plataformas[0] && aplicativos.find(a => a.id === aplicativoEditandoId).plataformas[0].id) || generateId(),
+        dispositivos,
+        sistemas,
+        link: row ? row.querySelector('.ap-plat-link').value.trim() : ''
+      }];
       const msgTeste = (document.getElementById('apMsgTeste').value || '').trim();
       const msgCliente = (document.getElementById('apMsgCliente').value || '').trim();
       if (aplicativoEditandoId) {
         const idx = aplicativos.findIndex(a => a.id === aplicativoEditandoId);
         if (idx >= 0) {
-          const anteriores = aplicativos[idx].plataformas || [];
-          // Preserva o id de plataformas já existentes (por nome) para não quebrar histórico
-          plataformas.forEach(p => {
-            const anterior = anteriores.find(x => x.nome.trim().toLowerCase() === p.nome.trim().toLowerCase());
-            if (anterior) p.id = anterior.id;
-          });
           aplicativos[idx] = { id: aplicativoEditandoId, nome, painelId, icone, plataformas, msgTeste, msgCliente };
         }
       } else {
@@ -3064,7 +3122,10 @@ function whatsAppTeste(id) {
       if (!lista) return;
       if (aplicativos.length === 0) { lista.innerHTML = '<div class="empty-state"><i class="fas fa-mobile-alt"></i><p>Nenhum aplicativo cadastrado</p></div>'; return; }
       lista.innerHTML = aplicativos.map(a => {
-        const chips = (a.plataformas || []).map(p => `<span class="app-platform-chip"><i class="fas fa-check" style="font-size:8px;"></i> ${escapeHtml(p.nome)}</span>`).join('');
+        const chips = (a.plataformas || []).flatMap(p => [
+          ...(p.dispositivos || []).map(d => `<span class="app-platform-chip"><i class="fas fa-check" style="font-size:8px;"></i> ${escapeHtml(labelDispositivos([d]))}</span>`),
+          ...(p.sistemas || []).map(s => `<span class="app-platform-chip"><i class="fas fa-microchip" style="font-size:8px;"></i> ${escapeHtml(labelSistemas([s]))}</span>`)
+        ]).join('');
         const painelCls = getPainelIdxClass(a.painelId);
         const painelNome = getPainelNome(a.painelId);
         return `
@@ -3104,7 +3165,7 @@ function whatsAppTeste(id) {
       if (!app) { info.innerHTML = ''; return; }
       const painelCls = getPainelIdxClass(app.painelId);
       const painelNome = getPainelNome(app.painelId);
-      const plataformaNome = (app.plataformas && app.plataformas[0]) ? app.plataformas[0].nome : '—';
+      const plataformaNome = (app.plataformas && app.plataformas[0]) ? `${labelDispositivos(app.plataformas[0].dispositivos)} — ${labelSistemas(app.plataformas[0].sistemas)}` : '—';
       info.innerHTML = `<span class="painel-badge ${painelCls}" title="Painel deste aplicativo"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span> <span class="app-platform-chip"><i class="fas fa-mobile-alt" style="font-size:9px;"></i> ${escapeHtml(app.nome)}</span> <span class="app-platform-chip"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(plataformaNome)}</span>`;
     }
     window.atualizarInfoAplicativoSelecionado = atualizarInfoAplicativoSelecionado;
