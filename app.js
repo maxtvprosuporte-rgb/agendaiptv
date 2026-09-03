@@ -480,6 +480,8 @@ function setupMessageEditor() {
       searchClientesInput: document.getElementById('searchClientesInput'),
       paginationClientes: document.getElementById('paginationClientes'),
       clearFormBtn: document.getElementById('clearFormBtn'),
+      criarTesteBtn: document.getElementById('criarTesteBtn'),
+      criarTesteBtnWrap: document.getElementById('criarTesteBtnWrap'),
       exportBtn: document.getElementById('exportBtn'),
       importFile: document.getElementById('importFile'),
       formTitle: document.getElementById('formTitle'),
@@ -2040,6 +2042,31 @@ let ativacaoClienteAtual = null;
     window.copiarMensagemIndicador = copiarMensagemIndicador;
     window.enviarMensagemIndicadorWhatsApp = enviarMensagemIndicadorWhatsApp;
 
+    function extrairHorasDuracaoTeste(duracaoTeste) {
+      if (!duracaoTeste) return 3;
+      const m = String(duracaoTeste).match(/(\d+)/);
+      return m ? parseInt(m[1], 10) : 3;
+    }
+    function formatarContagemRegressiva(ms) {
+      if (ms <= 0) return { texto: 'Teste finalizado', encerrado: true };
+      const totalSeg = Math.floor(ms / 1000);
+      const h = Math.floor(totalSeg / 3600);
+      const m = Math.floor((totalSeg % 3600) / 60);
+      const s = totalSeg % 60;
+      const pad = n => String(n).padStart(2, '0');
+      return { texto: `Encerra em ${pad(h)}:${pad(m)}:${pad(s)}`, encerrado: false };
+    }
+    function atualizarContadoresTestes() {
+      document.querySelectorAll('.teste-countdown[data-end]').forEach(el => {
+        const end = parseInt(el.getAttribute('data-end'), 10);
+        if (!Number.isFinite(end)) return;
+        const { texto, encerrado } = formatarContagemRegressiva(end - Date.now());
+        el.textContent = texto;
+        el.classList.toggle('teste-countdown-ended', encerrado);
+      });
+    }
+    setInterval(atualizarContadoresTestes, 1000);
+
     function renderTestes() {
       const cont = document.getElementById('listaTestes');
       const cnt = document.getElementById('countTestes');
@@ -2056,6 +2083,11 @@ let ativacaoClienteAtual = null;
           t.valor ? `💰 R$ ${escapeHtml(t.valor)}` : '',
           t.aplicativo ? `📱 ${escapeHtml(t.aplicativo)}` : ''
         ].filter(Boolean).join(' • ');
+        const horasTeste = extrairHorasDuracaoTeste(t.duracaoTeste);
+        const fimTeste = t.createdAt ? (new Date(t.createdAt).getTime() + horasTeste * 3600000) : null;
+        const contagemHtml = fimTeste
+          ? `<div class="list-item-sub teste-countdown" data-end="${fimTeste}" data-testid="teste-countdown-${t.id}">calculando…</div>`
+          : '';
         return `
           <div class="list-item" style="flex-wrap:wrap; gap:10px;" data-testid="teste-item-${t.id}">
             <div class="list-item-content">
@@ -2063,7 +2095,8 @@ let ativacaoClienteAtual = null;
               <div style="flex:1; min-width:0;">
                 <div class="list-item-text">${escapeHtml(t.nome || '—')} ${t.telefone ? `• <span style="font-family:var(--font-mono); color:var(--muted); font-size:12.5px;">${escapeHtml(t.telefone)}</span>` : ''}</div>
                 <div class="list-item-sub">${linhaInfo || '—'}</div>
-                <div class="list-item-sub" style="opacity:.7;">Cadastrado em ${data}</div>
+                <div class="list-item-sub" style="opacity:.7;">Cadastrado em ${data} • Duração: ${escapeHtml(t.duracaoTeste || '3 Horas')}</div>
+                ${contagemHtml}
               </div>
             </div>
             <div class="client-row-actions" style="width:auto;">
@@ -2076,6 +2109,7 @@ let ativacaoClienteAtual = null;
           </div>`;
       }).join('');
       renderPagination(pagEl, pag.safePage, pag.totalPages, 'changeTestesPage');
+      atualizarContadoresTestes();
     }
 
     const APLICATIVO_MSG_TESTE_PADRAO = [
@@ -2345,7 +2379,22 @@ function whatsAppTeste(id) {
 
     function renderAll() { saveClients(); renderDashboard(); renderClientes(); if (typeof popularSelectClientesDiasExtras === 'function') popularSelectClientesDiasExtras(); }
 
-    function resetForm() { els.clientForm.reset(); els.clientId.value = ''; els.formTitle.textContent = 'Cadastrar Teste IPTV'; atualizarInfoAplicativoSelecionado('aplicativo'); }
+    function resetForm() {
+      els.clientForm.reset();
+      els.clientId.value = '';
+      els.formTitle.textContent = 'Cadastrar Teste IPTV';
+      atualizarInfoAplicativoSelecionado('aplicativo');
+      esconderFormTeste();
+    }
+    function mostrarFormTeste() {
+      if (els.clientForm) els.clientForm.classList.remove('hidden');
+      if (els.criarTesteBtnWrap) els.criarTesteBtnWrap.classList.add('hidden');
+      if (els.nome) els.nome.focus();
+    }
+    function esconderFormTeste() {
+      if (els.clientForm) els.clientForm.classList.add('hidden');
+      if (els.criarTesteBtnWrap) els.criarTesteBtnWrap.classList.remove('hidden');
+    }
     function getFormData() {
       const sel = els.plano;
       const planoNome = sel && sel.tagName === 'SELECT' ? getPlanoNomeDoSelect(sel) : (sel ? sel.value.trim() : '');
@@ -2597,6 +2646,7 @@ function whatsAppTeste(id) {
       showToast('Teste cadastrado com sucesso.');
     });
     els.clearFormBtn.addEventListener('click', resetForm);
+    if (els.criarTesteBtn) els.criarTesteBtn.addEventListener('click', mostrarFormTeste);
     let searchClientesDebounce = null;
     els.searchClientesInput.addEventListener('input', () => {
       clearTimeout(searchClientesDebounce);

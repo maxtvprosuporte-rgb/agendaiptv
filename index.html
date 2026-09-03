@@ -60,7 +60,7 @@
       <nav class="tabs" role="tablist">
         <button class="tab active" data-tab="login" data-auth-exempt="true" data-testid="tab-login"><i class="fas fa-user-lock tab-icon"></i><span>Login</span></button>
         <button class="tab" data-tab="dashboard" data-testid="tab-dashboard"><i class="fas fa-chart-line tab-icon"></i><span>Dashboard</span></button>
-        <button class="tab" data-tab="cadastros" data-testid="tab-cadastros"><i class="fas fa-user-plus tab-icon"></i><span>Cadastros</span></button>
+        <button class="tab" data-tab="cadastros" data-testid="tab-cadastros"><i class="fas fa-user-plus tab-icon"></i><span>Teste IPTV</span></button>
         <button class="tab" data-tab="clientes" data-testid="tab-clientes"><i class="fas fa-users tab-icon"></i><span>Clientes</span></button>
         <button class="tab" data-tab="mensagens" data-testid="tab-mensagens"><i class="fab fa-whatsapp tab-icon"></i><span>Mensagens</span></button>
         <button class="tab" data-tab="aplicativos" data-testid="tab-aplicativos"><i class="fas fa-mobile-alt tab-icon"></i><span>Aplicativos</span></button>
@@ -69,6 +69,7 @@
       </nav>
     </aside>
 
+    <div class="main-content" id="mainContent">
     <section id="login" class="panel active">
       <div class="auth-shell">
         <div class="card auth-card auth-card-single">
@@ -100,7 +101,7 @@
     </section>
 
     <section id="dashboard" class="panel">
-      <!-- GESTÃO FINANCEIRA -->
+      <!-- INDICADORES GERAIS (financeiro + clientes, tudo junto) -->
       <div class="credit-stats" style="margin-bottom: 18px;">
         <div class="credit-stat-card">
           <div class="credit-stat-value" id="dashTotalLucro" style="color: var(--primary);">R$ 0,00</div>
@@ -117,6 +118,22 @@
         <div class="credit-stat-card">
           <div class="credit-stat-value" id="dashTotalLiquido" style="color: var(--info);">R$ 0,00</div>
           <div class="credit-stat-label">Lucro Líquido</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashClientesAtivos" style="color: var(--primary);">0</div>
+          <div class="credit-stat-label">Clientes Ativos</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashTestesMes" style="color: var(--warning);">0</div>
+          <div class="credit-stat-label">Testes no Mês</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashClientesVencidos" style="color: #a02323;">0</div>
+          <div class="credit-stat-label">Clientes Vencidos</div>
+        </div>
+        <div class="credit-stat-card">
+          <div class="credit-stat-value" id="dashVence7Dias" style="color: var(--info);">0</div>
+          <div class="credit-stat-label">Vence em 7 dias</div>
         </div>
       </div>
       <!-- ALERTAS DE PAGAMENTOS PENDENTES (aparecem somente quando existem pendências) -->
@@ -153,25 +170,6 @@
         </div>
         <p class="card-hint">Escolha um mês para ver a movimentação por dia ou selecione `Ano todo` para visualizar o ano inteiro.</p>
         <div class="chart-container"><canvas id="dashGraficoMes"></canvas></div>
-      </div>
-      <!-- VISÃO GERAL DE CLIENTES -->
-      <div class="credit-stats" style="margin-bottom: 18px;">
-        <div class="credit-stat-card">
-          <div class="credit-stat-value" id="dashTestesMes" style="color: var(--warning);">0</div>
-          <div class="credit-stat-label">Testes no Mês</div>
-        </div>
-        <div class="credit-stat-card">
-          <div class="credit-stat-value" id="dashClientesAtivos" style="color: var(--primary);">0</div>
-          <div class="credit-stat-label">Clientes Ativos</div>
-        </div>
-        <div class="credit-stat-card">
-          <div class="credit-stat-value" id="dashClientesVencidos" style="color: #a02323;">0</div>
-          <div class="credit-stat-label">Clientes Vencidos</div>
-        </div>
-        <div class="credit-stat-card">
-          <div class="credit-stat-value" id="dashVence7Dias" style="color: var(--info);">0</div>
-          <div class="credit-stat-label">Vence em 7 dias</div>
-        </div>
       </div>
       <!-- VENCIMENTOS DETALHADOS -->
       <div class="card collapsed" style="margin-bottom:18px;">
@@ -251,7 +249,10 @@
         <div class="card-header">
           <div class="card-title"><h2 id="formTitle">Cadastrar Teste IPTV</h2><span class="tag">Formulário</span></div>
         </div>
-        <form id="clientForm" autocomplete="off">
+        <div id="criarTesteBtnWrap">
+          <button type="button" class="btn-primary" id="criarTesteBtn" data-testid="btn-criar-teste"><i class="fas fa-plus"></i> Criar teste IPTV</button>
+        </div>
+        <form id="clientForm" autocomplete="off" class="hidden">
           <input type="hidden" id="clientId" />
           <div class="form-grid">
             <div class="field"><label for="nome">Nome</label><input id="nome" required data-testid="input-nome" /></div>
@@ -259,7 +260,17 @@
             <div class="field"><label for="aplicativo">Aplicativo</label><select id="aplicativo" data-testid="input-aplicativo" onchange="atualizarInfoAplicativoSelecionado('aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="aplicativoInfo" data-testid="aplicativo-info" style="margin-top:6px;"></div></div>
             <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
             <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
-            <div class="field"><label for="duracaoTeste">Duração do teste</label><input id="duracaoTeste" placeholder="Ex.: 3 horas, 6 horas, 1 dia" data-testid="input-duracao-teste" /></div>
+            <div class="field">
+              <label for="duracaoTeste">Duração do teste</label>
+              <select id="duracaoTeste" data-testid="input-duracao-teste">
+                <option value="1 Hora">1 Hora</option>
+                <option value="2 Horas">2 Horas</option>
+                <option value="3 Horas" selected>3 Horas</option>
+                <option value="4 Horas">4 Horas</option>
+                <option value="5 Horas">5 Horas</option>
+                <option value="6 Horas">6 Horas</option>
+              </select>
+            </div>
             <div class="field"><label for="plano">Plano</label><select id="plano" data-testid="input-plano"><option value="">Selecione um plano</option></select></div>
             <div class="field"><label for="valor">Valor</label><input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" /></div>
             <div class="field"><label for="creditos">Créditos a descontar</label><input type="number" id="creditos" min="0" step="1" placeholder="Ex.: 1" data-testid="input-creditos" /></div>
@@ -681,6 +692,7 @@
         <div class="pagination-bar" id="paginationRoleta"></div>
       </div>
     </section>
+    </div>
   </div>
 
   <div id="modalPacote" class="modal">
@@ -836,7 +848,17 @@
           <div class="field"><label for="ec_aplicativo">Aplicativo</label><select id="ec_aplicativo" data-testid="ec-aplicativo" onchange="atualizarInfoAplicativoSelecionado('ec_aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="ecAplicativoInfo" data-testid="ec-aplicativo-info" style="margin-top:6px;"></div></div>
           <div class="field"><label for="ec_usuario">Usuário</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
           <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
-          <div class="field" id="ec_duracaoTeste_wrap"><label for="ec_duracaoTeste">Duração do teste</label><input id="ec_duracaoTeste" placeholder="Ex.: 3 horas, 6 horas, 1 dia" data-testid="ec-duracao-teste" /></div>
+          <div class="field" id="ec_duracaoTeste_wrap">
+            <label for="ec_duracaoTeste">Duração do teste</label>
+            <select id="ec_duracaoTeste" data-testid="ec-duracao-teste">
+              <option value="1 Hora">1 Hora</option>
+              <option value="2 Horas">2 Horas</option>
+              <option value="3 Horas">3 Horas</option>
+              <option value="4 Horas">4 Horas</option>
+              <option value="5 Horas">5 Horas</option>
+              <option value="6 Horas">6 Horas</option>
+            </select>
+          </div>
           <div class="field"><label for="ec_plano">Plano</label><select id="ec_plano" data-testid="ec-plano"><option value="">Selecione um plano</option></select></div>
           <div class="field"><label for="ec_valor">Valor</label><input id="ec_valor" placeholder="Ex.: 30,00" data-testid="ec-valor" /></div>
           <div class="field"><label for="ec_creditos">Créditos a descontar</label><input type="number" id="ec_creditos" min="0" step="1" placeholder="Ex.: 1" data-testid="ec-creditos" /></div>
