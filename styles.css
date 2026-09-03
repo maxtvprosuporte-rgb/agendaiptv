@@ -439,8 +439,13 @@
 
       body.is-authenticated:not(.auth-screen) .container {
         display: flex;
+        flex-wrap: wrap;
         align-items: flex-start;
         gap: 24px;
+      }
+      body.is-authenticated:not(.auth-screen) .topbar {
+        flex: 1 1 100%;
+        width: 100%;
       }
       body.is-authenticated:not(.auth-screen) .sidebar {
         flex: 0 0 196px;
