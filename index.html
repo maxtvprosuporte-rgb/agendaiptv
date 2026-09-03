@@ -229,50 +229,17 @@
     </section>
 
     <section id="cadastros" class="panel">
-      <div class="form-card">
-        <div class="card-header">
-          <div class="card-title"><h2 id="formTitle">Cadastrar Teste IPTV</h2><span class="tag">Formulário</span></div>
-        </div>
-        <div id="criarTesteBtnWrap">
-          <button type="button" class="btn-primary" id="criarTesteBtn" data-testid="btn-criar-teste"><i class="fas fa-plus"></i> Criar teste IPTV</button>
-        </div>
-        <form id="clientForm" autocomplete="off" class="hidden">
-          <input type="hidden" id="clientId" />
-          <div class="form-grid">
-            <div class="field"><label for="nome">Nome</label><input id="nome" required data-testid="input-nome" /></div>
-            <div class="field"><label for="telefone">Telefone</label><input id="telefone" placeholder="Ex.: 41999998888" data-testid="input-telefone" /></div>
-            <div class="field"><label for="aplicativo">Aplicativo</label><select id="aplicativo" data-testid="input-aplicativo" onchange="atualizarInfoAplicativoSelecionado('aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="aplicativoInfo" data-testid="aplicativo-info" style="margin-top:6px;"></div></div>
-            <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
-            <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
-            <div class="field">
-              <label for="duracaoTeste">Duração do teste</label>
-              <select id="duracaoTeste" data-testid="input-duracao-teste">
-                <option value="1 Hora">1 Hora</option>
-                <option value="2 Horas">2 Horas</option>
-                <option value="3 Horas" selected>3 Horas</option>
-                <option value="4 Horas">4 Horas</option>
-                <option value="5 Horas">5 Horas</option>
-                <option value="6 Horas">6 Horas</option>
-              </select>
-            </div>
-            <div class="field"><label for="plano">Plano</label><select id="plano" data-testid="input-plano"><option value="">Selecione um plano</option></select></div>
-            <div class="field"><label for="valor">Valor</label><input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" /></div>
-            <div class="field"><label for="creditos">Créditos a descontar</label><input type="number" id="creditos" min="0" step="1" placeholder="Ex.: 1" data-testid="input-creditos" /></div>
-            <div class="field" style="grid-column: span 2;"><label for="linkRenovacao">Link de ativação / renovação</label><input id="linkRenovacao" placeholder="https://..." data-testid="input-link-renovacao" /></div>
-            <div class="field"><label for="observacoes">Observações</label><input id="observacoes" placeholder="Opcional" data-testid="input-observacoes" /></div>
+      <div class="table-card">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <h2>Testes em andamento</h2>
+            <span class="count-badge" id="countTestes" data-testid="count-testes">0</span>
+            <button type="button" class="btn-primary" id="criarTesteBtn" data-testid="btn-criar-teste" style="margin-left:auto;">
+              <i class="fas fa-plus"></i> Criar teste IPTV
+            </button>
           </div>
-          <div class="form-actions">
-            <button type="submit" class="btn-primary" data-testid="save-client-btn">Salvar teste</button>
-            <button type="button" class="btn-secondary" id="clearFormBtn" data-testid="clear-form-btn">Limpar formulário</button>
-          </div>
-        </form>
-      </div>
-      <div class="table-card" style="margin-top:18px;">
-        <div class="card-header">
-          <div class="card-title"><h2>Testes em andamento</h2><span class="tag">Aguardando ativação</span></div>
-          <span class="count-badge" id="countTestes" data-testid="count-testes">0</span>
         </div>
-        <p class="card-hint">Clientes que fizeram o teste mas ainda não ativaram a assinatura. 10 por página.</p>
+        <p class="card-hint" style="margin: -4px 0 12px;">Clientes que fizeram o teste mas ainda não ativaram a assinatura. 10 por página.</p>
         <div id="listaTestes" data-testid="lista-testes"></div>
         <div class="pagination-bar" id="paginationTestes"></div>
       </div>
@@ -909,6 +876,45 @@
         <div class="form-actions">
           <button type="submit" class="btn-primary" data-testid="save-novo-cliente"><i class="fas fa-user-plus"></i> Cadastrar cliente</button>
           <button type="button" class="btn-secondary" onclick="fecharModalNovoCliente()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modalNovoTeste" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="formTitle">Cadastrar Teste IPTV</h3>
+        <button type="button" class="modal-close" id="closeNovoTesteBtn" data-testid="close-novo-teste"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="clientForm" autocomplete="off">
+        <input type="hidden" id="clientId" />
+        <div class="form-grid">
+          <div class="field"><label for="nome">Nome</label><input id="nome" required data-testid="input-nome" /></div>
+          <div class="field"><label for="telefone">Telefone</label><input id="telefone" placeholder="Ex.: 41999998888" data-testid="input-telefone" /></div>
+          <div class="field"><label for="aplicativo">Aplicativo</label><select id="aplicativo" data-testid="input-aplicativo" onchange="atualizarInfoAplicativoSelecionado('aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="aplicativoInfo" data-testid="aplicativo-info" style="margin-top:6px;"></div></div>
+          <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
+          <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
+          <div class="field">
+            <label for="duracaoTeste">Duração do teste</label>
+            <select id="duracaoTeste" data-testid="input-duracao-teste">
+              <option value="1 Hora">1 Hora</option>
+              <option value="2 Horas">2 Horas</option>
+              <option value="3 Horas" selected>3 Horas</option>
+              <option value="4 Horas">4 Horas</option>
+              <option value="5 Horas">5 Horas</option>
+              <option value="6 Horas">6 Horas</option>
+            </select>
+          </div>
+          <div class="field"><label for="plano">Plano</label><select id="plano" data-testid="input-plano"><option value="">Selecione um plano</option></select></div>
+          <div class="field"><label for="valor">Valor</label><input id="valor" placeholder="Ex.: 30,00" data-testid="input-valor" /></div>
+          <div class="field"><label for="creditos">Créditos a descontar</label><input type="number" id="creditos" min="0" step="1" placeholder="Ex.: 1" data-testid="input-creditos" /></div>
+          <div class="field" style="grid-column: span 2;"><label for="linkRenovacao">Link de ativação / renovação</label><input id="linkRenovacao" placeholder="https://..." data-testid="input-link-renovacao" /></div>
+          <div class="field"><label for="observacoes">Observações</label><input id="observacoes" placeholder="Opcional" data-testid="input-observacoes" /></div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" data-testid="save-client-btn"><i class="fas fa-plus"></i> Criar teste IPTV</button>
+          <button type="button" class="btn-secondary" id="clearFormBtn" data-testid="clear-form-btn">Cancelar</button>
         </div>
       </form>
     </div>

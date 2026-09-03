@@ -481,7 +481,6 @@ function setupMessageEditor() {
       paginationClientes: document.getElementById('paginationClientes'),
       clearFormBtn: document.getElementById('clearFormBtn'),
       criarTesteBtn: document.getElementById('criarTesteBtn'),
-      criarTesteBtnWrap: document.getElementById('criarTesteBtnWrap'),
       exportBtn: document.getElementById('exportBtn'),
       importFile: document.getElementById('importFile'),
       formTitle: document.getElementById('formTitle'),
@@ -2379,21 +2378,25 @@ function whatsAppTeste(id) {
 
     function renderAll() { saveClients(); renderDashboard(); renderClientes(); if (typeof popularSelectClientesDiasExtras === 'function') popularSelectClientesDiasExtras(); }
 
-    function resetForm() {
+    function limparCamposTeste() {
       els.clientForm.reset();
       els.clientId.value = '';
       els.formTitle.textContent = 'Cadastrar Teste IPTV';
       atualizarInfoAplicativoSelecionado('aplicativo');
+    }
+    function resetForm() {
+      limparCamposTeste();
       esconderFormTeste();
     }
     function mostrarFormTeste() {
-      if (els.clientForm) els.clientForm.classList.remove('hidden');
-      if (els.criarTesteBtnWrap) els.criarTesteBtnWrap.classList.add('hidden');
+      limparCamposTeste();
+      atualizarSelectPlanos();
+      atualizarSelectAplicativos();
+      document.getElementById('modalNovoTeste').classList.add('active');
       if (els.nome) els.nome.focus();
     }
     function esconderFormTeste() {
-      if (els.clientForm) els.clientForm.classList.add('hidden');
-      if (els.criarTesteBtnWrap) els.criarTesteBtnWrap.classList.remove('hidden');
+      document.getElementById('modalNovoTeste').classList.remove('active');
     }
     function getFormData() {
       const sel = els.plano;
@@ -2647,6 +2650,7 @@ function whatsAppTeste(id) {
     });
     els.clearFormBtn.addEventListener('click', resetForm);
     if (els.criarTesteBtn) els.criarTesteBtn.addEventListener('click', mostrarFormTeste);
+    document.getElementById('closeNovoTesteBtn')?.addEventListener('click', esconderFormTeste);
     let searchClientesDebounce = null;
     els.searchClientesInput.addEventListener('input', () => {
       clearTimeout(searchClientesDebounce);
