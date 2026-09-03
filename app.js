@@ -4363,6 +4363,19 @@ function aplicarDiasExtras() {
       return { custo, lucro, taxas, liquido: lucro - custo - taxas };
     }
 
+    function computeLucroEstimadoMes() {
+      // Previsão: soma o valor do plano de todos os clientes ativos (não vencidos),
+      // representando a receita esperada caso todos paguem normalmente.
+      const today = todayLocalDate();
+      let total = 0;
+      clients.forEach(c => {
+        const due = parseDate(c.dataRenovacao);
+        const ativo = !due || diffInDays(due, today) >= 0;
+        if (ativo) total += parseValor(c.valor);
+      });
+      return total;
+    }
+
     function atualizarDashboardFinanceiro() {
       const { custo, lucro, taxas, liquido } = computeTotaisMesAtual();
       const fmt = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
@@ -4370,10 +4383,12 @@ function aplicarDiasExtras() {
       const elC = document.getElementById('dashTotalCusto');
       const elT = document.getElementById('dashTotalTaxas');
       const elN = document.getElementById('dashTotalLiquido');
+      const elE = document.getElementById('dashLucroEstimado');
       if (elL) elL.textContent = fmt(lucro);
       if (elC) elC.textContent = fmt(custo);
       if (elT) elT.textContent = fmt(taxas);
       if (elN) { elN.textContent = fmt(liquido); elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b'; }
+      if (elE) elE.textContent = fmt(computeLucroEstimadoMes());
 
       atualizarFiltrosDashboardGrafico();
       const tagEl = document.getElementById('dashChartMesTag');
@@ -4426,30 +4441,56 @@ function aplicarDiasExtras() {
         dashGraficoMes.update('none');
         return;
       }
+      const ctx = canvas.getContext('2d');
+      const gradNovos = ctx.createLinearGradient(0, 0, 0, 300);
+      gradNovos.addColorStop(0, 'rgba(24,24,26,.16)');
+      gradNovos.addColorStop(1, 'rgba(24,24,26,0)');
+      const gradRenov = ctx.createLinearGradient(0, 0, 0, 300);
+      gradRenov.addColorStop(0, 'rgba(78,90,114,.18)');
+      gradRenov.addColorStop(1, 'rgba(78,90,114,0)');
+      const gradTestes = ctx.createLinearGradient(0, 0, 0, 300);
+      gradTestes.addColorStop(0, 'rgba(165,105,15,.16)');
+      gradTestes.addColorStop(1, 'rgba(165,105,15,0)');
+
       dashGraficoMes = new Chart(canvas, {
         type: 'line',
         data: {
           labels,
           datasets: [
-            { label: 'Novos', data: dataNovos, backgroundColor: 'rgba(57,255,20,.18)', borderColor: '#39ff14', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'Renovações', data: dataRenov, backgroundColor: 'rgba(92,240,255,.18)', borderColor: '#5cf0ff', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'Testes', data: dataTestes, backgroundColor: 'rgba(255,228,92,.18)', borderColor: '#ffe45c', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 }
+            { label: 'Novos', data: dataNovos, backgroundColor: gradNovos, borderColor: '#18181a', borderWidth: 2.5, tension: .35, fill: true, pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: '#18181a', pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2, pointHitRadius: 12 },
+            { label: 'Renovações', data: dataRenov, backgroundColor: gradRenov, borderColor: '#4e5a72', borderWidth: 2.5, tension: .35, fill: true, pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: '#4e5a72', pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2, pointHitRadius: 12 },
+            { label: 'Testes', data: dataTestes, backgroundColor: gradTestes, borderColor: '#a5690f', borderWidth: 2.5, tension: .35, fill: true, pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: '#a5690f', pointHoverBorderColor: '#fff', pointHoverBorderWidth: 2, pointHitRadius: 12 }
           ]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          animation: { duration: 250 },
+          animation: { duration: 300, easing: 'easeOutQuart' },
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { position: 'top', labels: { color: '#f5f5f5', font: { size: 11, weight: '600' }, padding: 10, usePointStyle: true } },
-            tooltip: { backgroundColor: '#0a0a0a', titleColor: '#fff', bodyColor: '#f5f5f5', borderColor: 'rgba(57,255,20,.3)', borderWidth: 1 }
+            legend: {
+              position: 'top', align: 'end',
+              labels: { color: '#4a4d53', font: { size: 12, weight: '600', family: "'Inter Tight', system-ui, sans-serif" }, padding: 16, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8 }
+            },
+            tooltip: {
+              backgroundColor: '#ffffff', titleColor: '#17181b', bodyColor: '#4a4d53',
+              borderColor: 'rgba(15,15,17,.10)', borderWidth: 1, padding: 12, cornerRadius: 10,
+              titleFont: { size: 12, weight: '700' }, bodyFont: { size: 12, weight: '500' },
+              boxPadding: 6, usePointStyle: true,
+              titleMarginBottom: 6
+            }
           },
           scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.07)' }, ticks: { color: '#a1a1aa', precision: 0 } },
+            y: {
+              beginAtZero: true,
+              border: { display: false },
+              grid: { color: 'rgba(15,15,17,.06)', drawTicks: false },
+              ticks: { color: '#9a9da3', precision: 0, padding: 8, font: { size: 11 } }
+            },
             x: {
+              border: { display: false },
               grid: { display: false },
-              ticks: { color: '#a1a1aa', font: { size: 11 }, maxRotation: 0, autoSkip: isYearView },
-              title: { display: true, text: tickLabel, color: '#8a8a8a', font: { size: 11, weight: '600' } }
+              ticks: { color: '#9a9da3', font: { size: 11 }, maxRotation: 0, autoSkip: isYearView, padding: 6 },
+              title: { display: true, text: tickLabel, color: '#74777e', font: { size: 11, weight: '600' } }
             }
           }
         }
