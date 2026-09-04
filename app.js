@@ -183,6 +183,17 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
     '🎁 Em breve entraremos em contato para entregar o seu prêmio!',
     '',
     'Obrigado por participar e por indicar nossos serviços. 🙏'
+  ].join('\n'),
+  teste_vencido: [
+    '🎉 Olá *{{nome}}*, Seu teste Venceu!',
+    '',
+    'Vamos renovar sua assinatura por mais 30 dias? 🚀',
+    '',
+    'É rápido e fácil! Acesse o link de pagamento e, em poucos minutos, sua assinatura estará renovada.',
+    '',
+    'Assim, você continua aproveitando todos os recursos do sistema sem interrupções e sem dor de cabeça!',
+    '',
+    '🔗 *Link de renovação*: {{link_renovacao}}'
   ].join('\n')
 });
 
@@ -195,7 +206,8 @@ const MESSAGE_TEMPLATE_META = Object.freeze({
   pagamento_pendente: { label: 'Pagamento pendente', variables: ['nome', 'usuario', 'senha', 'plano', 'valor', 'data_renovacao', 'link_renovacao'] },
   indicacao_teste: { label: 'Indicação registrada', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_mes_gratis: { label: 'Indicação convertida', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
-  indicacao_ganhador: { label: 'Ganhador do sorteio', variables: ['indicador_nome', 'amigo_nome', 'numero'] }
+  indicacao_ganhador: { label: 'Ganhador do sorteio', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
+  teste_vencido: { label: 'Teste vencido (não assinou)', variables: ['nome', 'link_renovacao'] }
 });
 
 function mergeMessageTemplates(raw) {
@@ -317,6 +329,10 @@ function getMessageTemplateSamples() {
       indicador_nome: ind.indicadorNome || 'Cliente Indicador',
       amigo_nome: ind.amigoNome || 'Amigo Indicado',
       numero: ind.numero || '074'
+    },
+    teste_vencido: {
+      nome: teste.nome || 'Teste Exemplo',
+      link_renovacao: teste.linkRenovacao || 'https://pagamento.exemplo/teste'
     }
   };
 }
@@ -1971,6 +1987,13 @@ let renovacaoClienteAtual = null;
         ? `<div class="detalhe-bloqueio-aviso" style="background: rgba(57,255,20,.1); border-color: rgba(57,255,20,.3); color: var(--primary);"><i class="fas fa-user-check"></i> Este telefone já é <b>cliente ativo</b>: ${escapeHtml(clienteVinculado.nome)}. <a href="javascript:void(0)" onclick="abrirDetalheCliente('${clienteVinculado.id}')" style="color:inherit; text-decoration:underline;">Ver ficha do cliente</a></div>`
         : '';
 
+      const horasTeste = extrairHorasDuracaoTeste(t.duracaoTeste);
+      const fimTeste = t.createdAt ? (new Date(t.createdAt).getTime() + horasTeste * 3600000) : null;
+      const testeVencido = fimTeste ? fimTeste <= Date.now() : false;
+      const testeVencidoBtnHtml = (testeVencido && !clienteVinculado)
+        ? `<button class="btn-danger" onclick="enviarWhatsAppTesteVencido('${t.id}')" title="Cobrar assinatura de quem testou e não renovou" data-testid="ficha-teste-vencido-${t.id}"><i class="fas fa-triangle-exclamation"></i> Teste venceu — cobrar assinatura</button>`
+        : '';
+
       body.innerHTML = `
         <div class="detalhe-cliente-header">
           <span class="pill-tested"><i class="fas fa-vial"></i> Teste em andamento</span>
@@ -1986,6 +2009,7 @@ let renovacaoClienteAtual = null;
         <div class="detalhe-cliente-actions">
           <button class="btn-whatsapp" onclick="whatsAppTeste('${t.id}')" data-testid="ficha-teste-whats-${t.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>
           <button class="btn-secondary" onclick="abrirModalMensagemAplicativo('${t.id}','teste')" data-testid="ficha-teste-app-${t.id}"><i class="fas fa-mobile-alt"></i> App</button>
+          ${testeVencidoBtnHtml}
           <button class="btn-info" onclick="editClient('${t.id}')" data-testid="ficha-teste-editar-${t.id}">Editar</button>
           <button class="btn-primary" onclick="ativarTeste('${t.id}')" data-testid="ficha-teste-ativar-${t.id}"><i class="fas fa-bolt"></i> Ativar</button>
           <button class="btn-danger" onclick="excluirTeste('${t.id}')" data-testid="ficha-teste-excluir-${t.id}"><i class="fas fa-trash"></i> Excluir</button>
@@ -2070,6 +2094,14 @@ function buildTesteMessage(t) {
     senha: t.senha || '',
     link_renovacao: link || '[informe o link de ativação no cadastro]',
     duracao_teste: (t.duracaoTeste && t.duracaoTeste.trim()) || '3 Horas de Teste Grátis!'
+  });
+}
+
+function buildTesteVencidoMessage(t) {
+  const link = (t.linkRenovacao || '').trim();
+  return renderMessageTemplate('teste_vencido', {
+    nome: t.nome || '',
+    link_renovacao: link || '[informe o link de renovação no cadastro]'
   });
 }
 
@@ -2408,6 +2440,17 @@ function whatsAppTeste(id) {
       const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
+
+    function enviarWhatsAppTesteVencido(id) {
+      const t = testes.find(x => x.id === id); if (!t) return;
+      const phone = String(t.telefone || '').replace(/\D/g, '');
+      const text = encodeURIComponent(buildTesteVencidoMessage(t));
+      const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      if (!phone) showToast('Teste sem telefone cadastrado. Adicione um telefone válido para enviar a mensagem.', true);
+    }
+    window.enviarWhatsAppTesteVencido = enviarWhatsAppTesteVencido;
 
     function ativarTeste(id) {
       const idx = testes.findIndex(x => x.id === id); if (idx < 0) return;
