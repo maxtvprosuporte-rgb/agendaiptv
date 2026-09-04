@@ -1555,8 +1555,8 @@ let renovacaoClienteAtual = null;
         const painelCls = getPainelIdxClass(painelId);
         const painelNome = getPainelNome(painelId);
         return `
-          <div class="client-row" data-testid="venc-row-${c.id}">
-            <div class="client-row-main client-row-main-clickable" onclick="abrirDetalheCliente('${c.id}')" role="button" tabindex="0" data-testid="venc-abrir-ficha-${c.id}">
+          <div class="client-row client-row-clickable" data-testid="venc-row-${c.id}" onclick="abrirDetalheCliente('${c.id}')" role="button" tabindex="0">
+            <div class="client-row-main" data-testid="venc-abrir-ficha-${c.id}">
               <div class="client-row-name">
                 ${escapeHtml(c.nome || '—')}
                 <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
@@ -1570,13 +1570,7 @@ let renovacaoClienteAtual = null;
                 <span><b>${metaLabel}:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
               </div>
             </div>
-            <div class="client-row-actions">
-              ${whatsBtnHtml(c)}
-              ${c.pagamentoPendente
-                ? `<button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="btn-confirmar-pag-${c.id}"><i class="fas fa-check-circle"></i> Confirmar Pagamento</button>`
-                : `<button class="btn-primary" onclick="renewClient('${c.id}')" data-testid="btn-renovar-${c.id}">Renovar</button>`}
-              <button class="btn-info" onclick="editClient('${c.id}')">Editar</button>
-            </div>
+            <div class="client-row-chevron"><i class="fas fa-chevron-right"></i></div>
           </div>`;
       }).join('');
     }
@@ -1595,8 +1589,8 @@ let renovacaoClienteAtual = null;
         const painelId = dados.painelId || ((encontrarPlanoPorNome(c.plano) || {}).painelId) || paineis[0].id;
         const painelCls = getPainelIdxClass(painelId);
         return `
-          <div class="client-row" data-testid="pending-payment-row-${c.id}">
-            <div class="client-row-main client-row-main-clickable" onclick="abrirDetalheCliente('${c.id}')" role="button" tabindex="0" data-testid="pending-abrir-ficha-${c.id}">
+          <div class="client-row client-row-clickable" data-testid="pending-payment-row-${c.id}" onclick="abrirDetalheCliente('${c.id}')" role="button" tabindex="0">
+            <div class="client-row-main" data-testid="pending-abrir-ficha-${c.id}">
               <div class="client-row-name">
                 ${escapeHtml(c.nome || '—')}
                 <span class="pill pill-pending">Pagamento pendente</span>
@@ -1611,11 +1605,7 @@ let renovacaoClienteAtual = null;
                 <span><b>Vencimento:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
               </div>
             </div>
-            <div class="client-row-actions">
-              <button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="pending-payment-confirm-${c.id}"><i class="fas fa-check-circle"></i> Confirmar que pagou</button>
-              <button class="btn-whatsapp" onclick="enviarWhatsAppPagamentoPendente('${c.id}')" data-testid="pending-payment-whats-${c.id}"><i class="fab fa-whatsapp"></i> Cobrar</button>
-              <button class="btn-info" onclick="editClient('${c.id}')">Editar</button>
-            </div>
+            <div class="client-row-chevron"><i class="fas fa-chevron-right"></i></div>
           </div>`;
       }).join('');
     }
@@ -2212,8 +2202,8 @@ let ativacaoClienteAtual = null;
           ? `<div class="list-item-sub teste-countdown" data-end="${fimTeste}" data-testid="teste-countdown-${t.id}">calculando…</div>`
           : '';
         return `
-          <div class="list-item" style="flex-wrap:wrap; gap:10px;" data-testid="teste-item-${t.id}">
-            <div class="list-item-content list-item-content-clickable" onclick="abrirDetalheTeste('${t.id}')" role="button" tabindex="0" data-testid="teste-abrir-ficha-${t.id}">
+          <div class="list-item list-item-clickable" style="flex-wrap:wrap; gap:10px; cursor:pointer;" data-testid="teste-item-${t.id}" onclick="abrirDetalheTeste('${t.id}')" role="button" tabindex="0">
+            <div class="list-item-content" data-testid="teste-abrir-ficha-${t.id}">
               <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-flask"></i></div>
               <div style="flex:1; min-width:0;">
                 <div class="list-item-text">${escapeHtml(t.nome || '—')} ${t.telefone ? `• <span style="font-family:var(--font-mono); color:var(--muted); font-size:12.5px;">${escapeHtml(t.telefone)}</span>` : ''}</div>
@@ -2222,13 +2212,7 @@ let ativacaoClienteAtual = null;
                 ${contagemHtml}
               </div>
             </div>
-            <div class="client-row-actions" style="width:auto;">
-              <button class="btn-whatsapp" onclick="whatsAppTeste('${t.id}')" data-testid="btn-whatsapp-teste-${t.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>
-              <button class="btn-secondary" onclick="abrirModalMensagemAplicativo('${t.id}','teste')" title="Enviar instruções do aplicativo" data-testid="btn-app-teste-${t.id}"><i class="fas fa-mobile-alt"></i> App</button>
-              <button class="btn-info" onclick="editClient('${t.id}')" data-testid="btn-editar-teste-${t.id}"><i class="fas fa-pen"></i> Editar</button>
-              <button class="btn-primary" onclick="ativarTeste('${t.id}')" data-testid="btn-ativar-teste-${t.id}"><i class="fas fa-bolt"></i> Ativar</button>
-              <button class="btn-danger" onclick="excluirTeste('${t.id}')" data-testid="btn-excluir-teste-${t.id}"><i class="fas fa-trash"></i> Excluir</button>
-            </div>
+            <div class="client-row-chevron"><i class="fas fa-chevron-right"></i></div>
           </div>`;
       }).join('');
       renderPagination(pagEl, pag.safePage, pag.totalPages, 'changeTestesPage');
