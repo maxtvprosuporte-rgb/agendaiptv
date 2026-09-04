@@ -1556,7 +1556,7 @@ let renovacaoClienteAtual = null;
         const painelNome = getPainelNome(painelId);
         return `
           <div class="client-row" data-testid="venc-row-${c.id}">
-            <div class="client-row-main">
+            <div class="client-row-main client-row-main-clickable" onclick="abrirDetalheCliente('${c.id}')" role="button" tabindex="0" data-testid="venc-abrir-ficha-${c.id}">
               <div class="client-row-name">
                 ${escapeHtml(c.nome || '—')}
                 <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
@@ -1596,7 +1596,7 @@ let renovacaoClienteAtual = null;
         const painelCls = getPainelIdxClass(painelId);
         return `
           <div class="client-row" data-testid="pending-payment-row-${c.id}">
-            <div class="client-row-main">
+            <div class="client-row-main client-row-main-clickable" onclick="abrirDetalheCliente('${c.id}')" role="button" tabindex="0" data-testid="pending-abrir-ficha-${c.id}">
               <div class="client-row-name">
                 ${escapeHtml(c.nome || '—')}
                 <span class="pill pill-pending">Pagamento pendente</span>
@@ -1795,14 +1795,69 @@ let renovacaoClienteAtual = null;
       renderPagination(els.paginationClientes, pag.safePage, pag.totalPages, 'changeClientesPage');
     }
 
-    /* === Detalhe do cliente (abre ao clicar na linha da lista) === */
-    function abrirDetalheCliente(id) {
+    /* === Ficha completa do cliente (página dedicada — abre ao clicar em qualquer cadastro no
+       Dashboard, Teste IPTV ou Clientes) === */
+    let fichaOrigemTab = 'clientes';
+
+    function construirHistoricoCliente(c) {
+      const fmtMoney = v => `R$ ${(Number(v) || 0).toFixed(2).replace('.', ',')}`;
+      const eventos = [];
+      const dataInicio = c.dataInicio || c.dataPagamento;
+      if (dataInicio) {
+        eventos.push({
+          data: `${dataInicio}T00:00:00`, icone: 'fa-user-plus', cor: 'var(--info)',
+          titulo: 'Cliente cadastrado', sub: `Plano ${c.plano || '—'} • 1ª renovação em ${formatDate(c.dataRenovacao)}`
+        });
+      }
+      movimentacoes.filter(m => m.clientId === c.id).forEach(m => {
+        let titulo = 'Movimentação'; let icone = 'fa-receipt'; let cor = 'var(--muted)';
+        if (m.tipoCliente === 'novo') { titulo = 'Ativação (a partir de teste)'; icone = 'fa-bolt'; cor = 'var(--primary)'; }
+        else if (m.tipoCliente === 'renovacao') { titulo = 'Renovação'; icone = 'fa-rotate'; cor = 'var(--info)'; }
+        else if (m.tipoCliente === 'dias_extras') { titulo = `Dias extras concedidos${m.diasExtras ? ` (+${m.diasExtras}d)` : ''}`; icone = 'fa-calendar-plus'; cor = 'var(--warning)'; }
+        else if (m.tipoCliente === 'indicacao_bonus') { titulo = 'Mês grátis (bônus de indicação)'; icone = 'fa-gift'; cor = 'var(--warning)'; }
+        else if (m.tipoCliente === 'avulso') { titulo = 'Ajuste de crédito avulso'; icone = 'fa-sliders-h'; cor = 'var(--muted)'; }
+        const sub = `${fmtMoney(m.valor)} • ${formatCreditos(m.quantidade)} crédito${m.quantidade === 1 ? '' : 's'}${m.taxa ? ` • Taxa ${fmtMoney(m.taxa)}` : ''}${m.painelId ? ` • ${getPainelNome(m.painelId)}` : ''}`;
+        eventos.push({ data: m.data, icone, cor, titulo, sub });
+      });
+      if (c.bloqueado && c.bloqueadoEm) {
+        eventos.push({ data: c.bloqueadoEm, icone: 'fa-ban', cor: '#f87171', titulo: 'Cliente bloqueado', sub: c.motivoBloqueio ? `Motivo: ${c.motivoBloqueio}` : 'Sem motivo informado' });
+      }
+      if (c.ultimoPagamentoValor != null) {
+        eventos.push({ data: c.updatedAt || new Date().toISOString(), icone: 'fa-check-circle', cor: 'var(--primary)', titulo: 'Pagamento confirmado', sub: `${fmtMoney(c.ultimoPagamentoValor)}${c.ultimoPagamentoDivergente ? ` (esperado ${fmtMoney(c.ultimoPagamentoEsperado)})` : ''}` });
+      }
+      eventos.sort((a, b) => new Date(b.data) - new Date(a.data));
+      return eventos;
+    }
+
+    function renderFichaHistorico(eventos) {
+      if (!eventos.length) return `<div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>Nenhum evento registrado ainda.</p></div>`;
+      return eventos.map(ev => `
+        <div class="ficha-historico-item">
+          <div class="ficha-historico-icon" style="color:${ev.cor};"><i class="fas ${ev.icone}"></i></div>
+          <div class="ficha-historico-content">
+            <div class="ficha-historico-titulo">${escapeHtml(ev.titulo)}</div>
+            ${ev.sub ? `<div class="ficha-historico-sub">${escapeHtml(ev.sub)}</div>` : ''}
+          </div>
+          <div class="ficha-historico-data">${ev.data ? formatDateTimeSaoPaulo(ev.data) : '—'}</div>
+        </div>`).join('');
+    }
+
+    function abrirFicha(origemTab) {
+      fichaOrigemTab = origemTab || (document.querySelector('.tab.active') ? document.querySelector('.tab.active').dataset.tab : 'clientes');
+      els.tabs.forEach(tab => tab.classList.remove('active'));
+      els.panels.forEach(panel => panel.classList.toggle('active', panel.id === 'fichaCliente'));
+      closeSidebar();
+      window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    }
+    function voltarDaFicha() { switchTab(fichaOrigemTab || 'clientes'); }
+    window.voltarDaFicha = voltarDaFicha;
+
+    function abrirDetalheCliente(id, origemTab) {
       const c = clients.find(x => x.id === id);
       if (!c) return;
-      const modal = document.getElementById('modalDetalheCliente');
-      const body = document.getElementById('detalheClienteBody');
-      const title = document.getElementById('modalDetalheClienteTitle');
-      if (!modal || !body) return;
+      const body = document.getElementById('fichaClienteBody');
+      const title = document.getElementById('fichaClienteTitle');
+      if (!body) return;
       const st = getStatus(c);
       const planoCad = encontrarPlanoPorNome(c.plano);
       const painelId = planoCad && planoCad.painelId ? planoCad.painelId : (paineis[0] ? paineis[0].id : '');
@@ -1851,13 +1906,13 @@ let renovacaoClienteAtual = null;
             : `<button class="btn-danger" onclick="abrirModalBloquearCliente('${c.id}')" data-testid="detalhe-bloquear-${c.id}"><i class="fas fa-ban"></i> Bloquear cliente</button>`}
           <button class="btn-info" onclick="editClient('${c.id}')" data-testid="detalhe-editar-${c.id}">Editar</button>
           <button class="btn-danger" onclick="deleteClient('${c.id}')" data-testid="detalhe-apagar-${c.id}">Apagar</button>
-        </div>`;
-      modal.classList.add('active');
+        </div>
+        <div class="ficha-historico-title"><i class="fas fa-clock-rotate-left"></i> Histórico completo</div>
+        <div id="fichaHistoricoList" data-testid="ficha-historico-list">${renderFichaHistorico(construirHistoricoCliente(c))}</div>`;
+      abrirFicha(origemTab);
     }
-    function fecharModalDetalheCliente() {
-      const modal = document.getElementById('modalDetalheCliente');
-      if (modal) modal.classList.remove('active');
-    }
+    // Mantido por compatibilidade com chamadas antigas (bloqueio/desbloqueio) — agora volta para a aba de origem.
+    function fecharModalDetalheCliente() { voltarDaFicha(); }
     function toggleWhatsDropdown(id) {
       const menu = document.getElementById(`whatsDropdownMenu-${id}`);
       if (!menu) return;
@@ -1882,6 +1937,75 @@ let renovacaoClienteAtual = null;
         document.querySelectorAll('.whats-dropdown-menu.open').forEach(el => el.classList.remove('open'));
       }
     });
+    /* === Ficha completa do teste IPTV (mesma página/padrão, aberta a partir da aba Teste IPTV) === */
+    function construirHistoricoTeste(t) {
+      const eventos = [];
+      if (t.createdAt) {
+        eventos.push({ data: t.createdAt, icone: 'fa-flask', cor: 'var(--warning)', titulo: 'Teste cadastrado', sub: `Plano ${t.plano || '—'} • Duração ${t.duracaoTeste || '3 Horas'}` });
+      }
+      movimentacoes
+        .filter(m => (m.tipo === 'teste' || m.tipo === 'teste_excluido') && m.nome === t.nome && m.data !== t.createdAt)
+        .forEach(m => {
+          eventos.push({
+            data: m.data,
+            icone: m.tipo === 'teste_excluido' ? 'fa-trash' : 'fa-flask',
+            cor: m.tipo === 'teste_excluido' ? '#f87171' : 'var(--warning)',
+            titulo: m.tipo === 'teste_excluido' ? 'Teste anterior excluído' : 'Teste anterior cadastrado',
+            sub: ''
+          });
+        });
+      eventos.sort((a, b) => new Date(b.data) - new Date(a.data));
+      return eventos;
+    }
+
+    function abrirDetalheTeste(id) {
+      const t = testes.find(x => x.id === id);
+      if (!t) return;
+      const body = document.getElementById('fichaClienteBody');
+      const title = document.getElementById('fichaClienteTitle');
+      if (!body) return;
+      if (title) title.textContent = t.nome || 'Teste IPTV';
+
+      const telNorm = String(t.telefone || '').replace(/\D/g, '');
+      const clienteVinculado = telNorm ? clients.find(c => String(c.telefone || '').replace(/\D/g, '') === telNorm) : null;
+
+      const infoRows = [
+        ['Nome', t.nome], ['Telefone', t.telefone], ['Aplicativo', t.aplicativo],
+        ['Usuário', t.usuario], ['Senha', t.senha], ['Plano', t.plano],
+        ['Valor', t.valor], ['Duração do teste', t.duracaoTeste],
+        ['Cadastrado em', t.createdAt ? formatDateTimeSaoPaulo(t.createdAt) : '—'],
+        ['Link de ativação', t.linkRenovacao], ['Observações', t.observacoes]
+      ];
+
+      const vinculoHtml = clienteVinculado
+        ? `<div class="detalhe-bloqueio-aviso" style="background: rgba(57,255,20,.1); border-color: rgba(57,255,20,.3); color: var(--primary);"><i class="fas fa-user-check"></i> Este telefone já é <b>cliente ativo</b>: ${escapeHtml(clienteVinculado.nome)}. <a href="javascript:void(0)" onclick="abrirDetalheCliente('${clienteVinculado.id}')" style="color:inherit; text-decoration:underline;">Ver ficha do cliente</a></div>`
+        : '';
+
+      body.innerHTML = `
+        <div class="detalhe-cliente-header">
+          <span class="pill-tested"><i class="fas fa-vial"></i> Teste em andamento</span>
+        </div>
+        ${vinculoHtml}
+        <div class="detalhe-cliente-grid">
+          ${infoRows.map(([label, value]) => `
+            <div class="detalhe-cliente-field">
+              <span class="detalhe-cliente-label">${escapeHtml(label)}</span>
+              <span class="detalhe-cliente-value">${escapeHtml(value || '—')}</span>
+            </div>`).join('')}
+        </div>
+        <div class="detalhe-cliente-actions">
+          <button class="btn-whatsapp" onclick="whatsAppTeste('${t.id}')" data-testid="ficha-teste-whats-${t.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+          <button class="btn-secondary" onclick="abrirModalMensagemAplicativo('${t.id}','teste')" data-testid="ficha-teste-app-${t.id}"><i class="fas fa-mobile-alt"></i> App</button>
+          <button class="btn-info" onclick="editClient('${t.id}')" data-testid="ficha-teste-editar-${t.id}">Editar</button>
+          <button class="btn-primary" onclick="ativarTeste('${t.id}')" data-testid="ficha-teste-ativar-${t.id}"><i class="fas fa-bolt"></i> Ativar</button>
+          <button class="btn-danger" onclick="excluirTeste('${t.id}')" data-testid="ficha-teste-excluir-${t.id}"><i class="fas fa-trash"></i> Excluir</button>
+        </div>
+        <div class="ficha-historico-title"><i class="fas fa-clock-rotate-left"></i> Histórico completo</div>
+        <div id="fichaHistoricoList" data-testid="ficha-historico-list">${renderFichaHistorico(construirHistoricoTeste(t))}</div>`;
+      abrirFicha();
+    }
+    window.abrirDetalheTeste = abrirDetalheTeste;
+
     window.abrirDetalheCliente = abrirDetalheCliente;
     window.fecharModalDetalheCliente = fecharModalDetalheCliente;
     window.toggleWhatsDropdown = toggleWhatsDropdown;
@@ -1918,7 +2042,7 @@ let renovacaoClienteAtual = null;
       c.updatedAt = new Date().toISOString();
       renderAll();
       fecharModalBloquearCliente();
-      fecharModalDetalheCliente();
+      if (document.getElementById('fichaCliente') && document.getElementById('fichaCliente').classList.contains('active')) abrirDetalheCliente(c.id);
       showToast(`${c.nome} foi bloqueado${motivo ? ` • Motivo: ${motivo}` : ''}.`);
     }
     function desbloquearCliente(id) {
@@ -1929,7 +2053,7 @@ let renovacaoClienteAtual = null;
       c.motivoBloqueio = '';
       c.updatedAt = new Date().toISOString();
       renderAll();
-      fecharModalDetalheCliente();
+      if (document.getElementById('fichaCliente') && document.getElementById('fichaCliente').classList.contains('active')) abrirDetalheCliente(c.id);
       showToast(`${c.nome} foi desbloqueado.`);
     }
     window.abrirModalBloquearCliente = abrirModalBloquearCliente;
@@ -2089,7 +2213,7 @@ let ativacaoClienteAtual = null;
           : '';
         return `
           <div class="list-item" style="flex-wrap:wrap; gap:10px;" data-testid="teste-item-${t.id}">
-            <div class="list-item-content">
+            <div class="list-item-content list-item-content-clickable" onclick="abrirDetalheTeste('${t.id}')" role="button" tabindex="0" data-testid="teste-abrir-ficha-${t.id}">
               <div class="list-item-icon" style="color: var(--warning);"><i class="fas fa-flask"></i></div>
               <div style="flex:1; min-width:0;">
                 <div class="list-item-text">${escapeHtml(t.nome || '—')} ${t.telefone ? `• <span style="font-family:var(--font-mono); color:var(--muted); font-size:12.5px;">${escapeHtml(t.telefone)}</span>` : ''}</div>

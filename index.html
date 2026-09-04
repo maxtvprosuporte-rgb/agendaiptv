@@ -32,6 +32,18 @@
     .detalhe-cliente-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; opacity: .55; }
     .detalhe-cliente-value { font-size: 14px; word-break: break-word; }
     .detalhe-cliente-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .client-row-main-clickable, .list-item-content-clickable { cursor: pointer; border-radius: 8px; transition: opacity .15s ease; }
+    .client-row-main-clickable:hover, .list-item-content-clickable:hover { opacity: .82; }
+    .client-row-main-clickable:hover .client-row-name, .list-item-content-clickable:hover .list-item-text { text-decoration: underline; text-decoration-color: rgba(255,255,255,.3); text-underline-offset: 3px; }
+    .ficha-cliente-back { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .ficha-historico-title { font-size: 15px; font-weight: 700; margin: 24px 0 10px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+    .ficha-historico-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; background: rgba(0,0,0,.03); border: 1px solid var(--border-faint); border-radius: 10px; margin-bottom: 8px; }
+    .ficha-historico-icon { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; flex: 0 0 auto; font-size: 13px; background: rgba(0,0,0,.04); border: 1px solid var(--border-faint); }
+    .ficha-historico-content { flex: 1; min-width: 0; }
+    .ficha-historico-titulo { font-size: 13.5px; font-weight: 600; color: var(--text); }
+    .ficha-historico-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .ficha-historico-data { font-size: 11px; color: var(--muted); white-space: nowrap; flex: 0 0 auto; }
+    @media (max-width: 640px) { .ficha-historico-item { flex-wrap: wrap; } .ficha-historico-data { width: 100%; padding-left: 46px; } }
   </style>
 </head>
 <body class="auth-screen">
@@ -282,6 +294,17 @@
         <p class="card-hint" style="margin: -4px 0 12px;">Ordenados automaticamente por <b style="color:var(--primary);">vencimento mais próximo</b> primeiro (vencidos no topo, sem data ao final).</p>
         <div id="clientesList" data-testid="clientes-list"></div>
         <div class="pagination-bar" id="paginationClientes"></div>
+      </div>
+    </section>
+
+    <!-- Página dedicada: Ficha completa do cliente (aberta ao clicar em um cadastro no Dashboard, Teste IPTV ou Clientes) -->
+    <section id="fichaCliente" class="panel">
+      <div class="table-card">
+        <div class="ficha-cliente-back">
+          <button class="btn-secondary" onclick="voltarDaFicha()" data-testid="btn-voltar-ficha"><i class="fas fa-arrow-left"></i> Voltar</button>
+          <h2 id="fichaClienteTitle" style="margin:0;">Cliente</h2>
+        </div>
+        <div id="fichaClienteBody" data-testid="ficha-cliente-body"></div>
       </div>
     </section>
 
@@ -917,17 +940,6 @@
           <button type="button" class="btn-secondary" id="clearFormBtn" data-testid="clear-form-btn">Cancelar</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- Modal: Detalhe completo do cliente (aberto ao clicar na linha da lista) -->
-  <div id="modalDetalheCliente" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title" id="modalDetalheClienteTitle">Cliente</h3>
-        <button class="modal-close" onclick="fecharModalDetalheCliente()" data-testid="close-detalhe-cliente"><i class="fas fa-times"></i></button>
-      </div>
-      <div id="detalheClienteBody" data-testid="detalhe-cliente-body"></div>
     </div>
   </div>
 
