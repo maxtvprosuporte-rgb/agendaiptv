@@ -1528,13 +1528,21 @@ let renovacaoClienteAtual = null;
       const ov = document.getElementById('sidebarOverlay');
       if (sb) sb.classList.add('active');
       if (ov) ov.classList.add('active');
+      if (window.innerWidth <= 900) document.body.classList.add('sidebar-lock');
     }
     function closeSidebar() {
       const sb = document.getElementById('sidebar');
       const ov = document.getElementById('sidebarOverlay');
       if (sb) sb.classList.remove('active');
       if (ov) ov.classList.remove('active');
+      document.body.classList.remove('sidebar-lock');
     }
+    // Defensive: if the window is resized/rotated across the mobile<->desktop breakpoint
+    // while the drawer happens to be open, force it closed instead of leaving a stale
+    // .active state (and the scroll lock) behind.
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 900) closeSidebar();
+    });
 
     function paginate(list, page, perPage = ITEMS_PER_PAGE) {
       const totalPages = Math.max(1, Math.ceil(list.length / perPage));
