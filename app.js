@@ -4587,10 +4587,17 @@ function aplicarDiasExtras() {
       // (dataRenovacao) cai dentro do mês atual — ou seja, quem realmente
       // deve gerar receita de renovação este mês. Não tem relação com a
       // quantidade de créditos disponível no painel.
+      // Já sai líquido de taxa bancária: desconta a taxa cadastrada no plano
+      // de cada cliente (mesma regra usada quando a renovação é confirmada de
+      // verdade), sem precisar de um box separado para mostrar a taxa.
       const mk = getCurrentMonthKey();
       let total = 0;
       clients.forEach(c => {
-        if (monthKey(c.dataRenovacao) === mk) total += parseValor(c.valor);
+        if (monthKey(c.dataRenovacao) !== mk) return;
+        const valor = parseValor(c.valor);
+        const plano = encontrarPlanoPorNome(c.plano);
+        const taxa = calcularTaxaPlano(plano, valor);
+        total += (valor - taxa);
       });
       return total;
     }
