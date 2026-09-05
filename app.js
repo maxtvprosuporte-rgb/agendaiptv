@@ -4583,29 +4583,27 @@ function aplicarDiasExtras() {
     }
 
     function computeLucroEstimadoMes() {
-      // Previsão: soma o valor do plano de todos os clientes ativos (não vencidos),
-      // representando a receita esperada caso todos paguem normalmente.
-      const today = todayLocalDate();
+      // Previsão: soma o valor do plano apenas dos clientes cujo vencimento
+      // (dataRenovacao) cai dentro do mês atual — ou seja, quem realmente
+      // deve gerar receita de renovação este mês. Não tem relação com a
+      // quantidade de créditos disponível no painel.
+      const mk = getCurrentMonthKey();
       let total = 0;
       clients.forEach(c => {
-        const due = parseDate(c.dataRenovacao);
-        const ativo = !due || diffInDays(due, today) >= 0;
-        if (ativo) total += parseValor(c.valor);
+        if (monthKey(c.dataRenovacao) === mk) total += parseValor(c.valor);
       });
       return total;
     }
 
     function atualizarDashboardFinanceiro() {
-      const { custo, custoCredito, lucro, taxas, liquido } = computeTotaisMesAtual();
+      const { custoCredito, lucro, taxas, liquido } = computeTotaisMesAtual();
       const fmt = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
       const elL = document.getElementById('dashTotalLucro');
-      const elC = document.getElementById('dashTotalCusto');
       const elT = document.getElementById('dashTotalTaxas');
       const elN = document.getElementById('dashTotalLiquido');
       const elE = document.getElementById('dashLucroEstimado');
       const elR = document.getElementById('dashReservaRecarga');
       if (elL) elL.textContent = fmt(lucro);
-      if (elC) elC.textContent = fmt(custo);
       if (elT) elT.textContent = fmt(taxas);
       if (elN) { elN.textContent = fmt(liquido); elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b'; }
       if (elE) elE.textContent = fmt(computeLucroEstimadoMes());
