@@ -4338,6 +4338,17 @@ function aplicarDiasExtras() {
        do lote comprado no mês corrente. Isso garante que o "líquido" de um mês
        reflita o custo real dos créditos usados naquele mês, mesmo que o lote tenha
        sido comprado em outro período. */
+    /* Preço de referência do crédito de um painel, usado como estimativa quando ainda
+       não existe nenhuma compra ("add") registrada — ex: o pacote foi cadastrado com
+       preço, mas o usuário renovou clientes antes de clicar em "Adicionar Crédito"
+       pra dar entrada na compra. Sem isso, o custo médio ficaria em R$0 até a
+       primeira compra ser lançada, fazendo o sistema tratar 100% da venda como lucro. */
+    function precoReferenciaCreditoPainel(painelId) {
+      const doPainel = pacotes.filter(pk => pk.painelId === painelId && Number(pk.preco) > 0);
+      if (doPainel.length === 0) return 0;
+      return doPainel.reduce((s, pk) => s + Number(pk.preco), 0) / doPainel.length;
+    }
+
     function computeCustoCreditoAtribuido() {
       const porPainel = {};
       const atribuido = new Map();
@@ -4360,7 +4371,11 @@ function aplicarDiasExtras() {
           p.saldo = novoSaldo;
         } else if (m.tipo === 'use') {
           const qtd = Number(m.quantidade) || 0;
-          atribuido.set(m, qtd * p.custoMedio);
+          // Se ainda não há nenhuma compra registrada pra esse painel (custo médio
+          // zerado), usa o preço do pacote cadastrado como estimativa de custo.
+          const custoUnitario = p.custoMedio > 0 ? p.custoMedio : precoReferenciaCreditoPainel(pid);
+
+          atribuido.set(m, qtd * custoUnitario);
           p.saldo -= qtd;
         }
       });
