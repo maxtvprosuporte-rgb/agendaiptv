@@ -32,6 +32,11 @@
     .detalhe-cliente-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; opacity: .55; }
     .detalhe-cliente-value { font-size: 14px; word-break: break-word; }
     .detalhe-cliente-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .detalhe-cliente-actions button { flex: 1 1 auto; min-width: 150px; white-space: nowrap; }
+    @media (max-width: 640px) {
+      .detalhe-cliente-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .detalhe-cliente-actions button { width: 100%; min-width: 0; white-space: normal; text-align: center; }
+    }
     .client-row-main-clickable, .list-item-content-clickable { cursor: pointer; border-radius: 8px; transition: opacity .15s ease; }
     .client-row-main-clickable:hover, .list-item-content-clickable:hover { opacity: .82; }
     .client-row-main-clickable:hover .client-row-name, .list-item-content-clickable:hover .list-item-text { text-decoration: underline; text-decoration-color: rgba(255,255,255,.3); text-underline-offset: 3px; }

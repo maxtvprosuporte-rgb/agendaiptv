@@ -118,11 +118,6 @@
     .btn-whatsapp-sent:hover { background: linear-gradient(180deg, #343437, #17171a); border-color: #000; box-shadow: var(--glow-md); }
     .btn-whatsapp-unsent { background: #fdecec; color: #a02323; border: 1px solid rgba(207,46,46,.4); }
     .btn-whatsapp-unsent:hover { background: #fbdede; border-color: rgba(207,46,46,.65); box-shadow: 0 0 10px rgba(207,46,46,.12); }
-    .whats-dropdown { position: relative; display: inline-flex; }
-    .whats-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); left: 0; min-width: 170px; background: #ffffff; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); box-shadow: var(--shadow-xl), var(--glow-sm); padding: 6px; z-index: 950; flex-direction: column; gap: 4px; }
-    .whats-dropdown-menu.open { display: flex; }
-    .whats-dropdown-menu button { width: 100%; justify-content: flex-start; background: transparent; border: 1px solid transparent; min-height: 38px; padding: 8px 10px; font-size: 13px; }
-    .whats-dropdown-menu button:hover { background: rgba(0,0,0,.05); border-color: var(--border-faint); }
     .btn-block { width: 100%; }
 
     .tabs { display: flex; gap: 4px; padding: 5px; margin-bottom: 22px; background: rgba(0,0,0,.035); border: 1px solid var(--glass-border); border-radius: 999px; box-shadow: var(--shadow-sm), var(--glass-edge); overflow-x: auto; scrollbar-width: thin; }

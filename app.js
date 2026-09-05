@@ -1908,13 +1908,8 @@ let renovacaoClienteAtual = null;
           ${c.pagamentoPendente
             ? `<button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="detalhe-confirmar-pag-${c.id}"><i class="fas fa-check-circle"></i> Confirmar Pagamento</button>`
             : `<button class="btn-primary" onclick="renewClient('${c.id}')" data-testid="detalhe-renovar-${c.id}">Renovar</button>`}
-          <div class="whats-dropdown">
-            <button class="btn-whatsapp" onclick="toggleWhatsDropdown('${c.id}')" data-testid="detalhe-whats-${c.id}"><i class="fab fa-whatsapp"></i> WhatsApp <i class="fas fa-chevron-down" style="font-size:10px; margin-left:2px;"></i></button>
-            <div class="whats-dropdown-menu" id="whatsDropdownMenu-${c.id}">
-              <button type="button" onclick="enviarWhatsRenovacao('${c.id}')" data-testid="detalhe-whats-renovacao-${c.id}"><i class="fas fa-rotate"></i> Renovação</button>
-              <button type="button" onclick="enviarWhatsApp_App('${c.id}')" data-testid="detalhe-whats-app-${c.id}"><i class="fas fa-mobile-alt"></i> APP</button>
-            </div>
-          </div>
+          <button class="btn-whatsapp" onclick="enviarWhatsRenovacao('${c.id}')" data-testid="detalhe-whats-renovacao-${c.id}"><i class="fab fa-whatsapp"></i> WhatsApp Renovação</button>
+          <button class="btn-whatsapp" onclick="enviarWhatsApp_App('${c.id}')" data-testid="detalhe-whats-app-${c.id}"><i class="fas fa-mobile-alt"></i> WhatsApp App</button>
           ${c.bloqueado
             ? `<button class="btn-secondary" onclick="desbloquearCliente('${c.id}')" data-testid="detalhe-desbloquear-${c.id}"><i class="fas fa-lock-open"></i> Desbloquear</button>`
             : `<button class="btn-danger" onclick="abrirModalBloquearCliente('${c.id}')" data-testid="detalhe-bloquear-${c.id}"><i class="fas fa-ban"></i> Bloquear cliente</button>`}
@@ -1927,30 +1922,12 @@ let renovacaoClienteAtual = null;
     }
     // Mantido por compatibilidade com chamadas antigas (bloqueio/desbloqueio) — agora volta para a aba de origem.
     function fecharModalDetalheCliente() { voltarDaFicha(); }
-    function toggleWhatsDropdown(id) {
-      const menu = document.getElementById(`whatsDropdownMenu-${id}`);
-      if (!menu) return;
-      const isOpen = menu.classList.contains('open');
-      document.querySelectorAll('.whats-dropdown-menu.open').forEach(el => el.classList.remove('open'));
-      if (!isOpen) menu.classList.add('open');
-    }
-    function fecharWhatsDropdown(id) {
-      const menu = document.getElementById(`whatsDropdownMenu-${id}`);
-      if (menu) menu.classList.remove('open');
-    }
     function enviarWhatsRenovacao(id) {
-      fecharWhatsDropdown(id);
       openWhatsApp(id);
     }
     function enviarWhatsApp_App(id) {
-      fecharWhatsDropdown(id);
       abrirModalMensagemAplicativo(id, 'cliente');
     }
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.whats-dropdown')) {
-        document.querySelectorAll('.whats-dropdown-menu.open').forEach(el => el.classList.remove('open'));
-      }
-    });
     /* === Ficha completa do teste IPTV (mesma página/padrão, aberta a partir da aba Teste IPTV) === */
     function construirHistoricoTeste(t) {
       const eventos = [];
@@ -2030,8 +2007,6 @@ let renovacaoClienteAtual = null;
 
     window.abrirDetalheCliente = abrirDetalheCliente;
     window.fecharModalDetalheCliente = fecharModalDetalheCliente;
-    window.toggleWhatsDropdown = toggleWhatsDropdown;
-    window.fecharWhatsDropdown = fecharWhatsDropdown;
     window.enviarWhatsRenovacao = enviarWhatsRenovacao;
     window.enviarWhatsApp_App = enviarWhatsApp_App;
 
