@@ -4354,23 +4354,86 @@ function aplicarDiasExtras() {
       return startKey <= state.filtroMes ? 1 : 0;
     }
 
-    function computeTotaisFinanceiros() {
-      let custo = 0, lucro = 0, taxas = 0;
-      movimentacoes.forEach(m => {
-        if (!passaFiltroMes(m.data)) return;
-        if (m.tipo === 'add') custo += (m.custo || 0);
-        else if (m.tipo === 'use') {
-          lucro += (m.valor || 0);
-          taxas += (m.taxa || 0);
+    /* Custo médio ponderado por painel: percorre TODAS as movimentações (independente
+       do filtro de mês) em ordem cronológica e mantém, para cada painel, o saldo de
+       créditos e o custo médio por crédito. A cada compra ('add') o custo médio é
+       recalculado; a cada uso ('use' — renovação, novo cliente, bônus de indicação
+       etc.) o custo do crédito CONSUMIDO NAQUELE MOMENTO é atribuído à própria
+       movimentação, usando o custo médio vigente naquele instante — e não o custo
+       do lote comprado no mês corrente. Isso garante que o "líquido" de um mês
+       reflita o custo real dos créditos usados naquele mês, mesmo que o lote tenha
+       sido comprado em outro período. */
+    function computeCustoCreditoAtribuido() {
+      const porPainel = {};
+      const atribuido = new Map();
+      const primeiroPainelId = paineis[0] && paineis[0].id;
+      const ordenadas = movimentacoes
+        .filter(m => m.tipo === 'add' || m.tipo === 'use')
+        .slice()
+        .sort((a, b) => new Date(a.data) - new Date(b.data));
+      ordenadas.forEach(m => {
+        const pid = (m.painelId && (paineis.some(p => p.id === m.painelId))) ? m.painelId : primeiroPainelId;
+        if (!pid) return;
+        if (!porPainel[pid]) porPainel[pid] = { saldo: 0, custoMedio: 0 };
+        const p = porPainel[pid];
+        if (m.tipo === 'add') {
+          const qtd = Number(m.quantidade) || 0;
+          const custoCompra = Number(m.custo) || 0;
+          const novoSaldo = p.saldo + qtd;
+          const custoAcumulado = (p.saldo * p.custoMedio) + custoCompra;
+          p.custoMedio = novoSaldo > 0 ? custoAcumulado / novoSaldo : 0;
+          p.saldo = novoSaldo;
+        } else if (m.tipo === 'use') {
+          const qtd = Number(m.quantidade) || 0;
+          atribuido.set(m, qtd * p.custoMedio);
+          p.saldo -= qtd;
         }
       });
+      return atribuido;
+    }
+
+    /* Rótulos amigáveis para cada tipo de movimentação de uso de crédito. */
+    const TIPO_CLIENTE_LABEL = {
+      renovacao: 'Renovações',
+      novo: 'Novos clientes',
+      indicacao_bonus: 'Bônus de indicação',
+      avulso: 'Avulso',
+      dias_extras: 'Dias extras'
+    };
+
+    /* Agrega receita, custo de crédito (já pelo custo médio ponderado) e taxas das
+       movimentações de uso que passam no filtro informado, e também separa tudo por
+       tipoCliente (renovação, novo, indicação/bônus, etc.) — isso é o que permite
+       enxergar que uma indicação/bônus (receita R$0, crédito consumido normalmente)
+       ou um cliente novo tem uma margem bem diferente de uma renovação normal. */
+    function computeResumoUsoCreditos(filterFn) {
+      const custoAtribuido = computeCustoCreditoAtribuido();
+      let custoCredito = 0, lucro = 0, taxas = 0;
+      const porTipo = {};
+      movimentacoes.forEach(m => {
+        if (m.tipo !== 'use' || !filterFn(m)) return;
+        const receita = Number(m.valor) || 0;
+        const taxa = Number(m.taxa) || 0;
+        const custoM = custoAtribuido.get(m) || 0;
+        lucro += receita; taxas += taxa; custoCredito += custoM;
+        const chave = m.tipoCliente || 'outros';
+        if (!porTipo[chave]) porTipo[chave] = { qtd: 0, receita: 0, custoCredito: 0, taxas: 0 };
+        const pt = porTipo[chave];
+        pt.qtd += 1; pt.receita += receita; pt.custoCredito += custoM; pt.taxas += taxa;
+      });
+      return { custoCredito, lucro, taxas, porTipo };
+    }
+
+    function computeTotaisFinanceiros() {
+      const { custoCredito, lucro: lucroUso, taxas, porTipo } = computeResumoUsoCreditos(m => passaFiltroMes(m.data));
+      let lucro = lucroUso, custo = custoCredito;
       lucrosCustos.forEach(lc => {
         const ocorr = ocorrenciasLucroCusto(lc);
         if (ocorr === 0) return;
         if (lc.valor >= 0) lucro += lc.valor * ocorr;
         else custo += Math.abs(lc.valor) * ocorr;
       });
-      return { custo, lucro, taxas, liquido: lucro - custo - taxas };
+      return { custo, custoCredito, custoExtra: custo - custoCredito, lucro, taxas, liquido: lucro - custo - taxas, porTipo };
     }
 
     function atualizarStatsFinanceiras() {
@@ -4498,15 +4561,8 @@ function aplicarDiasExtras() {
 
     function computeTotaisMesAtual() {
       const mk = getCurrentMonthKey();
-      let custo = 0, lucro = 0, taxas = 0;
-      movimentacoes.forEach(m => {
-        if (monthKey(m.data) !== mk) return;
-        if (m.tipo === 'add') custo += (m.custo || 0);
-        else if (m.tipo === 'use') {
-          lucro += (m.valor || 0);
-          taxas += (m.taxa || 0);
-        }
-      });
+      const { custoCredito, lucro: lucroUso, taxas, porTipo } = computeResumoUsoCreditos(m => monthKey(m.data) === mk);
+      let lucro = lucroUso, custo = custoCredito;
       // Lucros/custos fixos do mês atual
       lucrosCustos.forEach(lc => {
         const startKey = monthKey(lc.data);
@@ -4523,7 +4579,7 @@ function aplicarDiasExtras() {
           }
         }
       });
-      return { custo, lucro, taxas, liquido: lucro - custo - taxas };
+      return { custo, custoCredito, custoExtra: custo - custoCredito, lucro, taxas, liquido: lucro - custo - taxas, porTipo };
     }
 
     function computeLucroEstimadoMes() {
@@ -4540,18 +4596,23 @@ function aplicarDiasExtras() {
     }
 
     function atualizarDashboardFinanceiro() {
-      const { custo, lucro, taxas, liquido } = computeTotaisMesAtual();
+      const { custo, custoCredito, lucro, taxas, liquido } = computeTotaisMesAtual();
       const fmt = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
       const elL = document.getElementById('dashTotalLucro');
       const elC = document.getElementById('dashTotalCusto');
       const elT = document.getElementById('dashTotalTaxas');
       const elN = document.getElementById('dashTotalLiquido');
       const elE = document.getElementById('dashLucroEstimado');
+      const elR = document.getElementById('dashReservaRecarga');
       if (elL) elL.textContent = fmt(lucro);
       if (elC) elC.textContent = fmt(custo);
       if (elT) elT.textContent = fmt(taxas);
       if (elN) { elN.textContent = fmt(liquido); elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b'; }
       if (elE) elE.textContent = fmt(computeLucroEstimadoMes());
+      // Valor que precisa ficar reservado (não gasto) para recomprar, ao custo médio
+      // atual, os créditos já consumidos neste mês — ou seja, o que garante que o
+      // painel continue "vivo" na próxima recarga, além do lucro de fato.
+      if (elR) elR.textContent = fmt(custoCredito);
 
       atualizarFiltrosDashboardGrafico();
       const tagEl = document.getElementById('dashChartMesTag');
@@ -4818,13 +4879,36 @@ function aplicarDiasExtras() {
           vencidosAtuais += 1;
         }
       });
-      const { custo, lucro, taxas, liquido } = computeTotaisFinanceiros();
+      const { custo, custoCredito, custoExtra, lucro, taxas, liquido, porTipo } = computeTotaisFinanceiros();
       const rotuloMes = state.filtroMes === 'all' ? 'GERAL' : monthLabel(state.filtroMes).toUpperCase();
       let t = `📊 *RESUMO COMPLETO - GESTÃO IPTV (${rotuloMes})*\n\n`;
       t += `👥 *CLIENTES*\n`;
       t += `• Novos: ${novos}\n• Renovações: ${renov}\n• Não Renovaram (20+ dias): ${nren}\n• Vencidos (1-19 dias): ${vencidosAtuais}\n• Testes criados: ${testes_criados}\n• Total Ativos: ${clients.length}\n\n`;
       t += `💰 *FINANCEIRO*\n`;
       t += `• Lucro Total: R$ ${lucro.toFixed(2)}\n• Custo Total: R$ ${custo.toFixed(2)}\n• Taxas Bancárias: R$ ${taxas.toFixed(2)}\n• Lucro Líquido: R$ ${liquido.toFixed(2)}\n\n`;
+
+      t += `💳 *RESERVA DE CRÉDITO*\n`;
+      t += `• Custo de créditos usados: R$ ${custoCredito.toFixed(2)}\n`;
+      t += `• ⚠️ Reserve esse valor para a próxima recarga do painel — só o que sobrar disso é lucro de verdade.\n`;
+      if (custoExtra > 0.005) t += `• Outros custos lançados: R$ ${custoExtra.toFixed(2)}\n`;
+      t += '\n';
+
+      // Margem por tipo de movimentação — evidencia que indicações/bônus e clientes
+      // novos costumam ter margem menor (ou negativa) do que uma renovação normal.
+      const chavesTipo = Object.keys(porTipo);
+      if (chavesTipo.length > 0) {
+        t += `🔎 *MARGEM POR TIPO DE MOVIMENTAÇÃO*\n`;
+        chavesTipo
+          .sort((a, b) => porTipo[b].receita - porTipo[a].receita)
+          .forEach(chave => {
+            const d = porTipo[chave];
+            const margem = d.receita - d.custoCredito - d.taxas;
+            const label = TIPO_CLIENTE_LABEL[chave] || 'Outros';
+            const alerta = margem < 0 ? ' 🔴' : (d.receita > 0 && margem / d.receita < 0.15 ? ' 🟡' : '');
+            t += `• ${label} (${d.qtd}): receita R$ ${d.receita.toFixed(2)} − crédito R$ ${d.custoCredito.toFixed(2)} − taxa R$ ${d.taxas.toFixed(2)} = *R$ ${margem.toFixed(2)}*${alerta}\n`;
+          });
+        t += `_🔴 margem negativa (prejuízo direto) • 🟡 margem apertada (abaixo de 15%)_\n\n`;
+      }
 
       // Detalhamento de taxas por plano
       const porPlano = {};
