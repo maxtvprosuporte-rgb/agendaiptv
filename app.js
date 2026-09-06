@@ -1055,6 +1055,12 @@ function setupMessageEditor() {
 
 
 function buildMessage(client) {
+  // Cliente com pagamento pendente: a mensagem de cobrança por dias (vence
+  // em/venceu há) não faz sentido aqui — o que importa é lembrar do pagamento
+  // pendente e reenviar o link de renovação.
+  if (client.pagamentoPendente) {
+    return buildPagamentoPendenteMessage(client);
+  }
   const diff = getDaysUntil(client);
   let statusTag;
   if (diff === null) statusTag = `Próximo do vencimento`;
