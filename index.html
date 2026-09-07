@@ -130,7 +130,7 @@
         </div>
         <div class="credit-stat-card">
           <div class="credit-stat-value" id="dashTotalLucro" style="color: var(--primary);">R$ 0,00</div>
-          <div class="credit-stat-label">Lucro Total</div>
+          <div class="credit-stat-label">Valor Total</div>
         </div>
         <div class="credit-stat-card" title="Valor a deixar separado (não gastar) para comprar o próximo lote de créditos do painel">
           <div class="credit-stat-value" id="dashReservaRecarga" style="color: #a02323;">R$ 0,00</div>
@@ -1038,7 +1038,7 @@
         <h3 class="modal-title"><i class="fas fa-paper-plane" style="color: var(--primary); margin-right: 6px;"></i> Mensagem para o Cliente</h3>
         <button class="modal-close" onclick="fecharModalMensagemRenovacao()" data-testid="close-msg-renovacao"><i class="fas fa-times"></i></button>
       </div>
-      <p class="card-hint" style="margin: 0 0 6px;">Renovação confirmada! Use os botões abaixo para enviar ao cliente.</p>
+      <p class="card-hint" id="renewMsgSubtitle" style="margin: 0 0 6px;">Renovação confirmada! Use os botões abaixo para enviar ao cliente.</p>
       <div class="renew-msg-box" id="renewMsgBox" data-testid="renew-msg-box"></div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button type="button" class="btn-whatsapp" onclick="enviarMensagemRenovacaoWhatsApp()" data-testid="btn-whats-renovacao"><i class="fab fa-whatsapp"></i> Enviar via WhatsApp</button>

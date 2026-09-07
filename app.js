@@ -104,6 +104,17 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
     '',
     '🙏🏻 *Obrigado pela preferência!*'
   ].join('\n'),
+  pagamento_confirmado: [
+    '✅ Olá *{{nome}}*, recebemos seu pagamento!',
+    '',
+    'Sua assinatura já está *renovada e ativa*. 🎉',
+    '',
+    '📦 *Plano*: {{plano}}',
+    '💰 *Valor pago*: {{valor}}',
+    '🗓️ *Nova data de vencimento*: {{data_renovacao}}',
+    '',
+    '🙏 Muito obrigado pela confiança e pela preferência!'
+  ].join('\n'),
   teste_criado: [
     '🎉 Olá *{{nome}}*, *Teste Gerado com Sucesso!*',
     '',
@@ -200,6 +211,7 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
 const MESSAGE_TEMPLATE_META = Object.freeze({
   cobranca: { label: 'Cobrança / vencimento', variables: ['nome', 'status_vencimento', 'usuario', 'senha', 'plano', 'valor', 'link_renovacao'] },
   renovacao_confirmada: { label: 'Renovação confirmada', variables: ['status_pagamento', 'usuario', 'senha', 'data_renovacao'] },
+  pagamento_confirmado: { label: 'Pagamento pendente confirmado', variables: ['nome', 'plano', 'valor', 'data_renovacao'] },
   teste_criado: { label: 'Teste criado', variables: ['nome', 'usuario', 'senha', 'link_renovacao', 'duracao_teste'] },
   ativacao: { label: 'Ativação de usuário', variables: ['nome', 'usuario', 'senha', 'data_renovacao'] },
   dias_extras: { label: 'Dias extras', variables: ['dias', 'usuario', 'senha', 'valor_adicional', 'data_renovacao'] },
@@ -284,6 +296,12 @@ function getMessageTemplateSamples() {
       status_pagamento: 'Pago',
       usuario: cli.usuario || 'usuario_teste',
       senha: cli.senha || '123456',
+      data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30)))
+    },
+    pagamento_confirmado: {
+      nome: cli.nome || 'Cliente Exemplo',
+      plano: cli.plano || 'Plano Premium',
+      valor: cli.valor ? `R$ ${cli.valor}` : 'R$ 30,00',
       data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30)))
     },
     teste_criado: {
@@ -1301,8 +1319,10 @@ function copyMessage(id) {
         ? ` • Valor pago: ${fmtMoney(valorFinal)} (esperado ${fmtMoney(valorEsperado)})`
         : '';
       showToast(`Pagamento confirmado de ${client.nome} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} (${getPainelNome(painelId)})${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}${divergenciaMsg}`);
+      abrirModalMensagemPagamentoConfirmado(client);
     }
     window.confirmarPagamento = confirmarPagamento;
+    window.abrirModalMensagemPagamentoConfirmado = abrirModalMensagemPagamentoConfirmado;
 
     /* === Modal: confirmar pagamento (valor total ou outro valor) === */
     let pagamentoConfirmAtualId = null;
@@ -1464,20 +1484,42 @@ function buildRenewMessage(client) {
   });
 }
 
+function buildPagamentoConfirmadoMessage(client) {
+  const valor = Number(client.ultimoPagamentoValor);
+  const valorFmt = Number.isFinite(valor) ? `R$ ${valor.toFixed(2).replace('.', ',')}` : (client.valor ? `R$ ${client.valor}` : '');
+  return renderMessageTemplate('pagamento_confirmado', {
+    nome: client.nome || '',
+    plano: client.plano || '',
+    valor: valorFmt,
+    data_renovacao: formatDate(client.dataRenovacao)
+  });
+}
+
 let renovacaoClienteAtual = null;
-    function abrirModalMensagemRenovacao(client) {
+    let renovacaoMsgBuilderAtual = buildRenewMessage;
+    function abrirModalMensagemPosAcao(client, builder, subtitulo) {
       renovacaoClienteAtual = client;
+      renovacaoMsgBuilderAtual = builder;
       const box = document.getElementById('renewMsgBox');
-      if (box) box.textContent = buildRenewMessage(client);
+      if (box) box.textContent = builder(client);
+      const sub = document.getElementById('renewMsgSubtitle');
+      if (sub) sub.textContent = subtitulo;
       document.getElementById('modalMensagemRenovacao').classList.add('active');
+    }
+    function abrirModalMensagemRenovacao(client) {
+      abrirModalMensagemPosAcao(client, buildRenewMessage, 'Renovação confirmada! Use os botões abaixo para enviar ao cliente.');
+    }
+    function abrirModalMensagemPagamentoConfirmado(client) {
+      abrirModalMensagemPosAcao(client, buildPagamentoConfirmadoMessage, 'Pagamento recebido! Avise o cliente e agradeça a preferência.');
     }
     function fecharModalMensagemRenovacao() {
       document.getElementById('modalMensagemRenovacao').classList.remove('active');
       renovacaoClienteAtual = null;
+      renovacaoMsgBuilderAtual = buildRenewMessage;
     }
     function copiarMensagemRenovacao() {
       if (!renovacaoClienteAtual) return;
-      const msg = buildRenewMessage(renovacaoClienteAtual);
+      const msg = renovacaoMsgBuilderAtual(renovacaoClienteAtual);
       const name = renovacaoClienteAtual.nome || '';
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(msg).then(() => showToast(`Mensagem copiada para ${name}`)).catch(() => fallbackCopy(msg, name));
@@ -1487,7 +1529,7 @@ let renovacaoClienteAtual = null;
       if (!renovacaoClienteAtual) return;
       const c = renovacaoClienteAtual;
       const phone = String(c.telefone || '').replace(/\D/g, '');
-      const text = encodeURIComponent(buildRenewMessage(c));
+      const text = encodeURIComponent(renovacaoMsgBuilderAtual(c));
       const url = phone ? `https://api.whatsapp.com/send?phone=${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
       const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
