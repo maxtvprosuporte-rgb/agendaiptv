@@ -824,7 +824,8 @@
         <div class="form-grid">
           <div class="field"><label for="ec_nome">Nome</label><input id="ec_nome" required data-testid="ec-nome" /></div>
           <div class="field"><label for="ec_telefone">Telefone</label><input id="ec_telefone" placeholder="Ex.: 41999998888" data-testid="ec-telefone" /></div>
-          <div class="field"><label for="ec_aplicativo">Aplicativo</label><select id="ec_aplicativo" data-testid="ec-aplicativo" onchange="atualizarInfoAplicativoSelecionado('ec_aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="ecAplicativoInfo" data-testid="ec-aplicativo-info" style="margin-top:6px;"></div></div>
+          <div class="field"><label for="ec_painel">Painel</label><select id="ec_painel" data-testid="ec-painel" onchange="atualizarSelectAplicativos()"><option value="">Selecione um painel</option></select></div>
+          <div class="field"><label for="ec_aplicativo">Aplicativo</label><select id="ec_aplicativo" data-testid="ec-aplicativo" disabled onchange="atualizarInfoAplicativoSelecionado('ec_aplicativo')"><option value="">Selecione um painel primeiro</option></select><div class="app-select-info" id="ecAplicativoInfo" data-testid="ec-aplicativo-info" style="margin-top:6px;"></div></div>
           <div class="field"><label for="ec_usuario">Usuário</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
           <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
           <div class="field" id="ec_duracaoTeste_wrap">
@@ -870,7 +871,8 @@
         <div class="form-grid">
           <div class="field"><label for="nc_nome">Nome</label><input id="nc_nome" required data-testid="nc-nome" /></div>
           <div class="field"><label for="nc_telefone">Telefone</label><input id="nc_telefone" placeholder="Ex.: 41999998888" data-testid="nc-telefone" /></div>
-          <div class="field"><label for="nc_aplicativo">Aplicativo</label><select id="nc_aplicativo" data-testid="nc-aplicativo" onchange="atualizarInfoAplicativoSelecionado('nc_aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="ncAplicativoInfo" data-testid="nc-aplicativo-info" style="margin-top:6px;"></div></div>
+          <div class="field"><label for="nc_painel">Painel</label><select id="nc_painel" data-testid="nc-painel" onchange="atualizarSelectAplicativos()"><option value="">Selecione um painel</option></select></div>
+          <div class="field"><label for="nc_aplicativo">Aplicativo</label><select id="nc_aplicativo" data-testid="nc-aplicativo" disabled onchange="atualizarInfoAplicativoSelecionado('nc_aplicativo')"><option value="">Selecione um painel primeiro</option></select><div class="app-select-info" id="ncAplicativoInfo" data-testid="nc-aplicativo-info" style="margin-top:6px;"></div></div>
           <div class="field"><label for="nc_usuario">Usuário</label><input id="nc_usuario" required data-testid="nc-usuario" /></div>
           <div class="field"><label for="nc_senha">Senha</label><input id="nc_senha" required data-testid="nc-senha" /></div>
           <div class="field"><label for="nc_plano">Plano</label><select id="nc_plano" data-testid="nc-plano"><option value="">Selecione um plano</option></select></div>
@@ -920,7 +922,8 @@
         <div class="form-grid">
           <div class="field"><label for="nome">Nome</label><input id="nome" required data-testid="input-nome" /></div>
           <div class="field"><label for="telefone">Telefone</label><input id="telefone" placeholder="Ex.: 41999998888" data-testid="input-telefone" /></div>
-          <div class="field"><label for="aplicativo">Aplicativo</label><select id="aplicativo" data-testid="input-aplicativo" onchange="atualizarInfoAplicativoSelecionado('aplicativo')"><option value="">Selecione um aplicativo</option></select><div class="app-select-info" id="aplicativoInfo" data-testid="aplicativo-info" style="margin-top:6px;"></div></div>
+          <div class="field"><label for="painel">Painel</label><select id="painel" data-testid="input-painel" onchange="atualizarSelectAplicativos()"><option value="">Selecione um painel</option></select></div>
+          <div class="field"><label for="aplicativo">Aplicativo</label><select id="aplicativo" data-testid="input-aplicativo" disabled onchange="atualizarInfoAplicativoSelecionado('aplicativo')"><option value="">Selecione um painel primeiro</option></select><div class="app-select-info" id="aplicativoInfo" data-testid="aplicativo-info" style="margin-top:6px;"></div></div>
           <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
           <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
           <div class="field">

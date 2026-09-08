@@ -3380,18 +3380,43 @@ function whatsAppTeste(id) {
       }).join('');
     }
     const APLICATIVO_SELECT_INFO_IDS = { aplicativo: 'aplicativoInfo', nc_aplicativo: 'ncAplicativoInfo', ec_aplicativo: 'ecAplicativoInfo' };
+    const PAINEL_APLICATIVO_PAIRS = { painel: 'aplicativo', nc_painel: 'nc_aplicativo', ec_painel: 'ec_aplicativo' };
+    const APLICATIVO_PAINEL_SELECT_IDS = { aplicativo: 'painel', nc_aplicativo: 'nc_painel', ec_aplicativo: 'ec_painel' };
+
+    /* Filtra o select de aplicativo pelos aplicativos cadastrados no painel escolhido
+       no select de painel correspondente. Enquanto nenhum painel for escolhido, o
+       select de aplicativo fica desabilitado — evita listar todos os apps de todos os
+       painéis misturados, que é o que causava confusão no cadastro. */
+    function atualizarAplicativosPorPainel(painelSelectId, aplicativoSelectId, manterId) {
+      const painelSel = painelSelectId ? document.getElementById(painelSelectId) : null;
+      const aplSel = document.getElementById(aplicativoSelectId);
+      if (!aplSel) return;
+      const painelId = painelSel ? painelSel.value : '';
+      const manter = manterId !== undefined ? manterId : aplSel.value;
+      const infoId = APLICATIVO_SELECT_INFO_IDS[aplicativoSelectId];
+      const info = infoId ? document.getElementById(infoId) : null;
+      if (!painelId) {
+        aplSel.innerHTML = '<option value="">Selecione um painel primeiro</option>';
+        aplSel.disabled = true;
+        aplSel.value = '';
+        if (info) info.innerHTML = '';
+        return;
+      }
+      const filtrados = aplicativos.filter(a => a.painelId === painelId);
+      aplSel.disabled = false;
+      aplSel.innerHTML = filtrados.length
+        ? '<option value="">Selecione um aplicativo</option>' + filtrados.map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('')
+        : '<option value="">Nenhum aplicativo cadastrado para este painel</option>';
+      aplSel.value = (manter && filtrados.some(a => String(a.id) === String(manter))) ? manter : '';
+      atualizarInfoAplicativoSelecionado(aplicativoSelectId);
+    }
+
     function atualizarSelectAplicativos() {
-      const ids = ['aplicativo', 'nc_aplicativo', 'ec_aplicativo'];
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el || el.tagName !== 'SELECT') return;
-        const currentVal = el.value;
-        const opcoes = aplicativos.map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
-        el.innerHTML = '<option value="">Selecione um aplicativo</option>' + opcoes;
-        if (currentVal && aplicativos.some(a => String(a.id) === String(currentVal))) el.value = currentVal;
-        atualizarInfoAplicativoSelecionado(id);
+      Object.keys(PAINEL_APLICATIVO_PAIRS).forEach(painelSelectId => {
+        atualizarAplicativosPorPainel(painelSelectId, PAINEL_APLICATIVO_PAIRS[painelSelectId]);
       });
     }
+    window.atualizarSelectAplicativos = atualizarSelectAplicativos;
     function atualizarInfoAplicativoSelecionado(selectId) {
       const infoId = APLICATIVO_SELECT_INFO_IDS[selectId];
       const info = infoId ? document.getElementById(infoId) : null;
@@ -3412,9 +3437,16 @@ function whatsAppTeste(id) {
     }
     function selecionarAplicativoPorId(selectEl, id) {
       if (!selectEl) return;
-      atualizarSelectAplicativos();
-      selectEl.value = id && aplicativos.some(a => a.id === id) ? id : '';
-      if (selectEl.id) atualizarInfoAplicativoSelecionado(selectEl.id);
+      const app = encontrarAplicativoPorId(id);
+      const painelSelId = APLICATIVO_PAINEL_SELECT_IDS[selectEl.id];
+      const painelSel = painelSelId ? document.getElementById(painelSelId) : null;
+      if (painelSel) painelSel.value = app ? (app.painelId || '') : '';
+      if (selectEl.id) {
+        atualizarAplicativosPorPainel(painelSelId, selectEl.id, id);
+      } else {
+        atualizarSelectAplicativos();
+        selectEl.value = id && aplicativos.some(a => a.id === id) ? id : '';
+      }
     }
     window.abrirModalAplicativo = abrirModalAplicativo;
     window.fecharModalAplicativo = fecharModalAplicativo;
@@ -3832,6 +3864,18 @@ function aplicarDiasExtras() {
         el.innerHTML = paineis.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
         if (cur && paineis.some(p => p.id === cur)) el.value = cur;
       });
+      // Selects de painel dos formulários de Teste/Cliente: começam vazios (sem
+      // pré-selecionar nenhum painel) para forçar a escolha explícita antes de
+      // liberar a lista de aplicativos daquele painel.
+      const idsComPlaceholder = ['painel', 'nc_painel', 'ec_painel'];
+      idsComPlaceholder.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const cur = el.value;
+        el.innerHTML = '<option value="">Selecione um painel</option>' + paineis.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
+        el.value = (cur && paineis.some(p => p.id === cur)) ? cur : '';
+      });
+      atualizarSelectAplicativos();
     }
 
     function renderMovimentacaoHtml(m, realIdx) {
