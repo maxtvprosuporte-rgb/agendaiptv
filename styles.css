@@ -428,31 +428,28 @@
       .subtab { font-size: 12.5px; padding: 8px 13px; }
     }
 
-    /* Desktop: sidebar as compact lateral menu (not a full drawer) */
+    /* Desktop: sidebar as compact lateral menu (not a full drawer).
+       Uses CSS Grid with named areas instead of flex-wrap: grid areas are hard
+       guarantees — sidebar and main-content always occupy separate, non-overlapping
+       regions regardless of content size, so there's no way for the sidebar to end up
+       floating on top of the page content again. */
     @media (min-width: 901px) {
       .sidebar-overlay { display: none !important; }
       .menu-toggle { display: none !important; }
 
-      /* Layout-critical: intentionally NOT gated behind body.is-authenticated/.auth-screen
-         classes. Gating this on JS-toggled body classes meant that any timing glitch in
-         the auth-state listener (or an error thrown before those classes were applied)
-         left .sidebar with no flex/sticky rule at all, so it rendered as a loose block
-         floating over .main-content instead of docking beside it — this is what caused
-         the sidebar to appear "on top of" the page content on Mensagens/Configuração.
-         The login screen still gets its own centered layout because
-         "body.auth-screen .container" (below) is more specific and wins regardless. */
       .container {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-start;
+        display: grid;
+        grid-template-columns: 196px minmax(0, 1fr);
+        grid-template-areas: "topbar topbar" "sidebar main";
+        align-items: start;
         gap: 24px;
       }
       .topbar {
-        flex: 1 1 100%;
+        grid-area: topbar;
         width: 100%;
       }
       .sidebar {
-        flex: 0 0 196px;
+        grid-area: sidebar;
         position: sticky;
         top: 20px;
         z-index: 20;
@@ -465,7 +462,7 @@
         overflow-y: auto;
       }
       .main-content {
-        flex: 1 1 auto;
+        grid-area: main;
         min-width: 0;
       }
       body.auth-screen .container,
