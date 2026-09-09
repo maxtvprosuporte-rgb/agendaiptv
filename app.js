@@ -2327,16 +2327,23 @@ let ativacaoClienteAtual = null;
       });
     }
     const APLICATIVO_MSG_VARIAVEIS = ['nome', 'aplicativo', 'plataforma', 'sistema', 'link_download', 'usuario', 'senha', 'duracao_teste', 'plano', 'link_pagamento'];
+    let aplicativoMsgFocoAtual = 'teste';
+    function definirFocoMsgAplicativo(origem) { aplicativoMsgFocoAtual = origem; }
+    window.definirFocoMsgAplicativo = definirFocoMsgAplicativo;
     function renderAplicativoMsgVars() {
-      [['apMsgTesteVars', 'apMsgTeste', 'teste'], ['apMsgClienteVars', 'apMsgCliente', 'cliente']].forEach(([wrapId, textareaId, origem]) => {
-        const el = document.getElementById(wrapId);
-        if (!el || el.dataset.loaded) return;
-        el.innerHTML = APLICATIVO_MSG_VARIAVEIS.map(v =>
-          `<button type="button" class="var-chip" onclick="insertVariavelAplicativo('${v}','${textareaId}','${origem}')" title="Clique para inserir">{{${v}}}</button>`
-        ).join('');
-        el.dataset.loaded = '1';
-      });
+      const el = document.getElementById('apMsgVars');
+      if (!el || el.dataset.loaded) return;
+      el.innerHTML = APLICATIVO_MSG_VARIAVEIS.map(v =>
+        `<button type="button" class="var-chip" onclick="insertVariavelAplicativoFoco('${v}')" title="Clique para inserir">{{${v}}}</button>`
+      ).join('');
+      el.dataset.loaded = '1';
     }
+    function insertVariavelAplicativoFoco(varName) {
+      const origem = aplicativoMsgFocoAtual === 'cliente' ? 'cliente' : 'teste';
+      const textareaId = origem === 'cliente' ? 'apMsgCliente' : 'apMsgTeste';
+      insertVariavelAplicativo(varName, textareaId, origem);
+    }
+    window.insertVariavelAplicativoFoco = insertVariavelAplicativoFoco;
     function insertVariavelAplicativo(varName, textareaId, origem) {
       const editor = document.getElementById(textareaId);
       if (!editor) return;
@@ -3244,13 +3251,16 @@ function whatsAppTeste(id) {
       adicionarLinhaPlataformaAplicativo({ painelId: paineis[0] ? paineis[0].id : '' });
       document.getElementById('apMsgTeste').value = APLICATIVO_MSG_TESTE_PADRAO;
       document.getElementById('apMsgCliente').value = APLICATIVO_MSG_CLIENTE_PADRAO;
+      aplicativoMsgFocoAtual = 'teste';
       renderAplicativoMsgVars();
       atualizarPreviewMsgAplicativoCadastro('teste');
       atualizarPreviewMsgAplicativoCadastro('cliente');
-      document.getElementById('modalAplicativo').classList.add('active');
+      document.getElementById('aplicativosListView').style.display = 'none';
+      document.getElementById('aplicativosCadastroView').style.display = '';
     }
     function fecharModalAplicativo() {
-      document.getElementById('modalAplicativo').classList.remove('active');
+      document.getElementById('aplicativosCadastroView').style.display = 'none';
+      document.getElementById('aplicativosListView').style.display = '';
       aplicativoEditandoId = null;
     }
     function editarAplicativo(id) {
@@ -3265,10 +3275,12 @@ function whatsAppTeste(id) {
       adicionarLinhaPlataformaAplicativo(dadosRow);
       document.getElementById('apMsgTeste').value = a.msgTeste || APLICATIVO_MSG_TESTE_PADRAO;
       document.getElementById('apMsgCliente').value = a.msgCliente || APLICATIVO_MSG_CLIENTE_PADRAO;
+      aplicativoMsgFocoAtual = 'teste';
       renderAplicativoMsgVars();
       atualizarPreviewMsgAplicativoCadastro('teste');
       atualizarPreviewMsgAplicativoCadastro('cliente');
-      document.getElementById('modalAplicativo').classList.add('active');
+      document.getElementById('aplicativosListView').style.display = 'none';
+      document.getElementById('aplicativosCadastroView').style.display = '';
     }
     function adicionarLinhaPlataformaAplicativo(dados) {
       // Cada aplicativo cadastrado representa uma única instalação (pode ter múltiplas plataformas/sistemas).

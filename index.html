@@ -263,13 +263,68 @@
     </section>
 
     <section id="aplicativos" class="panel">
-      <div class="form-card">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-mobile-alt"></i><h2>Aplicativos Disponíveis</h2><span class="tag">Cadastro</span></div>
-          <button class="btn-primary" onclick="abrirModalAplicativo()" data-testid="btn-novo-aplicativo"><i class="fas fa-plus"></i> Novo Aplicativo</button>
+      <div id="aplicativosListView">
+        <div class="form-card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-mobile-alt"></i><h2>Aplicativos Disponíveis</h2><span class="tag">Cadastro</span></div>
+            <button class="btn-primary" onclick="abrirModalAplicativo()" data-testid="btn-novo-aplicativo"><i class="fas fa-plus"></i> Novo Aplicativo</button>
+          </div>
+          <p class="card-hint">Cadastre aqui os aplicativos usados para assistir (Ex.: XCIPTV, IBO Player, Smarters). Para cada um, adicione as instruções de instalação por plataforma (Android, iOS, Smart TV, Fire TV, etc). Eles aparecerão como lista nos formulários de Teste e Cliente, e poderão ser encaminhados ao cliente junto com usuário e senha.</p>
+          <div id="listaAplicativos" data-testid="lista-aplicativos"></div>
         </div>
-        <p class="card-hint">Cadastre aqui os aplicativos usados para assistir (Ex.: XCIPTV, IBO Player, Smarters). Para cada um, adicione as instruções de instalação por plataforma (Android, iOS, Smart TV, Fire TV, etc). Eles aparecerão como lista nos formulários de Teste e Cliente, e poderão ser encaminhados ao cliente junto com usuário e senha.</p>
-        <div id="listaAplicativos" data-testid="lista-aplicativos"></div>
+      </div>
+      <div id="aplicativosCadastroView" style="display:none;">
+        <div class="form-card">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-mobile-alt"></i><h2 id="modalAplicativoTitle">Adicionar Aplicativo</h2></div>
+            <button class="btn-secondary" onclick="fecharModalAplicativo()" data-testid="close-aplicativo"><i class="fas fa-arrow-left"></i> Voltar para a lista</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-tag"></i> 📁 Aplicativo</label>
+            <input type="text" id="apNome" class="form-input" placeholder="Ex: XCIPTV, IBO Player, Smarters" data-testid="ap-nome" oninput="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-icons"></i> Ícone</label>
+            <select id="apIcone" class="form-select" data-testid="ap-icone">
+              <option value="fas fa-mobile-alt">Celular</option>
+              <option value="fas fa-tablet-alt">Tablet</option>
+              <option value="fas fa-desktop">Computador</option>
+              <option value="fas fa-tv">Smart TV</option>
+              <option value="fas fa-satellite-dish">Dispositivos Smart TV</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-layer-group"></i> Instalação</label>
+            <p class="card-hint" style="margin: 0 0 10px;">Marque as plataformas e sistemas em que este aplicativo funciona (pode marcar mais de um) e, se necessário, informe o link de download.</p>
+            <div id="apPlataformasList"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-comment-dots"></i> Mensagem para Teste</label>
+            <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um teste.</p>
+            <textarea id="apMsgTeste" class="form-input" style="min-height:160px;" data-testid="ap-msg-teste" oninput="atualizarPreviewMsgAplicativoCadastro('teste')" onfocus="definirFocoMsgAplicativo('teste')"></textarea>
+            <div style="margin-top:8px;">
+              <span class="form-label"><i class="fas fa-eye"></i> Prévia</span>
+              <div id="apMsgTestePreview" class="template-preview" style="min-height:120px;"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-comment-dots"></i> Mensagem para Cliente</label>
+            <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um cliente ativo.</p>
+            <textarea id="apMsgCliente" class="form-input" style="min-height:160px;" data-testid="ap-msg-cliente" oninput="atualizarPreviewMsgAplicativoCadastro('cliente')" onfocus="definirFocoMsgAplicativo('cliente')"></textarea>
+            <div style="margin-top:8px;">
+              <span class="form-label"><i class="fas fa-eye"></i> Prévia</span>
+              <div id="apMsgClientePreview" class="template-preview" style="min-height:120px;"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="template-vars-wrap">
+              <span class="form-label"><i class="fas fa-code"></i> Variáveis disponíveis</span>
+              <p class="card-hint" style="margin: 4px 0 8px;">Clique para inserir na mensagem que você editou por último (Teste ou Cliente, o que estiver com o cursor).</p>
+              <div id="apMsgVars" class="template-vars"></div>
+            </div>
+          </div>
+          <button class="btn-primary btn-block" onclick="salvarAplicativo()" data-testid="save-aplicativo"><i class="fas fa-check"></i> Salvar Aplicativo</button>
+        </div>
       </div>
     </section>
 
@@ -745,61 +800,7 @@
     </div>
   </div>
 
-  <!-- Modal: Cadastrar/Editar Aplicativo -->
-  <div id="modalAplicativo" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title" id="modalAplicativoTitle">Adicionar Aplicativo</h3>
-        <button class="modal-close" onclick="fecharModalAplicativo()" data-testid="close-aplicativo"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="form-group">
-        <label class="form-label"><i class="fas fa-tag"></i> 📁 Aplicativo</label>
-        <input type="text" id="apNome" class="form-input" placeholder="Ex: XCIPTV, IBO Player, Smarters" data-testid="ap-nome" oninput="atualizarPreviewMsgAplicativoCadastro('teste'); atualizarPreviewMsgAplicativoCadastro('cliente');">
-      </div>
-      <div class="form-group">
-        <label class="form-label"><i class="fas fa-icons"></i> Ícone</label>
-        <select id="apIcone" class="form-select" data-testid="ap-icone">
-          <option value="fas fa-mobile-alt">Celular</option>
-          <option value="fas fa-tablet-alt">Tablet</option>
-          <option value="fas fa-desktop">Computador</option>
-          <option value="fas fa-tv">Smart TV</option>
-          <option value="fas fa-satellite-dish">Dispositivos Smart TV</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label"><i class="fas fa-layer-group"></i> Instalação</label>
-        <p class="card-hint" style="margin: 0 0 10px;">Marque as plataformas e sistemas em que este aplicativo funciona (pode marcar mais de um) e, se necessário, informe o link de download.</p>
-        <div id="apPlataformasList"></div>
-      </div>
-      <div class="form-group">
-        <label class="form-label"><i class="fas fa-comment-dots"></i> Mensagem para Teste</label>
-        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um teste.</p>
-        <textarea id="apMsgTeste" class="form-input" style="min-height:160px;" data-testid="ap-msg-teste" oninput="atualizarPreviewMsgAplicativoCadastro('teste')"></textarea>
-        <div class="template-vars-wrap" style="margin-top:8px;">
-          <span class="form-label"><i class="fas fa-code"></i> Variáveis disponíveis</span>
-          <div id="apMsgTesteVars" class="template-vars"></div>
-        </div>
-        <div style="margin-top:8px;">
-          <span class="form-label"><i class="fas fa-eye"></i> Prévia</span>
-          <div id="apMsgTestePreview" class="template-preview" style="min-height:120px;"></div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label"><i class="fas fa-comment-dots"></i> Mensagem para Cliente</label>
-        <p class="card-hint" style="margin: 0 0 10px;">Mensagem enviada quando este app for indicado para um cliente ativo.</p>
-        <textarea id="apMsgCliente" class="form-input" style="min-height:160px;" data-testid="ap-msg-cliente" oninput="atualizarPreviewMsgAplicativoCadastro('cliente')"></textarea>
-        <div class="template-vars-wrap" style="margin-top:8px;">
-          <span class="form-label"><i class="fas fa-code"></i> Variáveis disponíveis</span>
-          <div id="apMsgClienteVars" class="template-vars"></div>
-        </div>
-        <div style="margin-top:8px;">
-          <span class="form-label"><i class="fas fa-eye"></i> Prévia</span>
-          <div id="apMsgClientePreview" class="template-preview" style="min-height:120px;"></div>
-        </div>
-      </div>
-      <button class="btn-primary btn-block" onclick="salvarAplicativo()" data-testid="save-aplicativo"><i class="fas fa-check"></i> Salvar Aplicativo</button>
-    </div>
-  </div>
+  <!-- Modal: Cadastrar/Editar Aplicativo (agora é uma página dedicada, ver #aplicativosCadastroView) -->
 
   <div id="modalEditarMov" class="modal">
     <div class="modal-content sm">
