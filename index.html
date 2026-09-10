@@ -270,6 +270,14 @@
             <button class="btn-primary" onclick="abrirModalAplicativo()" data-testid="btn-novo-aplicativo"><i class="fas fa-plus"></i> Novo Aplicativo</button>
           </div>
           <p class="card-hint">Cadastre aqui os aplicativos usados para assistir (Ex.: XCIPTV, IBO Player, Smarters). Para cada um, adicione as instruções de instalação por plataforma (Android, iOS, Smart TV, Fire TV, etc). Eles aparecerão como lista nos formulários de Teste e Cliente, e poderão ser encaminhados ao cliente junto com usuário e senha.</p>
+          <div class="card-header" style="margin-top: 4px;">
+            <div class="field" style="max-width: 260px; margin: 0;">
+              <label for="filtroPainelAplicativos" style="font-size:11.5px;">Filtrar por painel</label>
+              <select id="filtroPainelAplicativos" data-testid="filtro-painel-aplicativos" onchange="atualizarListaAplicativos()">
+                <option value="">Todos os painéis</option>
+              </select>
+            </div>
+          </div>
           <div id="listaAplicativos" data-testid="lista-aplicativos"></div>
         </div>
       </div>

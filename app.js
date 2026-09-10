@@ -3184,11 +3184,10 @@ function whatsAppTeste(id) {
 
     /* ---------- APLICATIVOS (catálogo + instalação por plataforma) ---------- */
     const DISPOSITIVOS_OPCOES = [
-      { id: 'celular', nome: 'Celular' },
-      { id: 'tablet', nome: 'Tablet' },
+      { id: 'celular_tablet', nome: 'Celular/Tablet' },
       { id: 'computador', nome: 'Computador' },
-      { id: 'smarttv', nome: 'SmartTV' },
-      { id: 'dispositivo_smarttv', nome: 'Dispositivo SmartTV' }
+      { id: 'smarttv', nome: 'Smart TV' },
+      { id: 'dispositivo_smarttv', nome: 'Dispositivos Smart TV' }
     ];
     const SISTEMAS_OPCOES = [
       { id: 'android', nome: 'Android' },
@@ -3196,8 +3195,16 @@ function whatsAppTeste(id) {
       { id: 'windows', nome: 'Windows' },
       { id: 'tizen', nome: 'Tizen' },
       { id: 'webos', nome: 'webOS' },
-      { id: 'roku', nome: 'Roku' }
+      { id: 'roku', nome: 'Roku' },
+      { id: 'vegaos', nome: 'VegaOS' }
     ];
+    // Cadastros antigos podiam ter "Celular" e "Tablet" como opções separadas — agora
+    // viraram uma única opção "Celular/Tablet". Isso remapeia e remove duplicatas para
+    // que aplicativos já cadastrados continuem mostrando a plataforma certa marcada.
+    function migrarDispositivos(ids) {
+      const mapeados = (Array.isArray(ids) ? ids : []).map(id => (id === 'celular' || id === 'tablet') ? 'celular_tablet' : id);
+      return Array.from(new Set(mapeados));
+    }
     function labelDispositivos(ids) {
       return (Array.isArray(ids) ? ids : []).map(id => (DISPOSITIVOS_OPCOES.find(o => o.id === id) || {}).nome || id).join(', ');
     }
@@ -3224,13 +3231,13 @@ function whatsAppTeste(id) {
         icone: a.icone || 'fas fa-mobile-alt',
         plataformas: Array.isArray(a.plataformas) ? a.plataformas.map(p => {
           if (Array.isArray(p.dispositivos) || Array.isArray(p.sistemas)) {
-            return { id: p.id || generateId(), dispositivos: p.dispositivos || [], sistemas: p.sistemas || [], link: p.link || '' };
+            return { id: p.id || generateId(), dispositivos: migrarDispositivos(p.dispositivos || []), sistemas: p.sistemas || [], link: p.link || '' };
           }
           // Migração de cadastros antigos (campo único "Plataforma": Android/iOS/Computador/Smart TV/Smart TV Android)
           const legado = LEGACY_PLATAFORMA_MAP[String(p.nome || '').trim().toLowerCase()];
           return {
             id: p.id || generateId(),
-            dispositivos: legado ? legado.dispositivos : [],
+            dispositivos: migrarDispositivos(legado ? legado.dispositivos : []),
             sistemas: legado ? legado.sistemas : [],
             link: p.link || ''
           };
@@ -3368,8 +3375,12 @@ function whatsAppTeste(id) {
     function atualizarListaAplicativos() {
       const lista = document.getElementById('listaAplicativos');
       if (!lista) return;
+      const filtroSel = document.getElementById('filtroPainelAplicativos');
+      const filtroPainelId = filtroSel ? filtroSel.value : '';
+      const aplicativosFiltrados = filtroPainelId ? aplicativos.filter(a => a.painelId === filtroPainelId) : aplicativos;
       if (aplicativos.length === 0) { lista.innerHTML = '<div class="empty-state"><i class="fas fa-mobile-alt"></i><p>Nenhum aplicativo cadastrado</p></div>'; return; }
-      lista.innerHTML = aplicativos.map(a => {
+      if (aplicativosFiltrados.length === 0) { lista.innerHTML = '<div class="empty-state"><i class="fas fa-mobile-alt"></i><p>Nenhum aplicativo cadastrado para este painel</p></div>'; return; }
+      lista.innerHTML = aplicativosFiltrados.map(a => {
         const chips = (a.plataformas || []).flatMap(p => [
           ...(p.dispositivos || []).map(d => `<span class="app-platform-chip"><i class="fas fa-check" style="font-size:8px;"></i> ${escapeHtml(labelDispositivos([d]))}</span>`),
           ...(p.sistemas || []).map(s => `<span class="app-platform-chip"><i class="fas fa-microchip" style="font-size:8px;"></i> ${escapeHtml(labelSistemas([s]))}</span>`)
@@ -3887,6 +3898,13 @@ function aplicarDiasExtras() {
         el.innerHTML = '<option value="">Selecione um painel</option>' + paineis.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
         el.value = (cur && paineis.some(p => p.id === cur)) ? cur : '';
       });
+      // Filtro da lista de Aplicativos: "Todos os painéis" + cada painel cadastrado.
+      const filtroAp = document.getElementById('filtroPainelAplicativos');
+      if (filtroAp) {
+        const cur = filtroAp.value;
+        filtroAp.innerHTML = '<option value="">Todos os painéis</option>' + paineis.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
+        filtroAp.value = (cur && paineis.some(p => p.id === cur)) ? cur : '';
+      }
       atualizarSelectAplicativos();
     }
 
