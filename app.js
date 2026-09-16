@@ -3735,6 +3735,22 @@ function aplicarDiasExtras() {
         }).join('');
     }
 
+    /* Reserva de recarga (custo médio ponderado dos créditos usados no período),
+       agrupada por painel — mesma lógica do total mostrado no Dashboard, só que
+       detalhada painel a painel, pra saber quanto separar de cada um. */
+    function computeReservaRecargaPorPainel(filterFn) {
+      const custoAtribuido = computeCustoCreditoAtribuido();
+      const porPainel = {};
+      const primeiroPainelId = paineis[0] && paineis[0].id;
+      movimentacoes.forEach(m => {
+        if (m.tipo !== 'use' || !filterFn(m)) return;
+        const pid = (m.painelId && paineis.some(p => p.id === m.painelId)) ? m.painelId : primeiroPainelId;
+        if (!pid) return;
+        porPainel[pid] = (porPainel[pid] || 0) + (custoAtribuido.get(m) || 0);
+      });
+      return porPainel;
+    }
+
     function atualizarCreditos() {
       // Cálculo por painel
       const stats = {};
@@ -3746,6 +3762,8 @@ function aplicarDiasExtras() {
         else if (m.tipo === 'use') { s.usados += Number(m.quantidade) || 0; s.disponiveis -= Number(m.quantidade) || 0; }
         else if (m.tipo === 'reserve') { s.reservados += Number(m.quantidade) || 0; s.disponiveis -= Number(m.quantidade) || 0; }
       });
+      const mkAtual = getCurrentMonthKey();
+      const reservaPorPainel = computeReservaRecargaPorPainel(m => monthKey(m.data) === mkAtual);
       const grid = document.getElementById('paineisGrid');
       if (grid) {
         grid.innerHTML = paineis.map((p, idx) => {
@@ -3754,6 +3772,7 @@ function aplicarDiasExtras() {
           const disp = Number.isInteger(s.disponiveis) ? s.disponiveis : s.disponiveis.toFixed(3);
           const usd = Number.isInteger(s.usados) ? s.usados : s.usados.toFixed(3);
           const res = Number.isInteger(s.reservados) ? s.reservados : s.reservados.toFixed(3);
+          const reservaRecarga = reservaPorPainel[p.id] || 0;
           const cor = p.cor || '#39ff14';
           const logoHtml = p.logo
             ? `<img class="painel-logo" src="${escapeHtml(p.logo)}" alt="Logo ${escapeHtml(p.nome)}" data-testid="painel-logo-${p.id}" />`
@@ -3796,6 +3815,10 @@ function aplicarDiasExtras() {
                 <div class="painel-stat">
                   <div class="painel-stat-value" style="color: #ff9b9b;" data-testid="painel-custo-${p.id}">R$ ${s.custoTotal.toFixed(2)}</div>
                   <div class="painel-stat-label">Custo Total</div>
+                </div>
+                <div class="painel-stat" title="Custo dos créditos usados neste painel no mês atual — reserve esse valor antes de contar como lucro.">
+                  <div class="painel-stat-value" style="color: #a02323;" data-testid="painel-reserva-${p.id}">R$ ${reservaRecarga.toFixed(2)}</div>
+                  <div class="painel-stat-label">Reserva p/ Recarga (mês)</div>
                 </div>
               </div>
             </div>`;
