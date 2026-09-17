@@ -2637,15 +2637,18 @@ function whatsAppTeste(id) {
       document.getElementById('ec_observacoes').value = target.observacoes || '';
       const inicioWrap = document.getElementById('ec_inicio_wrap');
       const renovWrap = document.getElementById('ec_renovacao_wrap');
+      const datasSection = document.getElementById('ec_datas_section');
       const duracaoTesteWrap = document.getElementById('ec_duracaoTeste_wrap');
       document.getElementById('ec_duracaoTeste').value = target.duracaoTeste || '';
       if (duracaoTesteWrap) duracaoTesteWrap.style.display = editKind === 'teste' ? '' : 'none';
       if (editKind === 'client') {
+        if (datasSection) datasSection.style.display = '';
         inicioWrap.style.display = ''; renovWrap.style.display = '';
         document.getElementById('ec_dataInicio').value = target.dataInicio || target.dataPagamento || '';
         document.getElementById('ec_dataRenovacao').value = target.dataRenovacao || '';
         document.getElementById('modalEditarClienteTitle').textContent = `Editar Cliente • ${target.nome || ''}`;
       } else {
+        if (datasSection) datasSection.style.display = 'none';
         inicioWrap.style.display = 'none'; renovWrap.style.display = 'none';
         document.getElementById('ec_dataInicio').value = ''; document.getElementById('ec_dataRenovacao').value = '';
         document.getElementById('modalEditarClienteTitle').textContent = `Editar Teste • ${target.nome || ''}`;
