@@ -3751,6 +3751,24 @@ function aplicarDiasExtras() {
       return porPainel;
     }
 
+    /* Quantos clientes ativos (não vencidos) cada painel tem no momento. O painel de
+       um cliente vem do Plano cadastrado nele (mesma regra usada em toda a renovação);
+       se o plano não existir mais, cai no primeiro painel, igual ao resto do sistema. */
+    function contarClientesAtivosPorPainel() {
+      const contagem = {};
+      const primeiroPainelId = paineis[0] && paineis[0].id;
+      clients.forEach(c => {
+        const diff = getDaysUntil(c);
+        const ativo = diff === null || diff >= 0;
+        if (!ativo) return;
+        const plano = encontrarPlanoPorNome(c.plano);
+        const pid = (plano && plano.painelId && paineis.some(p => p.id === plano.painelId)) ? plano.painelId : primeiroPainelId;
+        if (!pid) return;
+        contagem[pid] = (contagem[pid] || 0) + 1;
+      });
+      return contagem;
+    }
+
     function atualizarCreditos() {
       // Cálculo por painel
       const stats = {};
@@ -3764,6 +3782,7 @@ function aplicarDiasExtras() {
       });
       const mkAtual = getCurrentMonthKey();
       const reservaPorPainel = computeReservaRecargaPorPainel(m => monthKey(m.data) === mkAtual);
+      const clientesAtivosPorPainel = contarClientesAtivosPorPainel();
       const grid = document.getElementById('paineisGrid');
       if (grid) {
         grid.innerHTML = paineis.map((p, idx) => {
@@ -3773,6 +3792,7 @@ function aplicarDiasExtras() {
           const usd = Number.isInteger(s.usados) ? s.usados : s.usados.toFixed(3);
           const res = Number.isInteger(s.reservados) ? s.reservados : s.reservados.toFixed(3);
           const reservaRecarga = reservaPorPainel[p.id] || 0;
+          const clientesAtivos = clientesAtivosPorPainel[p.id] || 0;
           const cor = p.cor || '#39ff14';
           const logoHtml = p.logo
             ? `<img class="painel-logo" src="${escapeHtml(p.logo)}" alt="Logo ${escapeHtml(p.nome)}" data-testid="painel-logo-${p.id}" />`
@@ -3820,6 +3840,10 @@ function aplicarDiasExtras() {
                   <div class="painel-stat" title="Custo dos créditos usados neste painel no mês atual — reserve esse valor antes de contar como lucro.">
                     <div class="painel-stat-value" style="color: #a02323;" data-testid="painel-reserva-${p.id}">R$ ${reservaRecarga.toFixed(2)}</div>
                     <div class="painel-stat-label">Reserva p/ Recarga (mês)</div>
+                  </div>
+                  <div class="painel-stat">
+                    <div class="painel-stat-value" style="color: var(--primary);" data-testid="painel-clientes-ativos-${p.id}">${clientesAtivos}</div>
+                    <div class="painel-stat-label">Clientes Ativos</div>
                   </div>
                 </div>
               </div>
