@@ -3785,40 +3785,42 @@ function aplicarDiasExtras() {
               <div class="painel-box-head">
                 <span class="painel-box-tag">Painel ${idx + 1}</span>
                 <input class="painel-name-input" type="text" value="${escapeHtml(p.nome)}" data-painel-id="${p.id}" data-testid="painel-nome-${p.id}" />
-                <button type="button" class="painel-brand-btn danger" onclick="removerPainel('${p.id}')" title="Excluir painel" style="margin-left:auto; flex-shrink:0;"><i class="fas fa-trash-alt"></i> Excluir</button>
+                <button type="button" class="painel-box-delete" onclick="removerPainel('${p.id}')" title="Excluir painel" data-testid="painel-excluir-${p.id}"><i class="fas fa-trash-alt"></i></button>
               </div>
-              <div class="painel-brand-row">
-                ${logoHtml}
-                <div class="painel-brand-actions">
-                  <button type="button" class="painel-brand-btn" data-action="upload-logo" data-painel-id="${p.id}" data-testid="painel-logo-upload-${p.id}"><i class="fas fa-upload"></i> ${p.logo ? 'Trocar logo' : 'Enviar logo'}</button>
-                  ${logoRemoveBtn}
+              <div class="painel-body">
+                <div class="painel-brand-row">
+                  ${logoHtml}
+                  <div class="painel-brand-actions">
+                    <button type="button" class="painel-brand-btn" data-action="upload-logo" data-painel-id="${p.id}" data-testid="painel-logo-upload-${p.id}"><i class="fas fa-upload"></i> ${p.logo ? 'Trocar logo' : 'Enviar logo'}</button>
+                    ${logoRemoveBtn}
+                  </div>
                   <label class="painel-color-wrap" title="Cor do painel">
                     <input type="color" class="painel-color-swatch" value="${cor}" data-painel-id="${p.id}" data-testid="painel-cor-${p.id}" />
                     <span class="painel-color-label">${cor.toUpperCase()}</span>
                   </label>
+                  <input type="file" accept="image/*" class="painel-file-hidden" data-painel-file="${p.id}" data-testid="painel-logo-file-${p.id}" />
                 </div>
-                <input type="file" accept="image/*" class="painel-file-hidden" data-painel-file="${p.id}" data-testid="painel-logo-file-${p.id}" />
-              </div>
-              <div class="painel-stats">
-                <div class="painel-stat">
-                  <div class="painel-stat-value" data-testid="painel-disp-${p.id}">${disp}</div>
-                  <div class="painel-stat-label">Disponíveis</div>
-                </div>
-                <div class="painel-stat">
-                  <div class="painel-stat-value" style="color: var(--warning);" data-testid="painel-res-${p.id}">${res}</div>
-                  <div class="painel-stat-label">Reservados</div>
-                </div>
-                <div class="painel-stat">
-                  <div class="painel-stat-value" style="color: var(--info);" data-testid="painel-usd-${p.id}">${usd}</div>
-                  <div class="painel-stat-label">Usados</div>
-                </div>
-                <div class="painel-stat">
-                  <div class="painel-stat-value" style="color: #ff9b9b;" data-testid="painel-custo-${p.id}">R$ ${s.custoTotal.toFixed(2)}</div>
-                  <div class="painel-stat-label">Custo Total</div>
-                </div>
-                <div class="painel-stat" title="Custo dos créditos usados neste painel no mês atual — reserve esse valor antes de contar como lucro.">
-                  <div class="painel-stat-value" style="color: #a02323;" data-testid="painel-reserva-${p.id}">R$ ${reservaRecarga.toFixed(2)}</div>
-                  <div class="painel-stat-label">Reserva p/ Recarga (mês)</div>
+                <div class="painel-stats">
+                  <div class="painel-stat">
+                    <div class="painel-stat-value" data-testid="painel-disp-${p.id}">${disp}</div>
+                    <div class="painel-stat-label">Disponíveis</div>
+                  </div>
+                  <div class="painel-stat">
+                    <div class="painel-stat-value" style="color: var(--warning);" data-testid="painel-res-${p.id}">${res}</div>
+                    <div class="painel-stat-label">Reservados</div>
+                  </div>
+                  <div class="painel-stat">
+                    <div class="painel-stat-value" style="color: var(--info);" data-testid="painel-usd-${p.id}">${usd}</div>
+                    <div class="painel-stat-label">Usados</div>
+                  </div>
+                  <div class="painel-stat">
+                    <div class="painel-stat-value" style="color: #ff9b9b;" data-testid="painel-custo-${p.id}">R$ ${s.custoTotal.toFixed(2)}</div>
+                    <div class="painel-stat-label">Custo Total</div>
+                  </div>
+                  <div class="painel-stat" title="Custo dos créditos usados neste painel no mês atual — reserve esse valor antes de contar como lucro.">
+                    <div class="painel-stat-value" style="color: #a02323;" data-testid="painel-reserva-${p.id}">R$ ${reservaRecarga.toFixed(2)}</div>
+                    <div class="painel-stat-label">Reserva p/ Recarga (mês)</div>
+                  </div>
                 </div>
               </div>
             </div>`;
