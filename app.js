@@ -3740,16 +3740,29 @@ function aplicarDiasExtras() {
 
     /* Reserva de recarga (custo médio ponderado dos créditos usados no período),
        agrupada por painel — mesma lógica do total mostrado no Dashboard, só que
-       detalhada painel a painel, pra saber quanto separar de cada um. */
-    function computeReservaRecargaPorPainel(filterFn) {
+       detalhada painel a painel, pra saber quanto separar de cada um. Recebe a
+       month key (não um filtro genérico) porque também precisa aplicar a mesma
+       regra de "fixo do mês" usada nos lançamentos de Lucro/Custo Extra. */
+    function computeReservaRecargaPorPainel(mk) {
       const custoAtribuido = computeCustoCreditoAtribuido();
       const porPainel = {};
       const primeiroPainelId = paineis[0] && paineis[0].id;
       movimentacoes.forEach(m => {
-        if (m.tipo !== 'use' || !filterFn(m)) return;
+        if (m.tipo !== 'use' || monthKey(m.data) !== mk) return;
         const pid = (m.painelId && paineis.some(p => p.id === m.painelId)) ? m.painelId : primeiroPainelId;
         if (!pid) return;
         porPainel[pid] = (porPainel[pid] || 0) + (custoAtribuido.get(m) || 0);
+      });
+      // Lucro/Custo Extra vinculado a um painel específico sai do mesmo "bolso" da
+      // reserva daquele painel: custo extra reduz o que sobra reservado, lucro extra
+      // reforça a reserva — mesma regra aplicada no total do Dashboard.
+      lucrosCustos.forEach(lc => {
+        if (!lc.painelId || !paineis.some(p => p.id === lc.painelId)) return;
+        const startKey = monthKey(lc.data);
+        if (!startKey) return;
+        const aplicaNoMes = lc.fixo ? (startKey <= mk) : (startKey === mk);
+        if (!aplicaNoMes) return;
+        porPainel[lc.painelId] = (porPainel[lc.painelId] || 0) + Number(lc.valor || 0);
       });
       return porPainel;
     }
@@ -3784,7 +3797,7 @@ function aplicarDiasExtras() {
         else if (m.tipo === 'reserve') { s.reservados += Number(m.quantidade) || 0; s.disponiveis -= Number(m.quantidade) || 0; }
       });
       const mkAtual = getCurrentMonthKey();
-      const reservaPorPainel = computeReservaRecargaPorPainel(m => monthKey(m.data) === mkAtual);
+      const reservaPorPainel = computeReservaRecargaPorPainel(mkAtual);
       const clientesAtivosPorPainel = contarClientesAtivosPorPainel();
       const grid = document.getElementById('paineisGrid');
       if (grid) {
@@ -3956,6 +3969,13 @@ function aplicarDiasExtras() {
         const cur = filtroAp.value;
         filtroAp.innerHTML = '<option value="">Todos os painéis</option>' + paineis.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
         filtroAp.value = (cur && paineis.some(p => p.id === cur)) ? cur : '';
+      }
+      // Lucro/Custo Extra: de qual painel esse valor está sendo utilizado (opcional).
+      const lcPainelSel = document.getElementById('lc_painel');
+      if (lcPainelSel) {
+        const cur = lcPainelSel.value;
+        lcPainelSel.innerHTML = '<option value="">Nenhum (não afeta reserva de nenhum painel)</option>' + paineis.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
+        lcPainelSel.value = (cur && paineis.some(p => p.id === cur)) ? cur : '';
       }
       atualizarSelectAplicativos();
     }
@@ -4160,20 +4180,29 @@ function aplicarDiasExtras() {
       if (isNaN(valor) || !info) { showToast('Preencha valor e informação.', true); return; }
       const fixoEl = document.querySelector('input[name="lc_fixo"]:checked');
       const fixo = !!(fixoEl && fixoEl.value === 'sim');
-      lucrosCustos.push({ data: new Date().toISOString(), valor, info, fixo });
+      const painelSel = document.getElementById('lc_painel');
+      const painelId = painelSel ? painelSel.value : '';
+      lucrosCustos.push({ data: new Date().toISOString(), valor, info, fixo, painelId: painelId || null });
       salvarLucrosCustos();
       atualizarListaLucrosCustos();
       atualizarSelectMesGestao();
       atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      atualizarCreditos();
+      atualizarDashboardFinanceiro();
       document.getElementById('valorLucroCusto').value = '';
       document.getElementById('infoLucroCusto').value = '';
+      if (painelSel) painelSel.value = '';
       // reset radio para "Não"
       const naoR = document.querySelector('input[name="lc_fixo"][value="nao"]');
       if (naoR) naoR.checked = true;
       const lcNao = document.getElementById('lc_fixo_nao');
       const lcSim = document.getElementById('lc_fixo_sim');
       if (lcNao && lcSim) { lcNao.classList.add('active'); lcSim.classList.remove('active'); }
-      showToast(fixo ? 'Lucro/Custo fixo adicionado (recorrente).' : 'Lucro/Custo adicionado.');
+      const painelNome = painelId ? (getPainelNome(painelId) || '') : '';
+      showToast(
+        (fixo ? 'Lucro/Custo fixo adicionado (recorrente).' : 'Lucro/Custo adicionado.') +
+        (painelNome ? ` Ajustado na reserva do painel ${painelNome}.` : '')
+      );
     }
     function atualizarListaLucrosCustos() {
       const lista = document.getElementById('listaLucrosCustos');
@@ -4187,6 +4216,9 @@ function aplicarDiasExtras() {
         const fixoBadge = lc.fixo
           ? `<span class="pill" style="background:rgba(255,228,92,.10); color:var(--warning); border-color:rgba(255,228,92,.35); font-size:11px;"><i class="fas fa-sync-alt" style="margin-right:4px;"></i>Fixo do mês</span>`
           : '';
+        const painelBadge = lc.painelId
+          ? `<span class="pill" style="background:rgba(57,255,20,.08); color: var(--primary); border-color: rgba(57,255,20,.3); font-size:11px;"><i class="fas fa-layer-group" style="margin-right:4px;"></i>${escapeHtml(getPainelNome(lc.painelId) || 'Painel removido')}</span>`
+          : '';
         const dataStr = lc.data ? formatDateTimeSaoPaulo(lc.data) : '';
         return `
           <div class="list-item" data-testid="lc-item-${idx}">
@@ -4194,7 +4226,7 @@ function aplicarDiasExtras() {
               <div class="list-item-icon" style="color:${cor};"><i class="fas fa-${lc.valor >= 0 ? 'arrow-up' : 'arrow-down'}"></i></div>
               <div style="flex:1; min-width:0;">
                 <div class="list-item-text" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                  ${escapeHtml(lc.info)} ${fixoBadge}
+                  ${escapeHtml(lc.info)} ${fixoBadge} ${painelBadge}
                 </div>
                 <div class="list-item-sub">${tipo} • Cadastrado em ${dataStr}${lc.fixo ? ' • Replicado mensalmente' : ''}</div>
               </div>
@@ -4725,25 +4757,26 @@ function aplicarDiasExtras() {
 
     function computeTotaisMesAtual() {
       const mk = getCurrentMonthKey();
-      const { custoCredito, lucro: lucroUso, taxas, porTipo } = computeResumoUsoCreditos(m => monthKey(m.data) === mk);
-      let lucro = lucroUso, custo = custoCredito;
+      const { custoCredito: custoCreditoBase, lucro: lucroUso, taxas, porTipo } = computeResumoUsoCreditos(m => monthKey(m.data) === mk);
+      let lucro = lucroUso, custo = custoCreditoBase;
+      let reservaAjustada = custoCreditoBase;
       // Lucros/custos fixos do mês atual
       lucrosCustos.forEach(lc => {
         const startKey = monthKey(lc.data);
         if (!startKey) return;
-        if (lc.fixo) {
-          if (startKey <= mk) {
-            if (lc.valor >= 0) lucro += lc.valor;
-            else custo += Math.abs(lc.valor);
-          }
-        } else {
-          if (monthKey(lc.data) === mk) {
-            if (lc.valor >= 0) lucro += lc.valor;
-            else custo += Math.abs(lc.valor);
-          }
+        const aplicaNoMes = lc.fixo ? (startKey <= mk) : (startKey === mk);
+        if (!aplicaNoMes) return;
+        if (lc.valor >= 0) lucro += lc.valor;
+        else custo += Math.abs(lc.valor);
+        // Quando o lançamento está vinculado a um painel, ele sai do mesmo "bolso"
+        // da reserva de recarga daquele painel: um custo extra pago com a reserva
+        // reduz o que ainda sobra reservado; um lucro extra destinado ao painel
+        // reforça a reserva.
+        if (lc.painelId && paineis.some(p => p.id === lc.painelId)) {
+          reservaAjustada += Number(lc.valor || 0);
         }
       });
-      return { custo, custoCredito, custoExtra: custo - custoCredito, lucro, taxas, liquido: lucro - custo - taxas, porTipo };
+      return { custo, custoCredito: reservaAjustada, custoCreditoBase, custoExtra: custo - custoCreditoBase, lucro, taxas, liquido: lucro - custo - taxas, porTipo };
     }
 
     function computeLucroEstimadoMes() {
