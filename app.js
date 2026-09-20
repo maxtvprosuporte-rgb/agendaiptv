@@ -3638,19 +3638,24 @@ function aplicarDiasExtras() {
       });
       salvarMovimentacoes();
       diasInput.value = '';
-      calcularDiasExtrasPreview();
-      renderAll();
-      atualizarCreditos(); atualizarHistorico();
-      atualizarSelectMesGestao();
-      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
-      showToast(`+${dias} dia${dias === 1 ? '' : 's'} para ${cli.nome} • -${creditosUsar.toFixed(3)} créd. (${getPainelNome(plano.painelId || painelId)}) • +R$ ${valorCobrar.toFixed(2)}`);
-
-      // Abre modal de mensagem
+      // Abre a mensagem e volta pro passo 1 logo depois de salvar o essencial —
+      // antes das atualizações de tela (que não devem travar o fluxo principal
+      // caso alguma delas falhe, ex: gráfico ainda carregando).
       dxClienteAtual = cli;
       dxMensagemAtual = buildDxMessage(cli, dias, valorCobrar, novaDataStr);
       const box = document.getElementById('dxMsgBox');
       if (box) box.textContent = dxMensagemAtual;
       document.getElementById('modalMensagemDiasExtras').classList.add('active');
+      voltarChooserLucroCusto();
+      showToast(`+${dias} dia${dias === 1 ? '' : 's'} para ${cli.nome} • -${creditosUsar.toFixed(3)} créd. (${getPainelNome(plano.painelId || painelId)}) • +R$ ${valorCobrar.toFixed(2)}`);
+      try { calcularDiasExtrasPreview(); } catch (e) {}
+      try { renderAll(); } catch (e) {}
+      try { atualizarCreditos(); } catch (e) {}
+      try { atualizarHistorico(); } catch (e) {}
+      try { atualizarSelectMesGestao(); } catch (e) {}
+      try { atualizarGraficoClientes(); } catch (e) {}
+      try { atualizarStatsFinanceiras(); } catch (e) {}
+      try { gerarTextoWhatsAppGestao(); } catch (e) {}
     }
 
     function fecharModalMensagemDiasExtras() {
@@ -4174,36 +4179,74 @@ function aplicarDiasExtras() {
     window.editarMovimentacao = editarMovimentacao; window.removerMovimentacao = removerMovimentacao;
     window.fecharModalEditarMov = fecharModalEditarMov; window.salvarEdicaoMov = salvarEdicaoMov;
 
-    function adicionarLucroCusto() {
+    /* Fluxo de 2 passos do card "Lucro/Custo Extra": primeiro escolhe o tipo
+       (Dias Extra ou Lucro/Custo), depois só então aparecem os campos daquele
+       tipo. Ao salvar (ou gerar a mensagem, no caso de Dias Extra), volta pro
+       passo 1 automaticamente. */
+    let lcEditandoIdx = null;
+    function selecionarTipoLucroCusto(tipo) {
+      document.getElementById('lcTipoChooser').style.display = 'none';
+      document.getElementById('lcFormLucroCusto').style.display = tipo === 'lucro_custo' ? '' : 'none';
+      document.getElementById('lcFormDiasExtra').style.display = tipo === 'dias_extra' ? '' : 'none';
+    }
+    window.selecionarTipoLucroCusto = selecionarTipoLucroCusto;
+    function voltarChooserLucroCusto() {
+      document.getElementById('lcTipoChooser').style.display = '';
+      document.getElementById('lcFormLucroCusto').style.display = 'none';
+      document.getElementById('lcFormDiasExtra').style.display = 'none';
+      // limpa o formulário de lucro/custo e sai do modo edição
+      lcEditandoIdx = null;
+      document.getElementById('lcFormLucroCustoTitulo').textContent = 'Lucro ou Custo';
+      document.getElementById('valorLucroCusto').value = '';
+      document.getElementById('infoLucroCusto').value = '';
+      const painelSel = document.getElementById('lc_painel');
+      if (painelSel) painelSel.value = '';
+    }
+    window.voltarChooserLucroCusto = voltarChooserLucroCusto;
+
+    function editarLucroCusto(idx) {
+      const lc = lucrosCustos[idx]; if (!lc) return;
+      lcEditandoIdx = idx;
+      document.getElementById('lcFormLucroCustoTitulo').textContent = 'Editando lançamento';
+      document.getElementById('valorLucroCusto').value = lc.valor;
+      document.getElementById('infoLucroCusto').value = lc.info;
+      const painelSel = document.getElementById('lc_painel');
+      if (painelSel) painelSel.value = lc.painelId || '';
+      selecionarTipoLucroCusto('lucro_custo');
+    }
+    window.editarLucroCusto = editarLucroCusto;
+
+    function salvarLucroCusto(fixo) {
       const valor = parseFloat(document.getElementById('valorLucroCusto').value);
       const info = document.getElementById('infoLucroCusto').value;
       if (isNaN(valor) || !info) { showToast('Preencha valor e informação.', true); return; }
-      const fixoEl = document.querySelector('input[name="lc_fixo"]:checked');
-      const fixo = !!(fixoEl && fixoEl.value === 'sim');
       const painelSel = document.getElementById('lc_painel');
       const painelId = painelSel ? painelSel.value : '';
-      lucrosCustos.push({ data: new Date().toISOString(), valor, info, fixo, painelId: painelId || null });
+      if (lcEditandoIdx !== null && lucrosCustos[lcEditandoIdx]) {
+        const lc = lucrosCustos[lcEditandoIdx];
+        lc.valor = valor; lc.info = info; lc.fixo = fixo; lc.painelId = painelId || null;
+      } else {
+        lucrosCustos.push({ data: new Date().toISOString(), valor, info, fixo, painelId: painelId || null });
+      }
       salvarLucrosCustos();
-      atualizarListaLucrosCustos();
-      atualizarSelectMesGestao();
-      atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
-      atualizarCreditos();
-      atualizarDashboardFinanceiro();
-      document.getElementById('valorLucroCusto').value = '';
-      document.getElementById('infoLucroCusto').value = '';
-      if (painelSel) painelSel.value = '';
-      // reset radio para "Não"
-      const naoR = document.querySelector('input[name="lc_fixo"][value="nao"]');
-      if (naoR) naoR.checked = true;
-      const lcNao = document.getElementById('lc_fixo_nao');
-      const lcSim = document.getElementById('lc_fixo_sim');
-      if (lcNao && lcSim) { lcNao.classList.add('active'); lcSim.classList.remove('active'); }
+      // Volta pro passo 1 (e limpa o formulário) antes de qualquer atualização de
+      // tela — assim, mesmo que algum gráfico/estatística falhe ao atualizar, o
+      // fluxo principal (salvar e voltar ao início) já aconteceu.
+      const editando = lcEditandoIdx !== null;
+      voltarChooserLucroCusto();
       const painelNome = painelId ? (getPainelNome(painelId) || '') : '';
       showToast(
-        (fixo ? 'Lucro/Custo fixo adicionado (recorrente).' : 'Lucro/Custo adicionado.') +
+        (editando ? 'Lançamento atualizado.' : (fixo ? 'Lucro/Custo fixo adicionado (recorrente).' : 'Lucro/Custo adicionado.')) +
         (painelNome ? ` Ajustado na reserva do painel ${painelNome}.` : '')
       );
+      try { atualizarListaLucrosCustos(); } catch (e) {}
+      try { atualizarSelectMesGestao(); } catch (e) {}
+      try { atualizarStatsFinanceiras(); } catch (e) {}
+      try { gerarTextoWhatsAppGestao(); } catch (e) {}
+      try { atualizarCreditos(); } catch (e) {}
+      try { atualizarDashboardFinanceiro(); } catch (e) {}
     }
+    window.salvarLucroCusto = salvarLucroCusto;
     function atualizarListaLucrosCustos() {
       const lista = document.getElementById('listaLucrosCustos');
       const cnt = document.getElementById('countLucrosCustos');
@@ -4232,6 +4275,7 @@ function aplicarDiasExtras() {
               </div>
             </div>
             <div class="list-item-badge" style="color:${cor}; background:${lc.valor >= 0 ? 'rgba(57,255,20,.08)' : 'rgba(255,92,92,.08)'}; border-color:${lc.valor >= 0 ? 'rgba(57,255,20,.25)' : 'rgba(255,92,92,.25)'};">R$ ${Math.abs(lc.valor).toFixed(2)}</div>
+            <button class="btn-info" onclick="editarLucroCusto(${idx})" data-testid="btn-editar-lc-${idx}"><i class="fas fa-pen"></i></button>
             <button class="btn-danger" onclick="removerLucroCusto(${idx})" data-testid="btn-remover-lc-${idx}"><i class="fas fa-trash"></i></button>
           </div>`;
       }).join('');
@@ -4245,7 +4289,7 @@ function aplicarDiasExtras() {
       atualizarSelectMesGestao();
       showToast(`"${lc.info}" removido.`);
     }
-    window.adicionarLucroCusto = adicionarLucroCusto; window.removerLucroCusto = removerLucroCusto;
+    window.removerLucroCusto = removerLucroCusto;
 
     function atualizarListaPacotes() {
       const lista = document.getElementById('listaPacotes');
