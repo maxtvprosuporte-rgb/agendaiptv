@@ -209,13 +209,13 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
 });
 
 const MESSAGE_TEMPLATE_META = Object.freeze({
-  cobranca: { label: 'Cobrança / vencimento', variables: ['nome', 'status_vencimento', 'usuario', 'senha', 'plano', 'valor', 'link_renovacao'] },
-  renovacao_confirmada: { label: 'Renovação confirmada', variables: ['status_pagamento', 'usuario', 'senha', 'data_renovacao'] },
+  cobranca: { label: 'Cobrança / vencimento', variables: ['nome', 'status_vencimento', 'usuario', 'senha', 'codigo_resgate', 'plano', 'valor', 'link_renovacao'] },
+  renovacao_confirmada: { label: 'Renovação confirmada', variables: ['status_pagamento', 'usuario', 'senha', 'codigo_resgate', 'data_renovacao'] },
   pagamento_confirmado: { label: 'Pagamento pendente confirmado', variables: ['nome', 'plano', 'valor', 'data_renovacao'] },
   teste_criado: { label: 'Teste criado', variables: ['nome', 'usuario', 'senha', 'link_renovacao', 'duracao_teste'] },
   ativacao: { label: 'Ativação de usuário', variables: ['nome', 'usuario', 'senha', 'data_renovacao'] },
   dias_extras: { label: 'Dias extras', variables: ['dias', 'usuario', 'senha', 'valor_adicional', 'data_renovacao'] },
-  pagamento_pendente: { label: 'Pagamento pendente', variables: ['nome', 'usuario', 'senha', 'plano', 'valor', 'data_renovacao', 'link_renovacao'] },
+  pagamento_pendente: { label: 'Pagamento pendente', variables: ['nome', 'usuario', 'senha', 'codigo_resgate', 'plano', 'valor', 'data_renovacao', 'link_renovacao'] },
   indicacao_teste: { label: 'Indicação registrada', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_mes_gratis: { label: 'Indicação convertida', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   indicacao_ganhador: { label: 'Ganhador do sorteio', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
@@ -288,6 +288,7 @@ function getMessageTemplateSamples() {
       status_vencimento: 'Vence hoje',
       usuario: cli.usuario || 'usuario_teste',
       senha: cli.senha || '123456',
+      codigo_resgate: cli.codigoResgate || 'ABC-123',
       plano: cli.plano || 'Plano Premium',
       valor: cli.valor ? `R$ ${cli.valor}` : 'R$ 30,00',
       link_renovacao: cli.linkRenovacao || 'https://pagamento.exemplo/renovar'
@@ -296,6 +297,7 @@ function getMessageTemplateSamples() {
       status_pagamento: 'Pago',
       usuario: cli.usuario || 'usuario_teste',
       senha: cli.senha || '123456',
+      codigo_resgate: cli.codigoResgate || 'ABC-123',
       data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30)))
     },
     pagamento_confirmado: {
@@ -328,6 +330,7 @@ function getMessageTemplateSamples() {
       nome: cli.nome || 'Cliente Exemplo',
       usuario: cli.usuario || 'usuario_teste',
       senha: cli.senha || '123456',
+      codigo_resgate: cli.codigoResgate || 'ABC-123',
       plano: cli.plano || 'Plano Premium',
       valor: cli.valor ? `R$ ${cli.valor}` : 'R$ 30,00',
       data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30))),
@@ -504,6 +507,8 @@ function setupMessageEditor() {
       aplicativo: document.getElementById('aplicativo'),
       usuario: document.getElementById('usuario'),
       senha: document.getElementById('senha'),
+      tipoAcesso: document.getElementById('tipoAcesso'),
+      codigoResgate: document.getElementById('codigoResgate'),
       duracaoTeste: document.getElementById('duracaoTeste'),
       plano: document.getElementById('plano'),
       valor: document.getElementById('valor'),
@@ -1093,6 +1098,7 @@ function buildMessage(client) {
     status_vencimento: statusTag,
     usuario: client.usuario || '',
     senha: client.senha || '',
+    codigo_resgate: client.codigoResgate || '',
     plano: client.plano || '',
     valor: valor ? `R$ ${valor}` : '',
     link_renovacao: client.linkRenovacao || ''
@@ -1141,6 +1147,7 @@ function copyMessage(id) {
         nome: client.nome || '',
         usuario: client.usuario || '',
         senha: client.senha || '',
+        codigo_resgate: client.codigoResgate || '',
         plano: client.plano || '',
         valor: valor ? `R$ ${valor.toFixed(2).replace('.', ',')}` : '',
         data_renovacao: formatDate(client.dataRenovacao),
@@ -1480,6 +1487,7 @@ function buildRenewMessage(client) {
     status_pagamento: client.pagamentoPendente ? 'PAGAMENTO PENDENTE' : 'Pago',
     usuario: client.usuario || '',
     senha: client.senha || '',
+    codigo_resgate: client.codigoResgate || '',
     data_renovacao: formatDate(client.dataRenovacao)
   });
 }
@@ -1636,7 +1644,7 @@ let renovacaoClienteAtual = null;
               </div>
               <div class="client-row-meta">
                 <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
-                <span><b>User:</b> ${escapeHtml(c.usuario || '—')}</span>
+                <span><b>${c.tipoAcesso === 'codigo_resgate' ? 'Código' : 'User'}:</b> ${escapeHtml((c.tipoAcesso === 'codigo_resgate' ? c.codigoResgate : c.usuario) || '—')}</span>
                 <span><b>Plano:</b> ${escapeHtml(c.plano || '—')}</span>
                 <span><b>Valor:</b> ${escapeHtml(c.valor || '—')}</span>
                 <span><b>${metaLabel}:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
@@ -1843,7 +1851,7 @@ let renovacaoClienteAtual = null;
                 <div class="client-row-meta">
                   <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
                   <span><b>App:</b> ${escapeHtml(c.aplicativo || '—')}</span>
-                  <span><b>User:</b> ${escapeHtml(c.usuario || '—')}</span>
+                  <span><b>${c.tipoAcesso === 'codigo_resgate' ? 'Código' : 'User'}:</b> ${escapeHtml((c.tipoAcesso === 'codigo_resgate' ? c.codigoResgate : c.usuario) || '—')}</span>
                   <span><b>Plano:</b> ${escapeHtml(c.plano || '—')}</span>
                   <span><b>Valor:</b> ${escapeHtml(c.valor || '—')}</span>
                   <span><b>Início:</b> ${escapeHtml(formatDate(c.dataInicio || c.dataPagamento))}</span>
@@ -1928,7 +1936,10 @@ let renovacaoClienteAtual = null;
 
       const infoRows = [
         ['Nome', c.nome], ['Telefone', c.telefone], ['Aplicativo', c.aplicativo],
-        ['Usuário', c.usuario], ['Senha', c.senha], ['Plano', c.plano],
+        ...(c.tipoAcesso === 'codigo_resgate'
+          ? [['Código de Resgate', c.codigoResgate]]
+          : [['Usuário', c.usuario], ['Senha', c.senha]]),
+        ['Plano', c.plano],
         ['Valor', c.valor], ['Painel', painelNome],
         ['Início', formatDate(c.dataInicio || c.dataPagamento)],
         ['Renovação', formatDate(c.dataRenovacao)],
@@ -2010,7 +2021,10 @@ let renovacaoClienteAtual = null;
 
       const infoRows = [
         ['Nome', t.nome], ['Telefone', t.telefone], ['Aplicativo', t.aplicativo],
-        ['Usuário', t.usuario], ['Senha', t.senha], ['Plano', t.plano],
+        ...(t.tipoAcesso === 'codigo_resgate'
+          ? [['Código de Resgate', t.codigoResgate]]
+          : [['Usuário', t.usuario], ['Senha', t.senha]]),
+        ['Plano', t.plano],
         ['Valor', t.valor], ['Duração do teste', t.duracaoTeste],
         ['Cadastrado em', t.createdAt ? formatDateTimeSaoPaulo(t.createdAt) : '—'],
         ['Link de ativação', t.linkRenovacao], ['Observações', t.observacoes]
@@ -2326,7 +2340,7 @@ let ativacaoClienteAtual = null;
         return value == null ? '' : String(value);
       });
     }
-    const APLICATIVO_MSG_VARIAVEIS = ['nome', 'aplicativo', 'plataforma', 'sistema', 'link_download', 'usuario', 'senha', 'duracao_teste', 'plano', 'link_pagamento'];
+    const APLICATIVO_MSG_VARIAVEIS = ['nome', 'aplicativo', 'plataforma', 'sistema', 'link_download', 'usuario', 'senha', 'codigo_resgate', 'duracao_teste', 'plano', 'link_pagamento'];
     let aplicativoMsgFocoAtual = 'teste';
     function definirFocoMsgAplicativo(origem) { aplicativoMsgFocoAtual = origem; }
     window.definirFocoMsgAplicativo = definirFocoMsgAplicativo;
@@ -2371,6 +2385,7 @@ let ativacaoClienteAtual = null;
         link_download: linkDownload || 'https://exemplo.com/download',
         usuario: origem === 'teste' ? 'teste_demo' : 'usuario_teste',
         senha: origem === 'teste' ? '654321' : '123456',
+        codigo_resgate: 'ABC-123',
         duracao_teste: '3 Horas de Teste Grátis!',
         plano: 'Plano Premium',
         link_pagamento: 'https://pagamento.exemplo/renovar'
@@ -2397,6 +2412,7 @@ let ativacaoClienteAtual = null;
     link_download: (plataforma && plataforma.link) || '',
     usuario: entity.usuario || '',
     senha: entity.senha || '',
+    codigo_resgate: entity.codigoResgate || '',
     plano: entity.plano || '',
     duracao_teste: (entity.duracaoTeste && entity.duracaoTeste.trim()) || '3 Horas de Teste Grátis!',
     link_pagamento: entity.linkRenovacao || ''
@@ -2571,6 +2587,7 @@ function whatsAppTeste(id) {
       els.clientForm.reset();
       els.clientId.value = '';
       els.formTitle.textContent = 'Cadastrar Teste IPTV';
+      alternarTipoAcesso('', 'usuario_senha');
       atualizarInfoAplicativoSelecionado('aplicativo');
     }
     function resetForm() {
@@ -2587,6 +2604,26 @@ function whatsAppTeste(id) {
     function esconderFormTeste() {
       document.getElementById('modalNovoTeste').classList.remove('active');
     }
+    /* Alterna entre "Usuário e Senha" e "Código de Resgate" nos formulários de
+       Cliente/Teste. prefix é '' (Novo Teste), 'nc' (Novo Cliente) ou 'ec' (Editar). */
+    function alternarTipoAcesso(prefix, tipo) {
+      const p = prefix ? prefix + '_' : '';
+      const usuarioWrap = document.getElementById(`${p}usuario_wrap`);
+      const senhaWrap = document.getElementById(`${p}senha_wrap`);
+      const codigoWrap = document.getElementById(`${p}codigoResgate_wrap`);
+      const btnUsuario = document.getElementById(`${p}tipoAcesso_usuario`);
+      const btnCodigo = document.getElementById(`${p}tipoAcesso_codigo`);
+      const ehCodigo = tipo === 'codigo_resgate';
+      if (usuarioWrap) usuarioWrap.style.display = ehCodigo ? 'none' : '';
+      if (senhaWrap) senhaWrap.style.display = ehCodigo ? 'none' : '';
+      if (codigoWrap) codigoWrap.style.display = ehCodigo ? '' : 'none';
+      if (btnUsuario) btnUsuario.classList.toggle('active', !ehCodigo);
+      if (btnCodigo) btnCodigo.classList.toggle('active', ehCodigo);
+      const hidden = document.getElementById(`${p}tipoAcesso`);
+      if (hidden) hidden.value = tipo;
+    }
+    window.alternarTipoAcesso = alternarTipoAcesso;
+
     function getFormData() {
       const sel = els.plano;
       const planoNome = sel && sel.tagName === 'SELECT' ? getPlanoNomeDoSelect(sel) : (sel ? sel.value.trim() : '');
@@ -2596,12 +2633,16 @@ function whatsAppTeste(id) {
         : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
       const aplicativoId = els.aplicativo ? els.aplicativo.value : '';
       const aplicativoCad = encontrarAplicativoPorId(aplicativoId);
+      const tipoAcesso = els.tipoAcesso ? els.tipoAcesso.value : 'usuario_senha';
       return {
         id: els.clientId.value || generateId(),
         nome: els.nome.value.trim(), telefone: els.telefone.value.trim(),
         aplicativoId: aplicativoId || '', aplicativo: aplicativoCad ? aplicativoCad.nome : '',
-        usuario: els.usuario.value.trim(),
-        senha: els.senha.value.trim(), plano: planoNome,
+        tipoAcesso,
+        usuario: tipoAcesso === 'codigo_resgate' ? '' : els.usuario.value.trim(),
+        senha: tipoAcesso === 'codigo_resgate' ? '' : els.senha.value.trim(),
+        codigoResgate: tipoAcesso === 'codigo_resgate' ? (els.codigoResgate ? els.codigoResgate.value.trim() : '') : '',
+        plano: planoNome,
         duracaoTeste: els.duracaoTeste ? els.duracaoTeste.value.trim() : '',
         valor: els.valor.value.trim(), creditos: creditosVal,
         linkRenovacao: els.linkRenovacao.value.trim(),
@@ -2626,8 +2667,11 @@ function whatsAppTeste(id) {
       document.getElementById('ec_nome').value = target.nome || '';
       document.getElementById('ec_telefone').value = target.telefone || '';
       selecionarAplicativoPorId(document.getElementById('ec_aplicativo'), target.aplicativoId || '');
+      alternarTipoAcesso('ec', target.tipoAcesso === 'codigo_resgate' ? 'codigo_resgate' : 'usuario_senha');
       document.getElementById('ec_usuario').value = target.usuario || '';
       document.getElementById('ec_senha').value = target.senha || '';
+      const ecCodigoResgateEl = document.getElementById('ec_codigoResgate');
+      if (ecCodigoResgateEl) ecCodigoResgateEl.value = target.codigoResgate || '';
       const ecPlanoSel = document.getElementById('ec_plano');
       selecionarPlanoPorNome(ecPlanoSel, target.plano);
       document.getElementById('ec_valor').value = target.valor || '';
@@ -2684,12 +2728,21 @@ function whatsAppTeste(id) {
       const creditosFinal = ecCredVal !== '' ? Math.max(0, parseInt(ecCredVal) || 0) : (planoCad && Number.isFinite(parseInt(planoCad.creditos)) ? parseInt(planoCad.creditos) : 1);
       const ecAplicativoId = document.getElementById('ec_aplicativo').value;
       const ecAplicativoCad = encontrarAplicativoPorId(ecAplicativoId);
+      const ecTipoAcesso = document.getElementById('ec_tipoAcesso').value || 'usuario_senha';
+      const ecUsuario = ecTipoAcesso === 'codigo_resgate' ? '' : document.getElementById('ec_usuario').value.trim();
+      const ecSenha = ecTipoAcesso === 'codigo_resgate' ? '' : document.getElementById('ec_senha').value.trim();
+      const ecCodigoResgateEl = document.getElementById('ec_codigoResgate');
+      const ecCodigoResgate = ecTipoAcesso === 'codigo_resgate' ? (ecCodigoResgateEl ? ecCodigoResgateEl.value.trim() : '') : '';
+      if (ecTipoAcesso === 'codigo_resgate') {
+        if (!ecCodigoResgate) { showToast('Preencha o Código de Resgate.', true); return; }
+      } else if (!ecUsuario || !ecSenha) {
+        showToast('Preencha Usuário e Senha.', true); return;
+      }
       const base = {
         nome: document.getElementById('ec_nome').value.trim(),
         telefone: document.getElementById('ec_telefone').value.trim(),
         aplicativoId: ecAplicativoId || '', aplicativo: ecAplicativoCad ? ecAplicativoCad.nome : '',
-        usuario: document.getElementById('ec_usuario').value.trim(),
-        senha: document.getElementById('ec_senha').value.trim(),
+        tipoAcesso: ecTipoAcesso, usuario: ecUsuario, senha: ecSenha, codigoResgate: ecCodigoResgate,
         plano: planoNome, valor: document.getElementById('ec_valor').value.trim(),
         creditos: creditosFinal,
         linkRenovacao: document.getElementById('ec_linkRenovacao').value.trim(),
@@ -2722,6 +2775,7 @@ function whatsAppTeste(id) {
       const form = document.getElementById('formNovoCliente'); form.reset();
       atualizarSelectPlanos();
       atualizarSelectAplicativos();
+      alternarTipoAcesso('nc', 'usuario_senha');
       const hoje = todayLocalDate();
       document.getElementById('nc_dataInicio').value = toInputDate(hoje);
       document.getElementById('nc_dataRenovacao').value = toInputDate(addPlanPeriod(hoje, 30));
@@ -2766,9 +2820,17 @@ function whatsAppTeste(id) {
     document.getElementById('formNovoCliente').addEventListener('submit', (e) => {
       e.preventDefault();
       const nome = document.getElementById('nc_nome').value.trim();
-      const usuario = document.getElementById('nc_usuario').value.trim();
-      const senha = document.getElementById('nc_senha').value.trim();
-      if (!nome || !usuario || !senha) { showToast('Preencha Nome, Usuário e Senha.', true); return; }
+      const ncTipoAcesso = document.getElementById('nc_tipoAcesso').value || 'usuario_senha';
+      const usuario = ncTipoAcesso === 'codigo_resgate' ? '' : document.getElementById('nc_usuario').value.trim();
+      const senha = ncTipoAcesso === 'codigo_resgate' ? '' : document.getElementById('nc_senha').value.trim();
+      const codigoResgateEl = document.getElementById('nc_codigoResgate');
+      const codigoResgate = ncTipoAcesso === 'codigo_resgate' ? (codigoResgateEl ? codigoResgateEl.value.trim() : '') : '';
+      if (!nome) { showToast('Preencha o Nome.', true); return; }
+      if (ncTipoAcesso === 'codigo_resgate') {
+        if (!codigoResgate) { showToast('Preencha o Código de Resgate.', true); return; }
+      } else if (!usuario || !senha) {
+        showToast('Preencha Usuário e Senha.', true); return;
+      }
       const hoje = todayLocalDate();
       const dataInicio = document.getElementById('nc_dataInicio').value || toInputDate(hoje);
       const ncPlanoSel = document.getElementById('nc_plano');
@@ -2785,7 +2847,8 @@ function whatsAppTeste(id) {
         id: generateId(), nome,
         telefone: document.getElementById('nc_telefone').value.trim(),
         aplicativoId: ncAplicativoId || '', aplicativo: ncAplicativoCad ? ncAplicativoCad.nome : '',
-        usuario, senha, plano: planoNome, valor, creditos: creditosFinal,
+        tipoAcesso: ncTipoAcesso, usuario, senha, codigoResgate,
+        plano: planoNome, valor, creditos: creditosFinal,
         dataInicio, dataPagamento: dataInicio, dataRenovacao,
         linkRenovacao: document.getElementById('nc_linkRenovacao').value.trim(),
         observacoes: document.getElementById('nc_observacoes').value.trim(),
@@ -2830,6 +2893,12 @@ function whatsAppTeste(id) {
     els.clientForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const d = getFormData();
+      if (!d.nome) { showToast('Preencha o Nome.', true); return; }
+      if (d.tipoAcesso === 'codigo_resgate') {
+        if (!d.codigoResgate) { showToast('Preencha o Código de Resgate.', true); return; }
+      } else if (!d.usuario || !d.senha) {
+        showToast('Preencha Usuário e Senha.', true); return;
+      }
       testes.push(d); salvarTestes();
       movimentacoes.push({ data: new Date().toISOString(), tipo: 'teste', tipoCliente: 'teste', quantidade: 1, nome: d.nome });
       salvarMovimentacoes();

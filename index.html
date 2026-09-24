@@ -855,6 +855,7 @@
       <form id="formEditarCliente" autocomplete="off">
         <input type="hidden" id="ec_id" />
         <input type="hidden" id="ec_kind" />
+        <input type="hidden" id="ec_tipoAcesso" value="usuario_senha" />
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-user"></i> Dados do Cliente</div>
           <div class="form-grid">
@@ -872,8 +873,16 @@
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-key"></i> Acesso ao Sistema</div>
           <div class="form-grid">
-            <div class="field"><label for="ec_usuario">Usuário</label><input id="ec_usuario" required data-testid="ec-usuario" /></div>
-            <div class="field"><label for="ec_senha">Senha</label><input id="ec_senha" required data-testid="ec-senha" /></div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label class="form-label" style="margin-bottom:8px;">Tipo de acesso</label>
+              <div class="radio-group" role="radiogroup" aria-label="Tipo de acesso">
+                <button type="button" class="radio-option active" id="ec_tipoAcesso_usuario" onclick="alternarTipoAcesso('ec','usuario_senha')" data-testid="ec-tipo-usuario"><i class="fas fa-user-lock"></i> Usuário e Senha</button>
+                <button type="button" class="radio-option" id="ec_tipoAcesso_codigo" onclick="alternarTipoAcesso('ec','codigo_resgate')" data-testid="ec-tipo-codigo"><i class="fas fa-ticket-alt"></i> Código de Resgate</button>
+              </div>
+            </div>
+            <div class="field" id="ec_usuario_wrap"><label for="ec_usuario">Usuário</label><input id="ec_usuario" data-testid="ec-usuario" /></div>
+            <div class="field" id="ec_senha_wrap"><label for="ec_senha">Senha</label><input id="ec_senha" data-testid="ec-senha" /></div>
+            <div class="field" id="ec_codigoResgate_wrap" style="display:none;"><label for="ec_codigoResgate">Código de Resgate</label><input id="ec_codigoResgate" placeholder="Ex.: ABC-123" data-testid="ec-codigo-resgate" /></div>
             <div class="field" id="ec_duracaoTeste_wrap">
               <label for="ec_duracaoTeste">Duração do teste</label>
               <select id="ec_duracaoTeste" data-testid="ec-duracao-teste">
@@ -930,6 +939,7 @@
         <button class="modal-close" onclick="fecharModalNovoCliente()" data-testid="close-novo-cliente"><i class="fas fa-times"></i></button>
       </div>
       <form id="formNovoCliente" autocomplete="off">
+        <input type="hidden" id="nc_tipoAcesso" value="usuario_senha" />
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-user"></i> Dados do Cliente</div>
           <div class="form-grid">
@@ -947,8 +957,16 @@
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-key"></i> Acesso ao Sistema</div>
           <div class="form-grid">
-            <div class="field"><label for="nc_usuario">Usuário</label><input id="nc_usuario" required data-testid="nc-usuario" /></div>
-            <div class="field"><label for="nc_senha">Senha</label><input id="nc_senha" required data-testid="nc-senha" /></div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label class="form-label" style="margin-bottom:8px;">Tipo de acesso</label>
+              <div class="radio-group" role="radiogroup" aria-label="Tipo de acesso">
+                <button type="button" class="radio-option active" id="nc_tipoAcesso_usuario" onclick="alternarTipoAcesso('nc','usuario_senha')" data-testid="nc-tipo-usuario"><i class="fas fa-user-lock"></i> Usuário e Senha</button>
+                <button type="button" class="radio-option" id="nc_tipoAcesso_codigo" onclick="alternarTipoAcesso('nc','codigo_resgate')" data-testid="nc-tipo-codigo"><i class="fas fa-ticket-alt"></i> Código de Resgate</button>
+              </div>
+            </div>
+            <div class="field" id="nc_usuario_wrap"><label for="nc_usuario">Usuário</label><input id="nc_usuario" data-testid="nc-usuario" /></div>
+            <div class="field" id="nc_senha_wrap"><label for="nc_senha">Senha</label><input id="nc_senha" data-testid="nc-senha" /></div>
+            <div class="field" id="nc_codigoResgate_wrap" style="display:none;"><label for="nc_codigoResgate">Código de Resgate</label><input id="nc_codigoResgate" placeholder="Ex.: ABC-123" data-testid="nc-codigo-resgate" /></div>
           </div>
         </div>
         <div class="form-section">
@@ -1009,6 +1027,7 @@
       </div>
       <form id="clientForm" autocomplete="off">
         <input type="hidden" id="clientId" />
+        <input type="hidden" id="tipoAcesso" value="usuario_senha" />
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-user"></i> Dados do Cliente</div>
           <div class="form-grid">
@@ -1026,8 +1045,16 @@
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-key"></i> Acesso ao Sistema</div>
           <div class="form-grid">
-            <div class="field"><label for="usuario">Usuário</label><input id="usuario" required data-testid="input-usuario" /></div>
-            <div class="field"><label for="senha">Senha</label><input id="senha" required data-testid="input-senha" /></div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label class="form-label" style="margin-bottom:8px;">Tipo de acesso</label>
+              <div class="radio-group" role="radiogroup" aria-label="Tipo de acesso">
+                <button type="button" class="radio-option active" id="tipoAcesso_usuario" onclick="alternarTipoAcesso('','usuario_senha')" data-testid="tipo-usuario"><i class="fas fa-user-lock"></i> Usuário e Senha</button>
+                <button type="button" class="radio-option" id="tipoAcesso_codigo" onclick="alternarTipoAcesso('','codigo_resgate')" data-testid="tipo-codigo"><i class="fas fa-ticket-alt"></i> Código de Resgate</button>
+              </div>
+            </div>
+            <div class="field" id="usuario_wrap"><label for="usuario">Usuário</label><input id="usuario" data-testid="input-usuario" /></div>
+            <div class="field" id="senha_wrap"><label for="senha">Senha</label><input id="senha" data-testid="input-senha" /></div>
+            <div class="field" id="codigoResgate_wrap" style="display:none;"><label for="codigoResgate">Código de Resgate</label><input id="codigoResgate" placeholder="Ex.: ABC-123" data-testid="input-codigo-resgate" /></div>
             <div class="field">
               <label for="duracaoTeste">Duração do teste</label>
               <select id="duracaoTeste" data-testid="input-duracao-teste">
