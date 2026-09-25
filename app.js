@@ -115,6 +115,37 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
     '',
     '🙏 Muito obrigado pela confiança e pela preferência!'
   ].join('\n'),
+  renovacao_codigo: [
+    '🎉 Olá *{{nome}}*, *Pagamento confirmado!*',
+    '',
+    '🔑 *Seu novo código de resgate*:',
+    '',
+    '*{{codigo_resgate}}*',
+    '',
+    '📦 *Plano*: {{plano}}',
+    '💰 *Valor pago*: {{valor}}',
+    '🗓️ *Código válido até*: {{data_renovacao}}',
+    '',
+    '⚠️ *Guarde este código com cuidado!* Ele só será gerado novamente no próximo pagamento.',
+    '',
+    '🙏 Muito obrigado pela confiança e pela preferência!'
+  ].join('\n'),
+  cobranca_codigo: [
+    '👋 Olá *{{nome}}*, *{{status_vencimento}}*',
+    '',
+    'Seu código de resgate atual vai *expirar em breve*. Para continuar assistindo sem interrupções, realize a renovação:',
+    '',
+    '📦 *Plano*: {{plano}}',
+    '💰 *Valor*: {{valor}}',
+    '🗓️ *Vencimento*: {{data_renovacao}}',
+    '',
+    '🔗 *Link de pagamento*: {{link_renovacao}}',
+    '',
+    '🔑 *Importante para quem usa código:*',
+    'Você só recebe o *novo código de resgate* após a *confirmação do pagamento* da renovação.',
+    '',
+    'Assim que o pagamento for confirmado, enviamos seu novo código por aqui. 🙏 Obrigado pela preferência!'
+  ].join('\n'),
   teste_criado: [
     '🎉 Olá *{{nome}}*, *Teste Gerado com Sucesso!*',
     '',
@@ -212,6 +243,8 @@ const MESSAGE_TEMPLATE_META = Object.freeze({
   cobranca: { label: 'Cobrança / vencimento', variables: ['nome', 'status_vencimento', 'usuario', 'senha', 'codigo_resgate', 'plano', 'valor', 'link_renovacao'] },
   renovacao_confirmada: { label: 'Renovação confirmada', variables: ['status_pagamento', 'usuario', 'senha', 'codigo_resgate', 'data_renovacao'] },
   pagamento_confirmado: { label: 'Pagamento pendente confirmado', variables: ['nome', 'plano', 'valor', 'data_renovacao'] },
+  renovacao_codigo: { label: 'Renovação confirmada (código de resgate)', variables: ['nome', 'codigo_resgate', 'plano', 'valor', 'data_renovacao'] },
+  cobranca_codigo: { label: 'Cobrança / vencimento (cliente com código)', variables: ['nome', 'status_vencimento', 'plano', 'valor', 'data_renovacao', 'link_renovacao'] },
   teste_criado: { label: 'Teste criado', variables: ['nome', 'usuario', 'senha', 'link_renovacao', 'duracao_teste'] },
   ativacao: { label: 'Ativação de usuário', variables: ['nome', 'usuario', 'senha', 'data_renovacao'] },
   dias_extras: { label: 'Dias extras', variables: ['dias', 'usuario', 'senha', 'valor_adicional', 'data_renovacao'] },
@@ -305,6 +338,21 @@ function getMessageTemplateSamples() {
       plano: cli.plano || 'Plano Premium',
       valor: cli.valor ? `R$ ${cli.valor}` : 'R$ 30,00',
       data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30)))
+    },
+    renovacao_codigo: {
+      nome: cli.nome || 'Cliente Exemplo',
+      codigo_resgate: cli.codigoResgate || 'XYZ-789',
+      plano: cli.plano || 'Plano Premium',
+      valor: cli.valor ? `R$ ${cli.valor}` : 'R$ 30,00',
+      data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30)))
+    },
+    cobranca_codigo: {
+      nome: cli.nome || 'Cliente Exemplo',
+      status_vencimento: 'Vence hoje',
+      plano: cli.plano || 'Plano Premium',
+      valor: cli.valor ? `R$ ${cli.valor}` : 'R$ 30,00',
+      data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30))),
+      link_renovacao: cli.linkRenovacao || 'https://pagamento.exemplo/renovar'
     },
     teste_criado: {
       nome: teste.nome || 'Teste Exemplo',
@@ -1084,6 +1132,26 @@ function buildMessage(client) {
   if (client.pagamentoPendente) {
     return buildPagamentoPendenteMessage(client);
   }
+  // Cliente que usa Código de Resgate: mensagem específica avisando que o novo
+  // código só é liberado após o pagamento da renovação.
+  if (client.tipoAcesso === 'codigo_resgate') {
+    const diffCod = getDaysUntil(client);
+    let statusTagCod;
+    if (diffCod === null) statusTagCod = `Próximo do vencimento`;
+    else if (diffCod > 1) statusTagCod = `Vence em ${diffCod} dias`;
+    else if (diffCod === 1) statusTagCod = `Vence em 1 dia`;
+    else if (diffCod === 0) statusTagCod = `Vence hoje`;
+    else if (diffCod === -1) statusTagCod = `Venceu há 1 dia`;
+    else statusTagCod = `Venceu há ${Math.abs(diffCod)} dias`;
+    return renderMessageTemplate('cobranca_codigo', {
+      nome: client.nome || '',
+      status_vencimento: statusTagCod,
+      plano: client.plano || '',
+      valor: client.valor ? `R$ ${client.valor}` : '',
+      data_renovacao: formatDate(client.dataRenovacao),
+      link_renovacao: client.linkRenovacao || ''
+    });
+  }
   const diff = getDaysUntil(client);
   let statusTag;
   if (diff === null) statusTag = `Próximo do vencimento`;
@@ -1143,6 +1211,16 @@ function copyMessage(id) {
     function buildPagamentoPendenteMessage(client) {
       const dados = client._renovacaoPendente || {};
       const valor = Number(dados.valorVenda) || parseValor(client.valor);
+      if (client.tipoAcesso === 'codigo_resgate') {
+        return renderMessageTemplate('cobranca_codigo', {
+          nome: client.nome || '',
+          status_vencimento: 'Renovação em andamento',
+          plano: client.plano || '',
+          valor: valor ? `R$ ${valor.toFixed(2).replace('.', ',')}` : '',
+          data_renovacao: formatDate(client.dataRenovacao),
+          link_renovacao: client.linkRenovacao || ''
+        });
+      }
       return renderMessageTemplate('pagamento_pendente', {
         nome: client.nome || '',
         usuario: client.usuario || '',
@@ -1483,6 +1561,17 @@ function copyMessage(id) {
 
 
 function buildRenewMessage(client) {
+  // Cliente que usa Código de Resgate: a mensagem pós-renovação entrega o NOVO código,
+  // pois ele só recebe um novo código após o pagamento confirmado.
+  if (client.tipoAcesso === 'codigo_resgate') {
+    return renderMessageTemplate('renovacao_codigo', {
+      nome: client.nome || '',
+      codigo_resgate: client.codigoResgate || '[cadastre o novo código no cliente]',
+      plano: client.plano || '',
+      valor: client.valor ? `R$ ${client.valor}` : '',
+      data_renovacao: formatDate(client.dataRenovacao)
+    });
+  }
   return renderMessageTemplate('renovacao_confirmada', {
     status_pagamento: client.pagamentoPendente ? 'PAGAMENTO PENDENTE' : 'Pago',
     usuario: client.usuario || '',
