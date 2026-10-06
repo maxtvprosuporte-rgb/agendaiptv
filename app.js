@@ -5009,7 +5009,9 @@ function aplicarDiasExtras() {
       const elN = document.getElementById('dashTotalLiquido');
       const elE = document.getElementById('dashLucroEstimado');
       const elR = document.getElementById('dashReservaRecarga');
-      if (elL) elL.textContent = fmt(lucro);
+      // "Valor Total" já sai líquido de taxa bancária (receita das renovações/novos
+      // clientes do mês, menos as taxas cobradas nessas transações).
+      if (elL) elL.textContent = fmt(lucro - taxas);
       if (elT) elT.textContent = fmt(taxas);
       if (elN) { elN.textContent = fmt(liquido); elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b'; }
       if (elE) elE.textContent = fmt(computeLucroEstimadoMes());
