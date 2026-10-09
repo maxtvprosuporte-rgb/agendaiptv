@@ -635,9 +635,10 @@ function setupMessageEditor() {
     function setCloudStatus(label, tone = 'warn', helperText = '') {
       const statusEl = document.getElementById('authStatusBadge');
       const syncEl = document.getElementById('cloudSyncTag');
+      const configSyncStatusEl = document.getElementById('configSyncStatus');
       const helperEl = document.getElementById('authHelperText');
       const classes = ['status-ok', 'status-warn', 'status-error'];
-      [statusEl, syncEl].forEach(el => {
+      [statusEl, syncEl, configSyncStatusEl].forEach(el => {
         if (!el) return;
         el.textContent = label;
         el.classList.remove(...classes);
@@ -742,11 +743,11 @@ function setupMessageEditor() {
     }
     function updateAuthUi() {
       const emailEl = document.getElementById('authUserEmail');
-      const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+      const configEmailEl = document.getElementById('configUserEmail');
       const registerBtn = document.getElementById('firebaseRegisterBtn');
       applyAuthScreenState();
       if (emailEl) emailEl.textContent = currentFirebaseUser && currentFirebaseUser.email ? currentFirebaseUser.email : 'Nenhuma';
-      if (headerLogoutBtn) headerLogoutBtn.classList.toggle('hidden', !currentFirebaseUser);
+      if (configEmailEl) configEmailEl.textContent = currentFirebaseUser && currentFirebaseUser.email ? currentFirebaseUser.email : 'Nenhuma';
       if (registerBtn) registerBtn.classList.toggle('hidden', !!currentFirebaseUser);
       els.tabs.forEach(tab => {
         const isFree = tab.dataset.authExempt === 'true';
@@ -968,13 +969,28 @@ function setupMessageEditor() {
         const form = document.getElementById('firebaseLoginForm');
         const registerBtn = document.getElementById('firebaseRegisterBtn');
         const cancelRegisterBtn = document.getElementById('firebaseCancelRegisterBtn');
-        const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+        const configLogoutBtn = document.getElementById('configLogoutBtn');
+        const configSyncBtn = document.getElementById('configSyncBtn');
         const trialExpiredLogoutBtn = document.getElementById('trialExpiredLogoutBtn');
         if (form) form.addEventListener('submit', handleFirebaseLogin);
         if (registerBtn) registerBtn.addEventListener('click', handleFirebaseRegister);
         if (cancelRegisterBtn) cancelRegisterBtn.addEventListener('click', () => setRegisterStep(false));
-        if (headerLogoutBtn) headerLogoutBtn.addEventListener('click', handleFirebaseLogout);
+        if (configLogoutBtn) configLogoutBtn.addEventListener('click', handleFirebaseLogout);
         if (trialExpiredLogoutBtn) trialExpiredLogoutBtn.addEventListener('click', handleFirebaseLogout);
+        if (configSyncBtn) configSyncBtn.addEventListener('click', async () => {
+          configSyncBtn.disabled = true;
+          const originalHtml = configSyncBtn.innerHTML;
+          configSyncBtn.innerHTML = '<i class="fas fa-rotate fa-spin"></i> Sincronizando...';
+          try {
+            await syncCloudDataNow('force');
+            showToast('Dados sincronizados com o Firebase.');
+          } catch (e) {
+            showToast('Falha ao sincronizar.', true);
+          } finally {
+            configSyncBtn.disabled = false;
+            configSyncBtn.innerHTML = originalHtml;
+          }
+        });
         firebaseAuthInstance.onAuthStateChanged(async (user) => {
           currentFirebaseUser = user || null;
           updateAuthUi();

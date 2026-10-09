@@ -64,7 +64,6 @@
       </div>
       <div class="actions">
         <div class="auth-status-chip" id="authStatusBadge">Aguardando login</div>
-        <button class="icon-action hidden" id="headerLogoutBtn" type="button" aria-label="Sair" title="Sair"><i class="fas fa-right-from-bracket"></i></button>
       </div>
     </header>
 
@@ -422,6 +421,24 @@
     </section>
 
     <section id="config" class="panel">
+      <div class="card" id="cardConta">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-user-circle"></i><h2>Conta</h2></div>
+        </div>
+        <div class="card-body">
+          <div class="conta-info-row">
+            <div class="conta-info-text">
+              <span class="conta-info-label">Conta conectada</span>
+              <strong id="configUserEmail">Nenhuma</strong>
+            </div>
+            <span class="auth-status-chip" id="configSyncStatus">Aguardando login</span>
+          </div>
+          <div class="conta-actions">
+            <button class="btn-secondary" id="configSyncBtn" type="button" data-testid="config-sync-btn"><i class="fas fa-rotate"></i> Sincronizar agora</button>
+            <button class="btn-danger" id="configLogoutBtn" type="button" data-testid="config-logout-btn"><i class="fas fa-right-from-bracket"></i> Sair da conta</button>
+          </div>
+        </div>
+      </div>
       <div class="card collapsed" id="cardGestaoCreditos">
         <div class="card-header collapsible" id="headerGestaoCreditos" data-testid="header-gestao-creditos">
           <div class="card-title"><i class="fas fa-coins"></i><h2>Gestão de Créditos</h2></div>

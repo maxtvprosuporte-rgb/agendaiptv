@@ -534,6 +534,20 @@
     .auth-status-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
     .auth-user-line { display: flex; justify-content: space-between; gap: 12px; align-items: center; background: rgba(0,0,0,.035); border: 1px solid var(--border-faint); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--text-dim); }
     .auth-user-line strong { color: var(--text); font-family: var(--font-mono); font-size: 12.5px; word-break: break-all; text-align: right; }
+
+    #cardConta .card-body { padding-top: 4px; }
+    .conta-info-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; background: rgba(0,0,0,.035); border: 1px solid var(--border-faint); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+    .conta-info-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .conta-info-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+    .conta-info-text strong { color: var(--text); font-family: var(--font-mono); font-size: 13px; word-break: break-all; }
+    .conta-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .conta-actions button { flex: 1 1 auto; min-width: 170px; }
+    @media (max-width: 480px) {
+      .conta-info-row { flex-direction: column; align-items: stretch; }
+      .conta-info-row .auth-status-chip { width: 100%; }
+      .conta-actions { flex-direction: column; }
+      .conta-actions button { width: 100%; min-width: 0; }
+    }
     .auth-note { background: rgba(0,0,0,.03); border: 1px dashed var(--border-faint); border-radius: 14px; padding: 14px 16px; color: var(--muted); font-size: 13px; line-height: 1.6; }
     .auth-note p { margin: 0; }
     .auth-note p + p { margin-top: 8px; }
