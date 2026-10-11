@@ -6126,7 +6126,8 @@ function renderIndicacoes() {
       /* Ordem dos cards na aba Configuração:
          1-Gestão de Crédito, 2-Gestão Financeira, 3-Pacote de Crédito,
          4-Planos Disponíveis, 5-Lucro e Custo personalizado, 6-Indicação,
-         7-Histórico de movimentação, 8-Histórico de taxa bancária, 9-Calculadora */
+         7-Histórico de movimentação, 8-Histórico de taxa bancária, 9-Calculadora,
+         10-Conta (sempre por último) */
       const ordemCards = [
         'cardGestaoCreditos',
         'cardGestao',
@@ -6136,7 +6137,8 @@ function renderIndicacoes() {
         'cardIndicacoes',
         'cardHistorico',
         'cardHistoricoTaxas',
-        'cardCalculadora'
+        'cardCalculadora',
+        'cardConta'
       ];
       ordemCards.forEach(id => {
         const el = document.getElementById(id);

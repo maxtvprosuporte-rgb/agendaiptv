@@ -421,24 +421,6 @@
     </section>
 
     <section id="config" class="panel">
-      <div class="card" id="cardConta">
-        <div class="card-header">
-          <div class="card-title"><i class="fas fa-user-circle"></i><h2>Conta</h2></div>
-        </div>
-        <div class="card-body">
-          <div class="conta-info-row">
-            <div class="conta-info-text">
-              <span class="conta-info-label">Conta conectada</span>
-              <strong id="configUserEmail">Nenhuma</strong>
-            </div>
-            <span class="auth-status-chip" id="configSyncStatus">Aguardando login</span>
-          </div>
-          <div class="conta-actions">
-            <button class="btn-secondary" id="configSyncBtn" type="button" data-testid="config-sync-btn"><i class="fas fa-rotate"></i> Sincronizar agora</button>
-            <button class="btn-danger" id="configLogoutBtn" type="button" data-testid="config-logout-btn"><i class="fas fa-right-from-bracket"></i> Sair da conta</button>
-          </div>
-        </div>
-      </div>
       <div class="card collapsed" id="cardGestaoCreditos">
         <div class="card-header collapsible" id="headerGestaoCreditos" data-testid="header-gestao-creditos">
           <div class="card-title"><i class="fas fa-coins"></i><h2>Gestão de Créditos</h2></div>
@@ -610,6 +592,24 @@
         <div class="card-body" id="bodyHistoricoTaxas">
           <p class="card-hint">Taxas cobradas por banco/gateway a cada venda ou renovação, agrupadas por plano. Use o filtro de mês na aba Gestão para variar o período.</p>
           <div id="detalheTaxas" data-testid="detalhe-taxas"></div>
+        </div>
+      </div>
+      <div class="card" id="cardConta">
+        <div class="card-header">
+          <div class="card-title"><i class="fas fa-user-circle"></i><h2>Conta</h2></div>
+        </div>
+        <div class="card-body">
+          <div class="conta-info-row">
+            <div class="conta-info-text">
+              <span class="conta-info-label">Conta conectada</span>
+              <strong id="configUserEmail">Nenhuma</strong>
+            </div>
+            <span class="auth-status-chip" id="configSyncStatus">Aguardando login</span>
+          </div>
+          <div class="conta-actions">
+            <button class="btn-secondary" id="configSyncBtn" type="button" data-testid="config-sync-btn"><i class="fas fa-rotate"></i> Sincronizar agora</button>
+            <button class="btn-danger" id="configLogoutBtn" type="button" data-testid="config-logout-btn"><i class="fas fa-right-from-bracket"></i> Sair da conta</button>
+          </div>
         </div>
       </div>
     </section>
