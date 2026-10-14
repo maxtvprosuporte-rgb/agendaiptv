@@ -165,6 +165,19 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
     '',
     '🙏 Obrigado pela preferência!'
   ].join('\n'),
+  ativacao_codigo: [
+    '🎉 Olá *{{nome}}*, *Acesso ativado com sucesso!*',
+    '',
+    '🔑 *Seu código de resgate*:',
+    '',
+    '*{{codigo_resgate}}*',
+    '',
+    '🗓️ *Válido até*: {{data_renovacao}}',
+    '',
+    '⚠️ *Guarde este código com cuidado!* Um novo código só é enviado após o pagamento da próxima renovação.',
+    '',
+    '🙏 Obrigado pela preferência!'
+  ].join('\n'),
   dias_extras: [
     '📅 *Ajuste no seu vencimento*',
     '',
@@ -247,6 +260,7 @@ const MESSAGE_TEMPLATE_META = Object.freeze({
   cobranca_codigo: { label: 'Cobrança / vencimento (cliente com código)', variables: ['nome', 'status_vencimento', 'plano', 'valor', 'data_renovacao', 'link_renovacao'] },
   teste_criado: { label: 'Teste criado', variables: ['nome', 'usuario', 'senha', 'link_renovacao', 'duracao_teste'] },
   ativacao: { label: 'Ativação de usuário', variables: ['nome', 'usuario', 'senha', 'data_renovacao'] },
+  ativacao_codigo: { label: 'Ativação do teste (código de resgate)', variables: ['nome', 'codigo_resgate', 'data_renovacao'] },
   dias_extras: { label: 'Dias extras', variables: ['dias', 'usuario', 'senha', 'valor_adicional', 'data_renovacao'] },
   pagamento_pendente: { label: 'Pagamento pendente', variables: ['nome', 'usuario', 'senha', 'codigo_resgate', 'plano', 'valor', 'data_renovacao', 'link_renovacao'] },
   indicacao_teste: { label: 'Indicação registrada', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
@@ -365,6 +379,11 @@ function getMessageTemplateSamples() {
       nome: cli.nome || 'Cliente Exemplo',
       usuario: cli.usuario || 'usuario_teste',
       senha: cli.senha || '123456',
+      data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30)))
+    },
+    ativacao_codigo: {
+      nome: cli.nome || 'Cliente Exemplo',
+      codigo_resgate: cli.codigoResgate || 'XYZ-789',
       data_renovacao: formatDate(cli.dataRenovacao || toInputDate(addDays(todayLocalDate(), 30)))
     },
     dias_extras: {
@@ -2256,6 +2275,15 @@ function buildTesteVencidoMessage(t) {
 }
 
 function buildAtivacaoMessage(client) {
+  // Cliente com Código de Resgate: a ativação entrega o código (informado na hora
+  // de ativar o teste), e não usuário/senha.
+  if (client.tipoAcesso === 'codigo_resgate') {
+    return renderMessageTemplate('ativacao_codigo', {
+      nome: client.nome || '',
+      codigo_resgate: client.codigoResgate || '[informe o código de resgate]',
+      data_renovacao: formatDate(client.dataRenovacao)
+    });
+  }
   return renderMessageTemplate('ativacao', {
     nome: client.nome || '',
     usuario: client.usuario || '',
@@ -2611,16 +2639,55 @@ function whatsAppTeste(id) {
     }
     window.enviarWhatsAppTesteVencido = enviarWhatsAppTesteVencido;
 
+    /* Ativar teste: se o acesso do teste é por Código de Resgate, o código NÃO é
+       pedido no cadastro — ele é solicitado aqui, na hora de ativar, para seguir
+       junto com a mensagem de ativação. */
+    let ativacaoCodigoTesteId = null;
     function ativarTeste(id) {
+      const t = testes.find(x => x.id === id); if (!t) return;
+      if (t.tipoAcesso === 'codigo_resgate') { abrirModalCodigoAtivacao(id); return; }
+      executarAtivacaoTeste(id, '');
+    }
+    function abrirModalCodigoAtivacao(id) {
+      const t = testes.find(x => x.id === id); if (!t) return;
+      ativacaoCodigoTesteId = id;
+      const nomeEl = document.getElementById('ativCodigoNome');
+      const inp = document.getElementById('ativCodigoInput');
+      if (nomeEl) nomeEl.textContent = t.nome || '';
+      if (inp) inp.value = t.codigoResgate || '';
+      document.getElementById('modalCodigoAtivacao').classList.add('active');
+      setTimeout(() => { if (inp) inp.focus(); }, 60);
+    }
+    function fecharModalCodigoAtivacao() {
+      document.getElementById('modalCodigoAtivacao').classList.remove('active');
+      ativacaoCodigoTesteId = null;
+    }
+    function confirmarCodigoAtivacao() {
+      const inp = document.getElementById('ativCodigoInput');
+      const codigo = inp ? inp.value.trim() : '';
+      if (!codigo) { showToast('Informe o código de resgate para ativar.', true); return; }
+      const id = ativacaoCodigoTesteId;
+      fecharModalCodigoAtivacao();
+      if (id) executarAtivacaoTeste(id, codigo);
+    }
+    window.abrirModalCodigoAtivacao = abrirModalCodigoAtivacao;
+    window.fecharModalCodigoAtivacao = fecharModalCodigoAtivacao;
+    window.confirmarCodigoAtivacao = confirmarCodigoAtivacao;
+
+    function executarAtivacaoTeste(id, codigoResgate) {
       const idx = testes.findIndex(x => x.id === id); if (idx < 0) return;
       const t = testes[idx];
+      const ehCodigo = t.tipoAcesso === 'codigo_resgate';
       const planoCad = encontrarPlanoPorNome(t.plano);
       const dias = planoCad ? planoCad.dias : 30;
       const creditosUsar = resolverCreditosCliente(t);
       const hoje = todayLocalDate();
       const novoCliente = {
         id: generateId(), nome: t.nome, telefone: t.telefone, aplicativoId: t.aplicativoId || '', aplicativo: t.aplicativo,
-        usuario: t.usuario, senha: t.senha, plano: t.plano, valor: t.valor,
+        tipoAcesso: ehCodigo ? 'codigo_resgate' : 'usuario_senha',
+        usuario: ehCodigo ? '' : t.usuario, senha: ehCodigo ? '' : t.senha,
+        codigoResgate: ehCodigo ? (codigoResgate || '') : '',
+        plano: t.plano, valor: t.valor,
         creditos: creditosUsar,
         dataInicio: toInputDate(hoje), dataPagamento: toInputDate(hoje),
         dataRenovacao: toInputDate(addPlanPeriod(hoje, dias)),
@@ -2838,9 +2905,7 @@ function whatsAppTeste(id) {
       const ecSenha = ecTipoAcesso === 'codigo_resgate' ? '' : document.getElementById('ec_senha').value.trim();
       const ecCodigoResgateEl = document.getElementById('ec_codigoResgate');
       const ecCodigoResgate = ecTipoAcesso === 'codigo_resgate' ? (ecCodigoResgateEl ? ecCodigoResgateEl.value.trim() : '') : '';
-      if (ecTipoAcesso === 'codigo_resgate') {
-        if (!ecCodigoResgate) { showToast('Preencha o Código de Resgate.', true); return; }
-      } else if (!ecUsuario || !ecSenha) {
+      if (ecTipoAcesso !== 'codigo_resgate' && (!ecUsuario || !ecSenha)) {
         showToast('Preencha Usuário e Senha.', true); return;
       }
       const base = {
@@ -2931,9 +2996,7 @@ function whatsAppTeste(id) {
       const codigoResgateEl = document.getElementById('nc_codigoResgate');
       const codigoResgate = ncTipoAcesso === 'codigo_resgate' ? (codigoResgateEl ? codigoResgateEl.value.trim() : '') : '';
       if (!nome) { showToast('Preencha o Nome.', true); return; }
-      if (ncTipoAcesso === 'codigo_resgate') {
-        if (!codigoResgate) { showToast('Preencha o Código de Resgate.', true); return; }
-      } else if (!usuario || !senha) {
+      if (ncTipoAcesso !== 'codigo_resgate' && (!usuario || !senha)) {
         showToast('Preencha Usuário e Senha.', true); return;
       }
       const hoje = todayLocalDate();
@@ -2999,9 +3062,8 @@ function whatsAppTeste(id) {
       e.preventDefault();
       const d = getFormData();
       if (!d.nome) { showToast('Preencha o Nome.', true); return; }
-      if (d.tipoAcesso === 'codigo_resgate') {
-        if (!d.codigoResgate) { showToast('Preencha o Código de Resgate.', true); return; }
-      } else if (!d.usuario || !d.senha) {
+      // Código de Resgate não é exigido aqui: ele é pedido na hora de ativar o teste.
+      if (d.tipoAcesso !== 'codigo_resgate' && (!d.usuario || !d.senha)) {
         showToast('Preencha Usuário e Senha.', true); return;
       }
       testes.push(d); salvarTestes();

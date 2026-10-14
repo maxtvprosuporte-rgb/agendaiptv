@@ -899,7 +899,7 @@
             </div>
             <div class="field" id="ec_usuario_wrap"><label for="ec_usuario">Usuário</label><input id="ec_usuario" data-testid="ec-usuario" /></div>
             <div class="field" id="ec_senha_wrap"><label for="ec_senha">Senha</label><input id="ec_senha" data-testid="ec-senha" /></div>
-            <div class="field" id="ec_codigoResgate_wrap" style="display:none;"><label for="ec_codigoResgate">Código de Resgate</label><input id="ec_codigoResgate" placeholder="Ex.: ABC-123" data-testid="ec-codigo-resgate" /></div>
+            <div class="field" id="ec_codigoResgate_wrap" style="display:none;"><label for="ec_codigoResgate">Código de Resgate (opcional)</label><input id="ec_codigoResgate" placeholder="Ex.: ABC-123" data-testid="ec-codigo-resgate" /></div>
             <div class="field" id="ec_duracaoTeste_wrap">
               <label for="ec_duracaoTeste">Duração do teste</label>
               <select id="ec_duracaoTeste" data-testid="ec-duracao-teste">
@@ -983,7 +983,7 @@
             </div>
             <div class="field" id="nc_usuario_wrap"><label for="nc_usuario">Usuário</label><input id="nc_usuario" data-testid="nc-usuario" /></div>
             <div class="field" id="nc_senha_wrap"><label for="nc_senha">Senha</label><input id="nc_senha" data-testid="nc-senha" /></div>
-            <div class="field" id="nc_codigoResgate_wrap" style="display:none;"><label for="nc_codigoResgate">Código de Resgate</label><input id="nc_codigoResgate" placeholder="Ex.: ABC-123" data-testid="nc-codigo-resgate" /></div>
+            <div class="field" id="nc_codigoResgate_wrap" style="display:none;"><label for="nc_codigoResgate">Código de Resgate (opcional)</label><input id="nc_codigoResgate" placeholder="Ex.: ABC-123" data-testid="nc-codigo-resgate" /></div>
           </div>
         </div>
         <div class="form-section">
@@ -1071,7 +1071,7 @@
             </div>
             <div class="field" id="usuario_wrap"><label for="usuario">Usuário</label><input id="usuario" data-testid="input-usuario" /></div>
             <div class="field" id="senha_wrap"><label for="senha">Senha</label><input id="senha" data-testid="input-senha" /></div>
-            <div class="field" id="codigoResgate_wrap" style="display:none;"><label for="codigoResgate">Código de Resgate</label><input id="codigoResgate" placeholder="Ex.: ABC-123" data-testid="input-codigo-resgate" /></div>
+            <div class="field" id="codigoResgate_wrap" style="display:none; grid-column: 1 / -1;"><p class="card-hint" style="margin:0;"><i class="fas fa-circle-info"></i> O código de resgate não é pedido agora — o sistema solicita na hora de <b>ativar</b> o teste, para ir junto com a mensagem de ativação.</p></div>
             <div class="field">
               <label for="duracaoTeste">Duração do teste</label>
               <select id="duracaoTeste" data-testid="input-duracao-teste">
@@ -1258,6 +1258,24 @@
   </div>
 
   <!-- Modal: Mensagem pós-ativação (teste -> assinatura) -->
+  <div id="modalCodigoAtivacao" class="modal">
+    <div class="modal-content sm">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-ticket-alt" style="color: var(--primary); margin-right: 6px;"></i> Código de resgate</h3>
+        <button class="modal-close" onclick="fecharModalCodigoAtivacao()" data-testid="close-codigo-ativacao"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="card-hint" style="margin: 0 0 12px;">Informe o código de resgate de <b id="ativCodigoNome"></b>. Ele será enviado junto com a mensagem de ativação.</p>
+      <div class="form-group">
+        <label class="form-label" for="ativCodigoInput">Código de resgate</label>
+        <input type="text" id="ativCodigoInput" class="form-input" placeholder="Ex.: ABC-123" autocomplete="off" data-testid="ativ-codigo-input" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmarCodigoAtivacao();}">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-primary" onclick="confirmarCodigoAtivacao()" data-testid="ativ-codigo-confirmar"><i class="fas fa-bolt"></i> Ativar e gerar mensagem</button>
+        <button type="button" class="btn-secondary" onclick="fecharModalCodigoAtivacao()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="modalMensagemAtivacao" class="modal">
     <div class="modal-content sm">
       <div class="modal-header">
