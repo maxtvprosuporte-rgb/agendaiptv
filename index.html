@@ -62,8 +62,8 @@
           <p>Controle de Cliente, lucro e custo!</p>
         </div>
       </div>
-      <div class="actions">
-        <div class="auth-status-chip" id="authStatusBadge">Aguardando login</div>
+      <div class="actions actions-dot">
+        <span class="sync-dot dot-red" id="authStatusBadge" role="status" aria-label="Aguardando login" title="Aguardando login"></span>
       </div>
     </header>
 
@@ -1166,8 +1166,23 @@
         <h3 class="modal-title"><i class="fas fa-rotate-right" style="color: var(--info); margin-right: 6px;"></i> Confirmar Renovação</h3>
         <button class="modal-close" onclick="fecharModalConfirmarRenovacao()" data-testid="close-confirm-renovacao"><i class="fas fa-times"></i></button>
       </div>
-      <p class="card-hint" style="margin: 0 0 6px;">Confira os dados abaixo. A nova data será calculada a partir de hoje.</p>
+      <p class="card-hint" style="margin: 0 0 6px;">Confira os dados abaixo e escolha o plano e o período da renovação — dias, créditos, taxa, custo e lucro são calculados conforme a escolha.</p>
       <div class="renew-confirm-grid" id="renewConfirmGrid"></div>
+
+      <div class="form-group" style="margin: 14px 0 0;">
+        <label class="form-label" for="renPlano"><i class="fas fa-box"></i> Plano da renovação</label>
+        <select id="renPlano" class="form-select" onchange="mudarPlanoRenovacao()" data-testid="ren-plano"></select>
+        <p class="card-hint" id="renPlanoAviso" style="margin: 6px 0 0;"></p>
+      </div>
+      <div class="form-group" style="margin: 14px 0 0;">
+        <label class="form-label"><i class="fas fa-calendar-plus"></i> Período da renovação</label>
+        <div class="radio-group ren-meses-group" role="radiogroup" aria-label="Período da renovação" id="renMesesGroup"></div>
+      </div>
+      <div class="form-group" id="renTotalBox" style="display:none; margin: 6px 0 0;">
+        <label class="form-label" for="renValorTotal"><i class="fas fa-tags"></i> Valor total cobrado (com desconto)</label>
+        <input type="text" inputmode="decimal" id="renValorTotal" class="form-input" placeholder="Ex.: 85,00" oninput="editarValorTotalRenovacao()" data-testid="ren-valor-total">
+        <p class="card-hint" id="renDescontoInfo" style="margin: 6px 0 0;"></p>
+      </div>
 
       <div class="form-group" style="margin: 14px 0;">
         <label class="form-label"><i class="fas fa-money-bill-wave"></i> Status do Pagamento</label>

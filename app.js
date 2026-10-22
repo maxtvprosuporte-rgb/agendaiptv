@@ -657,7 +657,16 @@ function setupMessageEditor() {
       const configSyncStatusEl = document.getElementById('configSyncStatus');
       const helperEl = document.getElementById('authHelperText');
       const classes = ['status-ok', 'status-warn', 'status-error'];
-      [statusEl, syncEl, configSyncStatusEl].forEach(el => {
+      // Bolinha do topo: verde = sincronizado, amarelo = enviando/pendente, vermelho = não sincronizado.
+      if (statusEl) {
+        const semLogin = label === 'Aguardando login';
+        const dot = tone === 'ok' ? 'dot-green' : (tone === 'error' || semLogin ? 'dot-red' : 'dot-yellow');
+        statusEl.classList.remove('dot-red', 'dot-yellow', 'dot-green');
+        statusEl.classList.add(dot);
+        statusEl.title = label;
+        statusEl.setAttribute('aria-label', label);
+      }
+      [syncEl, configSyncStatusEl].forEach(el => {
         if (!el) return;
         el.textContent = label;
         el.classList.remove(...classes);
@@ -1278,63 +1287,142 @@ function copyMessage(id) {
       if (!phone) showToast('Cliente sem telefone cadastrado. Adicione um telefone válido para enviar a mensagem.', true);
     }
 
-    /* === RENOVAÇÃO COM CONFIRMAÇÃO === */
-    let renovacaoPendente = null; // { client, dias, novaDataStr, valorVenda, painelId, creditosUsar, taxa }
+    /* === RENOVAÇÃO COM CONFIRMAÇÃO ===
+       Na renovação dá pra (1) trocar o plano por outro cadastrado e (2) renovar 1 a 4
+       períodos de uma vez. Dias, créditos, taxa, custo e lucro são recalculados conforme
+       o plano e o período escolhidos. Em períodos maiores que 1 o valor cobrado tem um
+       pequeno desconto (informado na hora), mas o custo NÃO ganha desconto: cada
+       período consome os mesmos créditos pelo mesmo custo. */
+    let renovacaoPendente = null; // estado do modal: { id, planoId, meses, valorTotalManual, ...calculados }
+
+    const r2 = v => Math.round((Number(v) || 0) * 100) / 100;
+    const fmtBRL = v => `R$ ${(Number(v) || 0).toFixed(2).replace('.', ',')}`;
+    function rotuloPeriodoRenovacao(n, dias) {
+      if (dias === 30) return n === 1 ? '1 mês' : `${n} meses`;
+      return `${n}× (${dias * n}d)`;
+    }
 
     function abrirModalConfirmarRenovacao(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
-      const planoCadastrado = encontrarPlanoPorNome(client.plano);
-      const dias = planoCadastrado ? planoCadastrado.dias : 30;
-      const creditosUsar = resolverCreditosCliente(client);
+      const planoAtual = encontrarPlanoPorNome(client.plano);
+      renovacaoPendente = { id: client.id, planoId: planoAtual ? planoAtual.id : null, meses: 1, valorTotalManual: null };
+
+      // Select de planos: o plano atual do cliente vem selecionado, mas dá pra escolher outro.
+      const sel = document.getElementById('renPlano');
+      if (sel) {
+        const opcoes = planos.map(p => {
+          const cred = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
+          const atual = planoAtual && p.id === planoAtual.id ? ' (atual)' : '';
+          return `<option value="${p.id}">${escapeHtml(p.nome)}${atual} • R$ ${Number(p.valor).toFixed(2)} • ${p.dias}d • ${cred} créd.</option>`;
+        }).join('');
+        const semCad = planoAtual ? '' : `<option value="">${escapeHtml(client.plano || 'Sem plano')} (atual — não cadastrado)</option>`;
+        sel.innerHTML = semCad + opcoes;
+        sel.value = planoAtual ? String(planoAtual.id) : '';
+      }
+      const totalInput = document.getElementById('renValorTotal');
+      if (totalInput) totalInput.value = '';
+      recalcularRenovacao();
+      document.getElementById('modalConfirmarRenovacao').classList.add('active');
+    }
+
+    function mudarPlanoRenovacao() {
+      if (!renovacaoPendente) return;
+      const v = document.getElementById('renPlano').value;
+      renovacaoPendente.planoId = v === '' ? null : parseInt(v);
+      renovacaoPendente.valorTotalManual = null;   // novo plano → volta ao valor cheio
+      recalcularRenovacao();
+    }
+    function selecionarMesesRenovacao(n) {
+      if (!renovacaoPendente) return;
+      renovacaoPendente.meses = n;
+      renovacaoPendente.valorTotalManual = null;   // novo período → volta ao valor cheio
+      recalcularRenovacao();
+    }
+    function editarValorTotalRenovacao() {
+      if (!renovacaoPendente) return;
+      const raw = document.getElementById('renValorTotal').value.trim();
+      renovacaoPendente.valorTotalManual = raw === '' ? null : parseValor(raw);
+      recalcularRenovacao({ manterCampoTotal: true });
+    }
+
+    function recalcularRenovacao(opts = {}) {
+      const st = renovacaoPendente; if (!st) return;
+      const client = clients.find(c => c.id === st.id); if (!client) return;
+      const planoAtual = encontrarPlanoPorNome(client.plano);
+      const planoSel = st.planoId != null ? (planos.find(p => p.id === st.planoId) || null) : null;
+      const usandoAtual = !planoSel || (planoAtual && planoSel.id === planoAtual.id);
+      const planoRef = planoSel || planoAtual;                 // fonte de dias / painel / taxa
+      const meses = st.meses;
+
+      const dias = planoRef ? planoRef.dias : 30;
+      const valorMensal = usandoAtual ? parseValor(client.valor) : (Number(planoSel.valor) || 0);
+      const creditosMensais = usandoAtual
+        ? resolverCreditosCliente(client)
+        : (Number.isFinite(parseInt(planoSel.creditos)) ? parseInt(planoSel.creditos) : 1);
+      const painelId = (planoRef && planoRef.painelId) ? planoRef.painelId : paineis[0].id;
+
+      const valorCheio = r2(valorMensal * meses);
+      const manualOk = meses > 1 && st.valorTotalManual != null && Number.isFinite(st.valorTotalManual);
+      const valorVenda = manualOk ? st.valorTotalManual : valorCheio;
+      const creditosUsar = creditosMensais * meses;            // custo NÃO tem desconto: N períodos = N× os créditos
+      const taxa = calcularTaxaPlano(planoRef, valorVenda);
+
+      // Data: renovação antecipada preserva os dias restantes; vencido/hoje conta a partir de hoje.
       const today = todayLocalDate();
       const dueDate = parseDate(client.dataRenovacao);
-      // Renovação antecipada (ainda não venceu): soma os dias do plano à data de vencimento atual,
-      // preservando os dias restantes. Vencido ou vencendo hoje: conta a partir de hoje (data da renovação).
       const baseDate = (dueDate && dueDate > today) ? dueDate : today;
-      const nd = addPlanPeriod(baseDate, dias);
-      const novaDataStr = toInputDate(nd);
-      const valorVenda = parseValor(client.valor);
-      const taxa = calcularTaxaPlano(planoCadastrado, valorVenda);
-      const painelId = (planoCadastrado && planoCadastrado.painelId) ? planoCadastrado.painelId : paineis[0].id;
+      const novaDataStr = toInputDate(addPlanPeriod(baseDate, dias * meses));
+
+      const custoUnit = custoUnitarioAtualPainel(painelId);
+      const custoEst = creditosUsar * custoUnit;
+      const lucroEst = valorVenda - taxa - custoEst;
+
+      Object.assign(st, { planoRef, usandoAtual, dias, valorMensal, creditosMensais, painelId, valorCheio,
+        valorVenda, creditosUsar, taxa, novaDataStr, custoEst, lucroEst, planoAtual });
+
+      renderRenovacaoModal(client, opts);
+    }
+
+    function renderRenovacaoModal(client, opts = {}) {
+      const st = renovacaoPendente; if (!st) return;
+      const today = todayLocalDate();
+      const dueDate = parseDate(client.dataRenovacao);
+      const { dias, meses, painelId, creditosUsar, taxa, valorVenda, valorCheio, novaDataStr, custoEst, lucroEst, valorMensal, planoRef, planoAtual, usandoAtual } = st;
       const painelNome = getPainelNome(painelId);
       const painelCls = getPainelIdxClass(painelId);
+      const diasTotal = dias * meses;
 
-      // Informação sobre o cálculo
       const venceuHa = (dueDate && dueDate < today) ? diffInDays(today, dueDate) : 0;
       const diasRestantes = (dueDate && dueDate > today) ? diffInDays(dueDate, today) : 0;
       let baseInfo;
       if (diasRestantes > 0) {
-        baseInfo = `<span style="color:var(--primary);">${diasRestantes} dia${diasRestantes === 1 ? '' : 's'} restantes</span> — contando ${dias} dias a partir do vencimento atual (renovação antecipada, dias restantes preservados)`;
+        baseInfo = `<span style="color:var(--primary);">${diasRestantes} dia${diasRestantes === 1 ? '' : 's'} restantes</span> — contando ${diasTotal} dias a partir do vencimento atual (renovação antecipada, dias restantes preservados)`;
       } else if (venceuHa > 0) {
-        baseInfo = `<span style="color:#ff9b9b;">Venceu há ${venceuHa} dia${venceuHa === 1 ? '' : 's'}</span> — contando ${dias} dias a partir de hoje`;
+        baseInfo = `<span style="color:#ff9b9b;">Venceu há ${venceuHa} dia${venceuHa === 1 ? '' : 's'}</span> — contando ${diasTotal} dias a partir de hoje`;
       } else {
-        baseInfo = `Vence hoje — contando ${dias} dias a partir de hoje`;
+        baseInfo = `Vence hoje — contando ${diasTotal} dias a partir de hoje`;
       }
 
-      renovacaoPendente = { id: client.id, dias, novaDataStr, valorVenda, painelId, creditosUsar, taxa };
+      const ehCodigo = client.tipoAcesso === 'codigo_resgate';
+      const acessoHtml = ehCodigo
+        ? `<div class="renew-confirm-item full"><div class="lbl">Código de resgate atual</div><div class="val">${escapeHtml(client.codigoResgate || '—')}</div></div>`
+        : `<div class="renew-confirm-item"><div class="lbl">Usuário</div><div class="val">${escapeHtml(client.usuario || '—')}</div></div>
+           <div class="renew-confirm-item"><div class="lbl">Senha</div><div class="val">${escapeHtml(client.senha || '—')}</div></div>`;
 
-      const grid = document.getElementById('renewConfirmGrid');
-      grid.innerHTML = `
+      document.getElementById('renewConfirmGrid').innerHTML = `
         <div class="renew-confirm-item full">
           <div class="lbl">Nome</div>
           <div class="val">${escapeHtml(client.nome || '—')} <span class="painel-badge ${painelCls}" style="margin-left:6px;"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span></div>
         </div>
+        ${acessoHtml}
         <div class="renew-confirm-item">
-          <div class="lbl">Usuário</div>
-          <div class="val">${escapeHtml(client.usuario || '—')}</div>
-        </div>
-        <div class="renew-confirm-item">
-          <div class="lbl">Senha</div>
-          <div class="val">${escapeHtml(client.senha || '—')}</div>
-        </div>
-        <div class="renew-confirm-item">
-          <div class="lbl">Plano</div>
+          <div class="lbl">Plano atual</div>
           <div class="val">${escapeHtml(client.plano || '—')}</div>
         </div>
         <div class="renew-confirm-item">
-          <div class="lbl">Valor</div>
-          <div class="val">R$ ${escapeHtml(String(client.valor || '0'))}</div>
+          <div class="lbl">Valor mensal</div>
+          <div class="val">${fmtBRL(valorMensal)}</div>
         </div>
         <div class="renew-confirm-item">
           <div class="lbl">Vencimento atual</div>
@@ -1345,11 +1433,60 @@ function copyMessage(id) {
           <div class="val" data-testid="confirm-nova-data">${escapeHtml(formatDate(novaDataStr))}</div>
         </div>
         <div class="renew-confirm-item full">
-          <div class="lbl">Cálculo</div>
-          <div class="val" style="font-size:13px;">${baseInfo}<br><span style="color:var(--muted); font-size:12px;">−${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} do <b>${escapeHtml(painelNome)}</b>${taxa > 0 ? ` • Taxa R$ ${taxa.toFixed(2)}` : ''}</span></div>
-        </div>
-      `;
-      document.getElementById('modalConfirmarRenovacao').classList.add('active');
+          <div class="lbl">Cálculo da renovação</div>
+          <div class="val" style="font-size:13px;">${baseInfo}
+            <div style="margin-top:8px; display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px 14px; font-size:12.5px;" data-testid="renew-calculo">
+              <span>Receita: <b>${fmtBRL(valorVenda)}</b></span>
+              <span>Créditos: <b>−${creditosUsar}</b> (${escapeHtml(painelNome)})</span>
+              <span>Taxa: <b>${fmtBRL(taxa)}</b></span>
+              <span>Custo estimado: <b>${fmtBRL(custoEst)}</b></span>
+              <span style="grid-column: 1 / -1;">Lucro estimado: <b style="color:${lucroEst >= 0 ? 'var(--primary)' : '#a02323'};">${fmtBRL(lucroEst)}</b></span>
+            </div>
+          </div>
+        </div>`;
+
+      // Aviso quando o plano escolhido é de outro painel
+      const aviso = document.getElementById('renPlanoAviso');
+      if (aviso) {
+        const painelAtual = planoAtual ? planoAtual.painelId : null;
+        if (!usandoAtual && planoRef) {
+          const mudouPainel = painelAtual && planoRef.painelId && painelAtual !== planoRef.painelId;
+          aviso.innerHTML = `Plano alterado: o cliente passa a ser <b>${escapeHtml(planoRef.nome)}</b> (${fmtBRL(planoRef.valor)}/período).` +
+            (mudouPainel ? ` <span style="color:var(--warning);">⚠ Este plano é de outro painel (${escapeHtml(getPainelNome(planoRef.painelId))}) — confira o acesso do cliente.</span>` : '');
+        } else {
+          aviso.textContent = 'Mantendo o plano atual do cliente. Escolha outro para trocar o plano nesta renovação.';
+        }
+      }
+
+      // Período (1 a 4)
+      const grp = document.getElementById('renMesesGroup');
+      if (grp) {
+        grp.innerHTML = [1, 2, 3, 4].map(n =>
+          `<button type="button" class="radio-option${n === meses ? ' active' : ''}" onclick="selecionarMesesRenovacao(${n})" data-testid="ren-meses-${n}">${escapeHtml(rotuloPeriodoRenovacao(n, dias))}</button>`
+        ).join('');
+      }
+
+      // Valor total com desconto (só quando passa de 1 período)
+      const box = document.getElementById('renTotalBox');
+      if (box) box.style.display = meses > 1 ? '' : 'none';
+      const totalInput = document.getElementById('renValorTotal');
+      if (totalInput && meses > 1 && !opts.manterCampoTotal) {
+        totalInput.value = valorVenda.toFixed(2).replace('.', ',');
+      }
+      const descInfo = document.getElementById('renDescontoInfo');
+      if (descInfo) {
+        if (meses > 1) {
+          const desc = r2(valorCheio - valorVenda);
+          const pct = valorCheio > 0 ? (desc / valorCheio) * 100 : 0;
+          descInfo.innerHTML = desc > 0.004
+            ? `Valor cheio ${fmtBRL(valorCheio)} → <b style="color:var(--primary);">desconto de ${fmtBRL(desc)} (${pct.toFixed(1).replace('.', ',')}%)</b>. O custo dos créditos continua o mesmo (${creditosUsar} créditos).`
+            : (desc < -0.004
+              ? `<span style="color:var(--warning);">Valor acima do cheio (${fmtBRL(valorCheio)}).</span> O custo dos créditos continua o mesmo.`
+              : `Sem desconto (valor cheio ${fmtBRL(valorCheio)}). Informe o valor com desconto, se houver. O custo dos créditos não muda.`);
+        } else {
+          descInfo.textContent = '';
+        }
+      }
     }
 
     function fecharModalConfirmarRenovacao() {
@@ -1359,58 +1496,69 @@ function copyMessage(id) {
 
     function confirmarRenovacao() {
       if (!renovacaoPendente) return;
-      const { id, novaDataStr, valorVenda, painelId, creditosUsar, taxa } = renovacaoPendente;
+      recalcularRenovacao({ manterCampoTotal: true });   // garante valores atuais (inclusive o total digitado)
+      const st = renovacaoPendente;
+      const { id, novaDataStr, valorVenda, painelId, creditosUsar, taxa, meses } = st;
       const client = clients.find(c => c.id === id);
       if (!client) { fecharModalConfirmarRenovacao(); return; }
-      
+      if (meses > 1 && st.valorTotalManual != null && !(st.valorTotalManual > 0)) {
+        showToast('Informe o valor total cobrado (maior que zero).', true); return;
+      }
+
+      // Plano trocado na renovação: o cliente passa a ter o plano (valor, créditos e link) escolhido.
+      if (st.planoRef && !st.usandoAtual) {
+        client.plano = st.planoRef.nome;
+        client.valor = Number(st.planoRef.valor).toFixed(2).replace('.', ',');
+        client.creditos = Number.isFinite(parseInt(st.planoRef.creditos)) ? parseInt(st.planoRef.creditos) : 1;
+        if (st.planoRef.link) client.linkRenovacao = st.planoRef.link;
+      }
+
       const today = todayLocalDate();
       client.dataInicio = toInputDate(today);
       client.dataPagamento = toInputDate(today);
       client.dataRenovacao = novaDataStr;
       client.msgSentAt = null;
       client.updatedAt = new Date().toISOString();
-      
+      const periodoTxt = meses > 1 ? `${meses} períodos • ` : '';
+
       // Verifica o status do pagamento
       const pagStatusEl = document.querySelector('input[name="pag_status"]:checked');
       const pagStatus = pagStatusEl ? pagStatusEl.value : 'realizado';
-      
+
       if (pagStatus === 'realizado') {
         // Pagamento realizado - processa imediatamente
         client.pagamentoPendente = false;
         delete client._renovacaoPendente;
-        
+
         movimentacoes.push({
           data: new Date().toISOString(), tipo: 'use', tipoCliente: 'renovacao',
-          valor: valorVenda, quantidade: creditosUsar, taxa: taxa,
+          valor: valorVenda, quantidade: creditosUsar, taxa: taxa, meses,
           planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
           painelId
         });
         salvarMovimentacoes();
-        
-        renderAll();
-        atualizarCreditos(); atualizarHistorico();
-        atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
-        atualizarSelectMesGestao();
-        
+        saveClients();
+
         fecharModalConfirmarRenovacao();
         abrirModalMensagemRenovacao(client);
-        showToast(`Renovação confirmada • Novo vencimento: ${formatDate(client.dataRenovacao)} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} (${getPainelNome(painelId)})${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}`);
+        showToast(`Renovação confirmada • ${periodoTxt}Novo vencimento: ${formatDate(client.dataRenovacao)} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} (${getPainelNome(painelId)})${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}`);
       } else {
         // Pagamento pendente - reserva o crédito agora, sem contabilizar lucro/taxa ainda
         client.pagamentoPendente = true;
         const reservaId = reservarCreditoPagamentoPendente(client, { valorVenda, painelId, creditosUsar, taxa });
-        client._renovacaoPendente = { valorVenda, painelId, creditosUsar, taxa, reservaId };
-        
+        client._renovacaoPendente = { valorVenda, painelId, creditosUsar, taxa, reservaId, meses };
         saveClients();
-        renderAll();
-        atualizarCreditos(); atualizarHistorico();
-        atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
-        atualizarSelectMesGestao();
         fecharModalConfirmarRenovacao();
         abrirModalMensagemRenovacao(client);
-        showToast(`Renovação pendente • ${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} reservado${creditosUsar === 1 ? '' : 's'} em ${getPainelNome(painelId)}`);
+        showToast(`Renovação pendente • ${periodoTxt}${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} reservado${creditosUsar === 1 ? '' : 's'} em ${getPainelNome(painelId)}`);
       }
+      // Atualizações de tela depois do essencial (uma falha aqui não desfaz a renovação)
+      [renderAll, atualizarCreditos, atualizarHistorico, atualizarGraficoClientes, atualizarStatsFinanceiras,
+       gerarTextoWhatsAppGestao, atualizarSelectMesGestao].forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
     }
+    window.mudarPlanoRenovacao = mudarPlanoRenovacao;
+    window.selecionarMesesRenovacao = selecionarMesesRenovacao;
+    window.editarValorTotalRenovacao = editarValorTotalRenovacao;
 
     function confirmarPagamento(id, valorPago = null) {
       const client = clients.find(c => c.id === id);
@@ -1427,7 +1575,7 @@ function copyMessage(id) {
       client.ultimoPagamentoValor = valorFinal;
       client.ultimoPagamentoEsperado = valorEsperado;
       client.ultimoPagamentoDivergente = Math.abs(valorFinal - valorEsperado) > 0.001;
-      converterReservaEmUso(client, { valorVenda: valorFinal, painelId, creditosUsar, taxa, reservaId: dados.reservaId });
+      converterReservaEmUso(client, { valorVenda: valorFinal, painelId, creditosUsar, taxa, reservaId: dados.reservaId, meses: dados.meses });
       salvarMovimentacoes();
       saveClients();
       renderAll();
@@ -1547,6 +1695,7 @@ function copyMessage(id) {
         planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
         painelId: dados.painelId || paineis[0].id
       };
+      if (Number(dados.meses) > 1) payload.meses = Number(dados.meses);
       if (reserva) {
         Object.keys(reserva).forEach(k => { if (!(k in payload) && k !== 'id') delete reserva[k]; });
         Object.assign(reserva, payload);
@@ -2006,7 +2155,7 @@ let renovacaoClienteAtual = null;
       movimentacoes.filter(m => m.clientId === c.id).forEach(m => {
         let titulo = 'Movimentação'; let icone = 'fa-receipt'; let cor = 'var(--muted)';
         if (m.tipoCliente === 'novo') { titulo = 'Ativação (a partir de teste)'; icone = 'fa-bolt'; cor = 'var(--primary)'; }
-        else if (m.tipoCliente === 'renovacao') { titulo = 'Renovação'; icone = 'fa-rotate'; cor = 'var(--info)'; }
+        else if (m.tipoCliente === 'renovacao') { titulo = m.meses > 1 ? `Renovação (${m.meses} períodos)` : 'Renovação'; icone = 'fa-rotate'; cor = 'var(--info)'; }
         else if (m.tipoCliente === 'dias_extras') { titulo = `Dias extras concedidos${m.diasExtras ? ` (+${m.diasExtras}d)` : ''}`; icone = 'fa-calendar-plus'; cor = 'var(--warning)'; }
         else if (m.tipoCliente === 'indicacao_bonus') { titulo = 'Mês grátis (bônus de indicação)'; icone = 'fa-gift'; cor = 'var(--warning)'; }
         else if (m.tipoCliente === 'avulso') { titulo = 'Ajuste de crédito avulso'; icone = 'fa-sliders-h'; cor = 'var(--muted)'; }
@@ -4835,7 +4984,7 @@ function aplicarDiasExtras() {
       return doPainel.reduce((s, pk) => s + Number(pk.preco), 0) / doPainel.length;
     }
 
-    function computeCustoCreditoAtribuido() {
+    function calcularCustoCreditoCore() {
       const porPainel = {};
       const atribuido = new Map();
       const primeiroPainelId = paineis[0] && paineis[0].id;
@@ -4865,7 +5014,16 @@ function aplicarDiasExtras() {
           p.saldo -= qtd;
         }
       });
-      return atribuido;
+      return { atribuido, porPainel };
+    }
+    function computeCustoCreditoAtribuido() { return calcularCustoCreditoCore().atribuido; }
+
+    /* Custo unitário (custo médio ponderado) que o PRÓXIMO crédito usado de um painel
+       vai carregar — usado na prévia de custo/lucro da renovação. */
+    function custoUnitarioAtualPainel(painelId) {
+      const { porPainel } = calcularCustoCreditoCore();
+      const p = porPainel[painelId];
+      return (p && p.custoMedio > 0) ? p.custoMedio : precoReferenciaCreditoPainel(painelId);
     }
 
     /* Rótulos amigáveis para cada tipo de movimentação de uso de crédito. */
