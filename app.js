@@ -2200,6 +2200,32 @@ let renovacaoClienteAtual = null;
     function voltarDaFicha() { switchTab(fichaOrigemTab || 'clientes'); }
     window.voltarDaFicha = voltarDaFicha;
 
+    /* === Helpers da ficha (sub-boxes por categoria) === */
+    function fichaCampoHtml(label, value, opts) {
+      const o = opts || {};
+      const vazio = value === undefined || value === null || String(value).trim() === '';
+      let conteudo;
+      if (vazio) conteudo = '—';
+      else if (o.link && /^https?:\/\//i.test(String(value).trim())) conteudo = `<a href="${escapeHtml(String(value).trim())}" target="_blank" rel="noopener noreferrer">${escapeHtml(value)}</a>`;
+      else conteudo = escapeHtml(value);
+      return `
+        <div class="detalhe-cliente-field">
+          <span class="detalhe-cliente-label">${escapeHtml(label)}</span>
+          <span class="detalhe-cliente-value">${conteudo}</span>
+        </div>`;
+    }
+    function fichaSubBoxHtml(icone, titulo, conteudoHtml, testid) {
+      return `
+        <div class="ficha-sub"${testid ? ` data-testid="${testid}"` : ''}>
+          <div class="ficha-sub-title"><i class="fas ${icone}"></i> ${escapeHtml(titulo)}</div>
+          ${conteudoHtml}
+        </div>`;
+    }
+    function fichaSubBoxCamposHtml(icone, titulo, campos, testid) {
+      return fichaSubBoxHtml(icone, titulo,
+        `<div class="detalhe-cliente-grid">${campos.map(([l, v, o]) => fichaCampoHtml(l, v, o)).join('')}</div>`, testid);
+    }
+
     function abrirDetalheCliente(id, origemTab) {
       const c = clients.find(x => x.id === id);
       if (!c) return;
@@ -2212,35 +2238,20 @@ let renovacaoClienteAtual = null;
       const painelNome = getPainelNome(painelId);
       if (title) title.textContent = c.nome || 'Cliente';
 
-      const infoRows = [
-        ['Nome', c.nome], ['Telefone', c.telefone], ['Aplicativo (Acesso 1)', c.aplicativo], ...(c.aplicativo2 ? [['Aplicativo (Acesso 2)', c.aplicativo2]] : []),
-        ...(c.tipoAcesso === 'codigo_resgate'
-          ? [['Código de Resgate', c.codigoResgate]]
-          : [['Usuário', c.usuario], ['Senha', c.senha]]),
-        ['Plano', c.plano],
-        ['Valor', c.valor], ['Painel', painelNome],
-        ['Início', formatDate(c.dataInicio || c.dataPagamento)],
-        ['Renovação', formatDate(c.dataRenovacao)],
-        ['Link de renovação', c.linkRenovacao], ['Observações', c.observacoes]
-      ];
-
       const bloqueioHtml = c.bloqueado
         ? `<div class="detalhe-bloqueio-aviso"><i class="fas fa-ban"></i> <b>Cliente bloqueado</b>${c.motivoBloqueio ? `: ${escapeHtml(c.motivoBloqueio)}` : ' (sem motivo informado)'}</div>`
         : '';
 
-      body.innerHTML = `
-        <div class="detalhe-cliente-header">
-          <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
-          <span class="painel-badge ${getPainelIdxClass(painelId)}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span>
-        </div>
-        ${bloqueioHtml}
-        <div class="detalhe-cliente-grid">
-          ${infoRows.map(([label, value]) => `
-            <div class="detalhe-cliente-field">
-              <span class="detalhe-cliente-label">${escapeHtml(label)}</span>
-              <span class="detalhe-cliente-value">${escapeHtml(value || '—')}</span>
-            </div>`).join('')}
-        </div>
+      const camposAcesso = [
+        ['Painel', painelNome],
+        ...(c.tipoAcesso === 'codigo_resgate'
+          ? [['Código de Resgate', c.codigoResgate]]
+          : [['Usuário', c.usuario], ['Senha', c.senha]]),
+        ['Aplicativo 1', c.aplicativo],
+        ['Aplicativo 2', c.aplicativo2]
+      ];
+
+      const acoesHtml = `
         <div class="detalhe-cliente-actions">
           ${c.pagamentoPendente
             ? `<button class="btn-pending" onclick="abrirModalConfirmarPagamento('${c.id}')" data-testid="detalhe-confirmar-pag-${c.id}"><i class="fas fa-check-circle"></i> Confirmar Pagamento</button>`
@@ -2252,9 +2263,32 @@ let renovacaoClienteAtual = null;
             : `<button class="btn-danger" onclick="abrirModalBloquearCliente('${c.id}')" data-testid="detalhe-bloquear-${c.id}"><i class="fas fa-ban"></i> Bloquear cliente</button>`}
           <button class="btn-info" onclick="editClient('${c.id}')" data-testid="detalhe-editar-${c.id}">Editar</button>
           <button class="btn-danger" onclick="deleteClient('${c.id}')" data-testid="detalhe-apagar-${c.id}">Apagar</button>
-        </div>
-        <div class="ficha-historico-title"><i class="fas fa-clock-rotate-left"></i> Histórico completo</div>
-        <div id="fichaHistoricoList" data-testid="ficha-historico-list">${renderFichaHistorico(construirHistoricoCliente(c))}</div>`;
+        </div>`;
+
+      body.innerHTML = `
+        <div class="ficha-box">
+          <div class="detalhe-cliente-header">
+            <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
+            <span class="painel-badge ${getPainelIdxClass(painelId)}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span>
+          </div>
+          ${bloqueioHtml}
+          ${fichaSubBoxCamposHtml('fa-user', 'Dados do cliente', [
+            ['Nome', c.nome],
+            ['Telefone', c.telefone],
+            ['Data de início', formatDate(c.dataInicio || c.dataPagamento)],
+            ['Data de renovação', formatDate(c.dataRenovacao)]
+          ], 'ficha-sub-dados')}
+          ${fichaSubBoxCamposHtml('fa-key', 'Acesso', camposAcesso, 'ficha-sub-acesso')}
+          ${fichaSubBoxCamposHtml('fa-tags', 'Plano', [
+            ['Plano', c.plano],
+            ['Valor', c.valor],
+            ['Link de pagamento', c.linkRenovacao, { link: true }]
+          ], 'ficha-sub-plano')}
+          ${c.observacoes ? fichaSubBoxCamposHtml('fa-note-sticky', 'Observações', [['Observações', c.observacoes]], 'ficha-sub-obs') : ''}
+          ${fichaSubBoxHtml('fa-bolt', 'Ações', acoesHtml, 'ficha-sub-acoes')}
+          ${fichaSubBoxHtml('fa-clock-rotate-left', 'Histórico completo',
+            `<div id="fichaHistoricoList" data-testid="ficha-historico-list">${renderFichaHistorico(construirHistoricoCliente(c))}</div>`, 'ficha-sub-historico')}
+        </div>`;
       abrirFicha(origemTab);
     }
     // Mantido por compatibilidade com chamadas antigas (bloqueio/desbloqueio) — agora volta para a aba de origem.
@@ -2297,17 +2331,6 @@ let renovacaoClienteAtual = null;
       const telNorm = String(t.telefone || '').replace(/\D/g, '');
       const clienteVinculado = telNorm ? clients.find(c => String(c.telefone || '').replace(/\D/g, '') === telNorm) : null;
 
-      const infoRows = [
-        ['Nome', t.nome], ['Telefone', t.telefone], ['Aplicativo (Acesso 1)', t.aplicativo], ...(t.aplicativo2 ? [['Aplicativo (Acesso 2)', t.aplicativo2]] : []),
-        ...(t.tipoAcesso === 'codigo_resgate'
-          ? [['Código de Resgate', t.codigoResgate]]
-          : [['Usuário', t.usuario], ['Senha', t.senha]]),
-        ['Plano', t.plano],
-        ['Valor', t.valor], ['Duração do teste', t.duracaoTeste],
-        ['Cadastrado em', t.createdAt ? formatDateTimeSaoPaulo(t.createdAt) : '—'],
-        ['Link de ativação', t.linkRenovacao], ['Observações', t.observacoes]
-      ];
-
       const vinculoHtml = clienteVinculado
         ? `<div class="detalhe-bloqueio-aviso" style="background: rgba(57,255,20,.1); border-color: rgba(57,255,20,.3); color: var(--primary);"><i class="fas fa-user-check"></i> Este telefone já é <b>cliente ativo</b>: ${escapeHtml(clienteVinculado.nome)}. <a href="javascript:void(0)" onclick="abrirDetalheCliente('${clienteVinculado.id}')" style="color:inherit; text-decoration:underline;">Ver ficha do cliente</a></div>`
         : '';
@@ -2319,18 +2342,20 @@ let renovacaoClienteAtual = null;
         ? `<button class="btn-danger" onclick="enviarWhatsAppTesteVencido('${t.id}')" title="Cobrar assinatura de quem testou e não renovou" data-testid="ficha-teste-vencido-${t.id}"><i class="fas fa-triangle-exclamation"></i> Teste venceu — cobrar assinatura</button>`
         : '';
 
-      body.innerHTML = `
-        <div class="detalhe-cliente-header">
-          <span class="pill-tested"><i class="fas fa-vial"></i> Teste em andamento</span>
-        </div>
-        ${vinculoHtml}
-        <div class="detalhe-cliente-grid">
-          ${infoRows.map(([label, value]) => `
-            <div class="detalhe-cliente-field">
-              <span class="detalhe-cliente-label">${escapeHtml(label)}</span>
-              <span class="detalhe-cliente-value">${escapeHtml(value || '—')}</span>
-            </div>`).join('')}
-        </div>
+      const planoCadT = encontrarPlanoPorNome(t.plano);
+      const painelIdT = planoCadT && planoCadT.painelId ? planoCadT.painelId : '';
+      const painelNomeT = painelIdT ? getPainelNome(painelIdT) : '';
+
+      const camposAcessoT = [
+        ['Painel', painelNomeT],
+        ...(t.tipoAcesso === 'codigo_resgate'
+          ? [['Código de Resgate', t.codigoResgate]]
+          : [['Usuário', t.usuario], ['Senha', t.senha]]),
+        ['Aplicativo 1', t.aplicativo],
+        ['Aplicativo 2', t.aplicativo2]
+      ];
+
+      const acoesTesteHtml = `
         <div class="detalhe-cliente-actions">
           <button class="btn-whatsapp" onclick="whatsAppTeste('${t.id}')" data-testid="ficha-teste-whats-${t.id}"><i class="fab fa-whatsapp"></i> WhatsApp</button>
           <button class="btn-secondary" onclick="abrirModalMensagemAplicativo('${t.id}','teste')" data-testid="ficha-teste-app-${t.id}"><i class="fas fa-mobile-alt"></i> App</button>
@@ -2338,9 +2363,31 @@ let renovacaoClienteAtual = null;
           <button class="btn-info" onclick="editClient('${t.id}')" data-testid="ficha-teste-editar-${t.id}">Editar</button>
           <button class="btn-primary" onclick="ativarTeste('${t.id}')" data-testid="ficha-teste-ativar-${t.id}"><i class="fas fa-bolt"></i> Ativar</button>
           <button class="btn-danger" onclick="excluirTeste('${t.id}')" data-testid="ficha-teste-excluir-${t.id}"><i class="fas fa-trash"></i> Excluir</button>
-        </div>
-        <div class="ficha-historico-title"><i class="fas fa-clock-rotate-left"></i> Histórico completo</div>
-        <div id="fichaHistoricoList" data-testid="ficha-historico-list">${renderFichaHistorico(construirHistoricoTeste(t))}</div>`;
+        </div>`;
+
+      body.innerHTML = `
+        <div class="ficha-box">
+          <div class="detalhe-cliente-header">
+            <span class="pill-tested"><i class="fas fa-vial"></i> Teste em andamento</span>
+          </div>
+          ${vinculoHtml}
+          ${fichaSubBoxCamposHtml('fa-user', 'Dados do cliente', [
+            ['Nome', t.nome],
+            ['Telefone', t.telefone],
+            ['Cadastrado em', t.createdAt ? formatDateTimeSaoPaulo(t.createdAt) : '—'],
+            ['Duração do teste', t.duracaoTeste]
+          ], 'ficha-sub-dados')}
+          ${fichaSubBoxCamposHtml('fa-key', 'Acesso', camposAcessoT, 'ficha-sub-acesso')}
+          ${fichaSubBoxCamposHtml('fa-tags', 'Plano', [
+            ['Plano', t.plano],
+            ['Valor', t.valor],
+            ['Link de pagamento', t.linkRenovacao, { link: true }]
+          ], 'ficha-sub-plano')}
+          ${t.observacoes ? fichaSubBoxCamposHtml('fa-note-sticky', 'Observações', [['Observações', t.observacoes]], 'ficha-sub-obs') : ''}
+          ${fichaSubBoxHtml('fa-bolt', 'Ações', acoesTesteHtml, 'ficha-sub-acoes')}
+          ${fichaSubBoxHtml('fa-clock-rotate-left', 'Histórico completo',
+            `<div id="fichaHistoricoList" data-testid="ficha-historico-list">${renderFichaHistorico(construirHistoricoTeste(t))}</div>`, 'ficha-sub-historico')}
+        </div>`;
       abrirFicha();
     }
     window.abrirDetalheTeste = abrirDetalheTeste;
