@@ -1302,6 +1302,60 @@ function copyMessage(id) {
       return `${n}× (${dias * n}d)`;
     }
 
+    /* Cálculo único de uma assinatura (renovação ou ativação): plano escolhido (ou o plano
+       base do cliente), N períodos, valor cobrado (com desconto manual), créditos, taxa,
+       custo e lucro estimados. O custo NÃO tem desconto: N períodos = N× os créditos. */
+    function calcularAssinatura({ planoId, planoBase, valorBase, creditosBase, meses, valorTotalManual, baseDate }) {
+      const planoSel = planoId != null ? (planos.find(p => p.id === planoId) || null) : null;
+      const usandoBase = !planoSel || !!(planoBase && planoSel.id === planoBase.id);
+      const planoRef = planoSel || planoBase;                 // fonte de dias / painel / taxa
+      const dias = planoRef ? planoRef.dias : 30;
+      const valorMensal = usandoBase ? valorBase : (Number(planoSel.valor) || 0);
+      const creditosMensais = usandoBase
+        ? creditosBase
+        : (Number.isFinite(parseInt(planoSel.creditos)) ? parseInt(planoSel.creditos) : 1);
+      const painelId = (planoRef && planoRef.painelId) ? planoRef.painelId : paineis[0].id;
+      const valorCheio = r2(valorMensal * meses);
+      const manualOk = meses > 1 && valorTotalManual != null && Number.isFinite(valorTotalManual);
+      const valorVenda = manualOk ? valorTotalManual : valorCheio;
+      const creditosUsar = creditosMensais * meses;
+      const taxa = calcularTaxaPlano(planoRef, valorVenda);
+      const novaDataStr = toInputDate(addPlanPeriod(baseDate, dias * meses));
+      const custoEst = creditosUsar * custoUnitarioAtualPainel(painelId);
+      const lucroEst = valorVenda - taxa - custoEst;
+      return { planoSel, usandoBase, planoRef, dias, valorMensal, creditosMensais, painelId, valorCheio,
+               valorVenda, creditosUsar, taxa, novaDataStr, custoEst, lucroEst };
+    }
+
+    /* Botões de período (1 a 4) + campo "valor total com desconto". prefix: 'ren' | 'ativ'. */
+    function renderPeriodoEDesconto(prefix, st, handlerName, opts = {}) {
+      const { meses, dias, valorVenda, valorCheio, creditosUsar } = st;
+      const grp = document.getElementById(prefix + 'MesesGroup');
+      if (grp) {
+        grp.innerHTML = [1, 2, 3, 4].map(n =>
+          `<button type="button" class="radio-option${n === meses ? ' active' : ''}" onclick="${handlerName}(${n})" data-testid="${prefix}-meses-${n}">${escapeHtml(rotuloPeriodoRenovacao(n, dias))}</button>`
+        ).join('');
+      }
+      const box = document.getElementById(prefix + 'TotalBox');
+      if (box) box.style.display = meses > 1 ? '' : 'none';
+      const totalInput = document.getElementById(prefix + 'ValorTotal');
+      if (totalInput && meses > 1 && !opts.manterCampoTotal) totalInput.value = valorVenda.toFixed(2).replace('.', ',');
+      const descInfo = document.getElementById(prefix + 'DescontoInfo');
+      if (descInfo) {
+        if (meses > 1) {
+          const desc = r2(valorCheio - valorVenda);
+          const pct = valorCheio > 0 ? (desc / valorCheio) * 100 : 0;
+          descInfo.innerHTML = desc > 0.004
+            ? `Valor cheio ${fmtBRL(valorCheio)} → <b style="color:var(--primary);">desconto de ${fmtBRL(desc)} (${pct.toFixed(1).replace('.', ',')}%)</b>. O custo dos créditos continua o mesmo (${creditosUsar} créditos).`
+            : (desc < -0.004
+              ? `<span style="color:var(--warning);">Valor acima do cheio (${fmtBRL(valorCheio)}).</span> O custo dos créditos continua o mesmo.`
+              : `Sem desconto (valor cheio ${fmtBRL(valorCheio)}). Informe o valor com desconto, se houver. O custo dos créditos não muda.`);
+        } else {
+          descInfo.textContent = '';
+        }
+      }
+    }
+
     function abrirModalConfirmarRenovacao(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
@@ -1350,37 +1404,16 @@ function copyMessage(id) {
       const st = renovacaoPendente; if (!st) return;
       const client = clients.find(c => c.id === st.id); if (!client) return;
       const planoAtual = encontrarPlanoPorNome(client.plano);
-      const planoSel = st.planoId != null ? (planos.find(p => p.id === st.planoId) || null) : null;
-      const usandoAtual = !planoSel || (planoAtual && planoSel.id === planoAtual.id);
-      const planoRef = planoSel || planoAtual;                 // fonte de dias / painel / taxa
-      const meses = st.meses;
-
-      const dias = planoRef ? planoRef.dias : 30;
-      const valorMensal = usandoAtual ? parseValor(client.valor) : (Number(planoSel.valor) || 0);
-      const creditosMensais = usandoAtual
-        ? resolverCreditosCliente(client)
-        : (Number.isFinite(parseInt(planoSel.creditos)) ? parseInt(planoSel.creditos) : 1);
-      const painelId = (planoRef && planoRef.painelId) ? planoRef.painelId : paineis[0].id;
-
-      const valorCheio = r2(valorMensal * meses);
-      const manualOk = meses > 1 && st.valorTotalManual != null && Number.isFinite(st.valorTotalManual);
-      const valorVenda = manualOk ? st.valorTotalManual : valorCheio;
-      const creditosUsar = creditosMensais * meses;            // custo NÃO tem desconto: N períodos = N× os créditos
-      const taxa = calcularTaxaPlano(planoRef, valorVenda);
-
       // Data: renovação antecipada preserva os dias restantes; vencido/hoje conta a partir de hoje.
       const today = todayLocalDate();
       const dueDate = parseDate(client.dataRenovacao);
       const baseDate = (dueDate && dueDate > today) ? dueDate : today;
-      const novaDataStr = toInputDate(addPlanPeriod(baseDate, dias * meses));
-
-      const custoUnit = custoUnitarioAtualPainel(painelId);
-      const custoEst = creditosUsar * custoUnit;
-      const lucroEst = valorVenda - taxa - custoEst;
-
-      Object.assign(st, { planoRef, usandoAtual, dias, valorMensal, creditosMensais, painelId, valorCheio,
-        valorVenda, creditosUsar, taxa, novaDataStr, custoEst, lucroEst, planoAtual });
-
+      const calc = calcularAssinatura({
+        planoId: st.planoId, planoBase: planoAtual, valorBase: parseValor(client.valor),
+        creditosBase: resolverCreditosCliente(client), meses: st.meses,
+        valorTotalManual: st.valorTotalManual, baseDate
+      });
+      Object.assign(st, calc, { usandoAtual: calc.usandoBase, planoAtual });
       renderRenovacaoModal(client, opts);
     }
 
@@ -1458,35 +1491,7 @@ function copyMessage(id) {
         }
       }
 
-      // Período (1 a 4)
-      const grp = document.getElementById('renMesesGroup');
-      if (grp) {
-        grp.innerHTML = [1, 2, 3, 4].map(n =>
-          `<button type="button" class="radio-option${n === meses ? ' active' : ''}" onclick="selecionarMesesRenovacao(${n})" data-testid="ren-meses-${n}">${escapeHtml(rotuloPeriodoRenovacao(n, dias))}</button>`
-        ).join('');
-      }
-
-      // Valor total com desconto (só quando passa de 1 período)
-      const box = document.getElementById('renTotalBox');
-      if (box) box.style.display = meses > 1 ? '' : 'none';
-      const totalInput = document.getElementById('renValorTotal');
-      if (totalInput && meses > 1 && !opts.manterCampoTotal) {
-        totalInput.value = valorVenda.toFixed(2).replace('.', ',');
-      }
-      const descInfo = document.getElementById('renDescontoInfo');
-      if (descInfo) {
-        if (meses > 1) {
-          const desc = r2(valorCheio - valorVenda);
-          const pct = valorCheio > 0 ? (desc / valorCheio) * 100 : 0;
-          descInfo.innerHTML = desc > 0.004
-            ? `Valor cheio ${fmtBRL(valorCheio)} → <b style="color:var(--primary);">desconto de ${fmtBRL(desc)} (${pct.toFixed(1).replace('.', ',')}%)</b>. O custo dos créditos continua o mesmo (${creditosUsar} créditos).`
-            : (desc < -0.004
-              ? `<span style="color:var(--warning);">Valor acima do cheio (${fmtBRL(valorCheio)}).</span> O custo dos créditos continua o mesmo.`
-              : `Sem desconto (valor cheio ${fmtBRL(valorCheio)}). Informe o valor com desconto, se houver. O custo dos créditos não muda.`);
-        } else {
-          descInfo.textContent = '';
-        }
-      }
+      renderPeriodoEDesconto('ren', st, 'selecionarMesesRenovacao', opts);
     }
 
     function fecharModalConfirmarRenovacao() {
@@ -2073,7 +2078,7 @@ let renovacaoClienteAtual = null;
       const today = todayLocalDate();
       const filtered = clients.filter(c => {
         if (term) {
-          const matches = [c.nome, c.telefone, c.usuario, c.aplicativo, c.plano]
+          const matches = [c.nome, c.telefone, c.usuario, c.aplicativo, c.aplicativo2, c.plano]
             .some(v => String(v || '').toLowerCase().includes(term));
           if (!matches) return false;
         }
@@ -2123,7 +2128,7 @@ let renovacaoClienteAtual = null;
                 </div>
                 <div class="client-row-meta">
                   <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
-                  <span><b>App:</b> ${escapeHtml(c.aplicativo || '—')}</span>
+                  <span><b>App:</b> ${escapeHtml(c.aplicativo || '—')}${c.aplicativo2 ? ` + ${escapeHtml(c.aplicativo2)}` : ''}</span>
                   <span><b>${c.tipoAcesso === 'codigo_resgate' ? 'Código' : 'User'}:</b> ${escapeHtml((c.tipoAcesso === 'codigo_resgate' ? c.codigoResgate : c.usuario) || '—')}</span>
                   <span><b>Plano:</b> ${escapeHtml(c.plano || '—')}</span>
                   <span><b>Valor:</b> ${escapeHtml(c.valor || '—')}</span>
@@ -2154,7 +2159,7 @@ let renovacaoClienteAtual = null;
       }
       movimentacoes.filter(m => m.clientId === c.id).forEach(m => {
         let titulo = 'Movimentação'; let icone = 'fa-receipt'; let cor = 'var(--muted)';
-        if (m.tipoCliente === 'novo') { titulo = 'Ativação (a partir de teste)'; icone = 'fa-bolt'; cor = 'var(--primary)'; }
+        if (m.tipoCliente === 'novo') { titulo = m.meses > 1 ? `Ativação (a partir de teste) • ${m.meses} períodos` : 'Ativação (a partir de teste)'; icone = 'fa-bolt'; cor = 'var(--primary)'; }
         else if (m.tipoCliente === 'renovacao') { titulo = m.meses > 1 ? `Renovação (${m.meses} períodos)` : 'Renovação'; icone = 'fa-rotate'; cor = 'var(--info)'; }
         else if (m.tipoCliente === 'dias_extras') { titulo = `Dias extras concedidos${m.diasExtras ? ` (+${m.diasExtras}d)` : ''}`; icone = 'fa-calendar-plus'; cor = 'var(--warning)'; }
         else if (m.tipoCliente === 'indicacao_bonus') { titulo = 'Mês grátis (bônus de indicação)'; icone = 'fa-gift'; cor = 'var(--warning)'; }
@@ -2208,7 +2213,7 @@ let renovacaoClienteAtual = null;
       if (title) title.textContent = c.nome || 'Cliente';
 
       const infoRows = [
-        ['Nome', c.nome], ['Telefone', c.telefone], ['Aplicativo', c.aplicativo],
+        ['Nome', c.nome], ['Telefone', c.telefone], ['Aplicativo (Acesso 1)', c.aplicativo], ...(c.aplicativo2 ? [['Aplicativo (Acesso 2)', c.aplicativo2]] : []),
         ...(c.tipoAcesso === 'codigo_resgate'
           ? [['Código de Resgate', c.codigoResgate]]
           : [['Usuário', c.usuario], ['Senha', c.senha]]),
@@ -2293,7 +2298,7 @@ let renovacaoClienteAtual = null;
       const clienteVinculado = telNorm ? clients.find(c => String(c.telefone || '').replace(/\D/g, '') === telNorm) : null;
 
       const infoRows = [
-        ['Nome', t.nome], ['Telefone', t.telefone], ['Aplicativo', t.aplicativo],
+        ['Nome', t.nome], ['Telefone', t.telefone], ['Aplicativo (Acesso 1)', t.aplicativo], ...(t.aplicativo2 ? [['Aplicativo (Acesso 2)', t.aplicativo2]] : []),
         ...(t.tipoAcesso === 'codigo_resgate'
           ? [['Código de Resgate', t.codigoResgate]]
           : [['Usuário', t.usuario], ['Senha', t.senha]]),
@@ -2553,7 +2558,7 @@ let ativacaoClienteAtual = null;
         const linhaInfo = [
           t.plano ? `📦 ${escapeHtml(t.plano)}` : '',
           t.valor ? `💰 R$ ${escapeHtml(t.valor)}` : '',
-          t.aplicativo ? `📱 ${escapeHtml(t.aplicativo)}` : ''
+          t.aplicativo ? `📱 ${escapeHtml(t.aplicativo)}${t.aplicativo2 ? ` + ${escapeHtml(t.aplicativo2)}` : ''}` : ''
         ].filter(Boolean).join(' • ');
         const horasTeste = extrairHorasDuracaoTeste(t.duracaoTeste);
         const fimTeste = t.createdAt ? (new Date(t.createdAt).getTime() + horasTeste * 3600000) : null;
@@ -2716,13 +2721,27 @@ function encontrarAplicativoDaEntidade(entity) {
   return null;
 }
 
-function abrirModalMensagemAplicativo(id, origem) {
+function abrirModalMensagemAplicativo(id, origem, acesso = 1) {
   const entity = origem === 'teste' ? testes.find(x => x.id === id) : clients.find(x => x.id === id);
   if (!entity) return;
-  const app = encontrarAplicativoDaEntidade(entity);
+  const app2 = entity.aplicativoId2 ? aplicativos.find(a => a.id === entity.aplicativoId2) : null;
+  if (acesso === 2 && !app2) acesso = 1;
+  const app = acesso === 2 ? app2 : encontrarAplicativoDaEntidade(entity);
   if (!app) { showToast('Nenhum aplicativo cadastrado para este registro. Selecione um aplicativo ou cadastre um na aba Aplicativos.', true); return; }
   if (!app.plataformas || app.plataformas.length === 0) { showToast('Cadastre ao menos uma plataforma de instalação para "' + app.nome + '" na aba Aplicativos.', true); return; }
-  aplicativoMsgContext = { entity, origem, app };
+  aplicativoMsgContext = { entity, origem, app, acesso };
+  // Cliente/teste com 2 acessos: escolhe de qual aplicativo mandar as instruções.
+  const acessoWrap = document.getElementById('amAcessoWrap');
+  if (acessoWrap) {
+    const app1 = encontrarAplicativoDaEntidade(entity);
+    acessoWrap.style.display = app2 ? '' : 'none';
+    const grp = document.getElementById('amAcessoGroup');
+    if (grp && app2) {
+      grp.innerHTML = [[1, app1], [2, app2]].map(([n, a]) =>
+        `<button type="button" class="radio-option${n === acesso ? ' active' : ''}" onclick="abrirModalMensagemAplicativo('${entity.id}','${origem}',${n})" data-testid="am-acesso-${n}">Acesso ${n}${a ? ' • ' + escapeHtml(a.nome) : ''}</button>`
+      ).join('');
+    }
+  }
   const tituloEl = document.getElementById('modalMensagemAplicativoTitle');
   if (tituloEl) tituloEl.innerHTML = `<i class="fas fa-mobile-alt" style="color: var(--primary); margin-right: 6px;"></i> ${origem === 'teste' ? 'Instalação / Teste' : 'Instalação / Cliente'}`;
   const sel = document.getElementById('amPlataformaSelect');
@@ -2788,69 +2807,169 @@ function whatsAppTeste(id) {
     }
     window.enviarWhatsAppTesteVencido = enviarWhatsAppTesteVencido;
 
-    /* Ativar teste: se o acesso do teste é por Código de Resgate, o código NÃO é
-       pedido no cadastro — ele é solicitado aqui, na hora de ativar, para seguir
-       junto com a mensagem de ativação. */
-    let ativacaoCodigoTesteId = null;
+    /* === ATIVAR TESTE ===
+       Ao ativar, informa-se o plano e por quantos meses o cliente assina (mesma regra da
+       renovação: com mais de 1 mês o valor cobrado tem desconto informado na hora, mas o
+       custo dos créditos não muda). Se o acesso é por Código de Resgate, o código também é
+       pedido aqui — e não no cadastro do teste — para ir junto com a mensagem de ativação. */
+    let ativacaoPendente = null;   // { id, planoId, meses, valorTotalManual, ...calculados }
+
     function ativarTeste(id) {
       const t = testes.find(x => x.id === id); if (!t) return;
-      if (t.tipoAcesso === 'codigo_resgate') { abrirModalCodigoAtivacao(id); return; }
-      executarAtivacaoTeste(id, '');
-    }
-    function abrirModalCodigoAtivacao(id) {
-      const t = testes.find(x => x.id === id); if (!t) return;
-      ativacaoCodigoTesteId = id;
-      const nomeEl = document.getElementById('ativCodigoNome');
-      const inp = document.getElementById('ativCodigoInput');
-      if (nomeEl) nomeEl.textContent = t.nome || '';
-      if (inp) inp.value = t.codigoResgate || '';
-      document.getElementById('modalCodigoAtivacao').classList.add('active');
-      setTimeout(() => { if (inp) inp.focus(); }, 60);
-    }
-    function fecharModalCodigoAtivacao() {
-      document.getElementById('modalCodigoAtivacao').classList.remove('active');
-      ativacaoCodigoTesteId = null;
-    }
-    function confirmarCodigoAtivacao() {
-      const inp = document.getElementById('ativCodigoInput');
-      const codigo = inp ? inp.value.trim() : '';
-      if (!codigo) { showToast('Informe o código de resgate para ativar.', true); return; }
-      const id = ativacaoCodigoTesteId;
-      fecharModalCodigoAtivacao();
-      if (id) executarAtivacaoTeste(id, codigo);
-    }
-    window.abrirModalCodigoAtivacao = abrirModalCodigoAtivacao;
-    window.fecharModalCodigoAtivacao = fecharModalCodigoAtivacao;
-    window.confirmarCodigoAtivacao = confirmarCodigoAtivacao;
+      const planoBase = encontrarPlanoPorNome(t.plano);
+      ativacaoPendente = { id: t.id, planoId: planoBase ? planoBase.id : null, meses: 1, valorTotalManual: null };
 
-    function executarAtivacaoTeste(id, codigoResgate) {
+      const sel = document.getElementById('ativPlano');
+      const opcoes = planos.map(p => {
+        const cred = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
+        const atual = planoBase && p.id === planoBase.id ? ' (do teste)' : '';
+        return `<option value="${p.id}">${escapeHtml(p.nome)}${atual} • R$ ${Number(p.valor).toFixed(2)} • ${p.dias}d • ${cred} créd.</option>`;
+      }).join('');
+      const semCad = planoBase ? '' : `<option value="">${escapeHtml(t.plano || 'Sem plano definido')} (do teste — não cadastrado)</option>`;
+      sel.innerHTML = semCad + opcoes;
+      sel.value = planoBase ? String(planoBase.id) : '';
+
+      const ehCodigo = t.tipoAcesso === 'codigo_resgate';
+      document.getElementById('ativCodigoWrap').style.display = ehCodigo ? '' : 'none';
+      const inp = document.getElementById('ativCodigoInput'); inp.value = t.codigoResgate || '';
+      document.getElementById('ativValorTotal').value = '';
+      recalcularAtivacao();
+      document.getElementById('modalAtivacaoTeste').classList.add('active');
+      if (ehCodigo) setTimeout(() => inp.focus(), 80);
+    }
+    function fecharModalAtivacaoTeste() {
+      document.getElementById('modalAtivacaoTeste').classList.remove('active');
+      ativacaoPendente = null;
+    }
+    function mudarPlanoAtivacao() {
+      if (!ativacaoPendente) return;
+      const v = document.getElementById('ativPlano').value;
+      ativacaoPendente.planoId = v === '' ? null : parseInt(v);
+      ativacaoPendente.valorTotalManual = null;
+      recalcularAtivacao();
+    }
+    function selecionarMesesAtivacao(n) {
+      if (!ativacaoPendente) return;
+      ativacaoPendente.meses = n;
+      ativacaoPendente.valorTotalManual = null;
+      recalcularAtivacao();
+    }
+    function editarValorTotalAtivacao() {
+      if (!ativacaoPendente) return;
+      const raw = document.getElementById('ativValorTotal').value.trim();
+      ativacaoPendente.valorTotalManual = raw === '' ? null : parseValor(raw);
+      recalcularAtivacao({ manterCampoTotal: true });
+    }
+
+    function recalcularAtivacao(opts = {}) {
+      const st = ativacaoPendente; if (!st) return;
+      const t = testes.find(x => x.id === st.id); if (!t) return;
+      const planoBase = encontrarPlanoPorNome(t.plano);
+      const calc = calcularAssinatura({
+        planoId: st.planoId, planoBase, valorBase: parseValor(t.valor), creditosBase: resolverCreditosCliente(t),
+        meses: st.meses, valorTotalManual: st.valorTotalManual, baseDate: todayLocalDate()
+      });
+      Object.assign(st, calc, { planoBase });
+
+      const painelNome = getPainelNome(calc.painelId);
+      const ehCodigo = t.tipoAcesso === 'codigo_resgate';
+      const acessoHtml = ehCodigo
+        ? ''
+        : `<div class="renew-confirm-item"><div class="lbl">Usuário</div><div class="val">${escapeHtml(t.usuario || '—')}</div></div>
+           <div class="renew-confirm-item"><div class="lbl">Senha</div><div class="val">${escapeHtml(t.senha || '—')}</div></div>`;
+      const apps = [t.aplicativo, t.aplicativo2].filter(Boolean).map(escapeHtml).join(' + ') || '—';
+      document.getElementById('ativGrid').innerHTML = `
+        <div class="renew-confirm-item full">
+          <div class="lbl">Nome</div>
+          <div class="val">${escapeHtml(t.nome || '—')} <span class="painel-badge ${getPainelIdxClass(calc.painelId)}" style="margin-left:6px;"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span></div>
+        </div>
+        ${acessoHtml}
+        <div class="renew-confirm-item ${ehCodigo ? '' : 'full'}">
+          <div class="lbl">Aplicativo(s)</div>
+          <div class="val">${apps}</div>
+        </div>
+        <div class="renew-confirm-item">
+          <div class="lbl">Valor mensal</div>
+          <div class="val">${fmtBRL(calc.valorMensal)}</div>
+        </div>
+        <div class="renew-confirm-item highlight">
+          <div class="lbl">Vencimento</div>
+          <div class="val" data-testid="ativ-nova-data">${escapeHtml(formatDate(calc.novaDataStr))}</div>
+        </div>
+        <div class="renew-confirm-item full">
+          <div class="lbl">Cálculo da ativação</div>
+          <div class="val" style="font-size:13px;">Assinatura de ${rotuloPeriodoRenovacao(st.meses, calc.dias)} — ${calc.dias * st.meses} dias a partir de hoje
+            <div style="margin-top:8px; display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px 14px; font-size:12.5px;" data-testid="ativ-calculo">
+              <span>Receita: <b>${fmtBRL(calc.valorVenda)}</b></span>
+              <span>Créditos: <b>−${calc.creditosUsar}</b> (${escapeHtml(painelNome)})</span>
+              <span>Taxa: <b>${fmtBRL(calc.taxa)}</b></span>
+              <span>Custo estimado: <b>${fmtBRL(calc.custoEst)}</b></span>
+              <span style="grid-column: 1 / -1;">Lucro estimado: <b style="color:${calc.lucroEst >= 0 ? 'var(--primary)' : '#a02323'};">${fmtBRL(calc.lucroEst)}</b></span>
+            </div>
+          </div>
+        </div>`;
+
+      const aviso = document.getElementById('ativPlanoAviso');
+      if (aviso) {
+        aviso.textContent = (!calc.usandoBase && calc.planoRef)
+          ? `Plano escolhido: ${calc.planoRef.nome} (${fmtBRL(calc.planoRef.valor)}/período).`
+          : 'Mantendo o plano do teste. Escolha outro para definir o plano deste cliente.';
+      }
+      renderPeriodoEDesconto('ativ', st, 'selecionarMesesAtivacao', opts);
+    }
+
+    function confirmarAtivacaoTeste() {
+      if (!ativacaoPendente) return;
+      recalcularAtivacao({ manterCampoTotal: true });
+      const st = ativacaoPendente;
+      const t = testes.find(x => x.id === st.id); if (!t) { fecharModalAtivacaoTeste(); return; }
+      let codigo = '';
+      if (t.tipoAcesso === 'codigo_resgate') {
+        codigo = document.getElementById('ativCodigoInput').value.trim();
+        if (!codigo) { showToast('Informe o código de resgate para ativar.', true); return; }
+      }
+      if (st.meses > 1 && st.valorTotalManual != null && !(st.valorTotalManual > 0)) {
+        showToast('Informe o valor total cobrado (maior que zero).', true); return;
+      }
+      const calc = { ...st };
+      fecharModalAtivacaoTeste();
+      executarAtivacaoTeste(t.id, calc, codigo);
+    }
+    window.ativarTeste = ativarTeste;
+    window.fecharModalAtivacaoTeste = fecharModalAtivacaoTeste;
+    window.mudarPlanoAtivacao = mudarPlanoAtivacao;
+    window.selecionarMesesAtivacao = selecionarMesesAtivacao;
+    window.editarValorTotalAtivacao = editarValorTotalAtivacao;
+    window.confirmarAtivacaoTeste = confirmarAtivacaoTeste;
+
+    function executarAtivacaoTeste(id, calc, codigoResgate) {
       const idx = testes.findIndex(x => x.id === id); if (idx < 0) return;
       const t = testes[idx];
       const ehCodigo = t.tipoAcesso === 'codigo_resgate';
-      const planoCad = encontrarPlanoPorNome(t.plano);
-      const dias = planoCad ? planoCad.dias : 30;
-      const creditosUsar = resolverCreditosCliente(t);
       const hoje = todayLocalDate();
+      const { meses, valorVenda, creditosUsar, taxa, painelId } = calc;
+      const trocouPlano = !!(calc.planoRef && !calc.usandoBase);
       const novoCliente = {
-        id: generateId(), nome: t.nome, telefone: t.telefone, aplicativoId: t.aplicativoId || '', aplicativo: t.aplicativo,
+        id: generateId(), nome: t.nome, telefone: t.telefone,
+        aplicativoId: t.aplicativoId || '', aplicativo: t.aplicativo,
+        aplicativoId2: t.aplicativoId2 || '', aplicativo2: t.aplicativo2 || '',
         tipoAcesso: ehCodigo ? 'codigo_resgate' : 'usuario_senha',
         usuario: ehCodigo ? '' : t.usuario, senha: ehCodigo ? '' : t.senha,
         codigoResgate: ehCodigo ? (codigoResgate || '') : '',
-        plano: t.plano, valor: t.valor,
-        creditos: creditosUsar,
+        plano: trocouPlano ? calc.planoRef.nome : t.plano,
+        valor: trocouPlano ? Number(calc.planoRef.valor).toFixed(2).replace('.', ',') : t.valor,
+        creditos: calc.creditosMensais,
         dataInicio: toInputDate(hoje), dataPagamento: toInputDate(hoje),
-        dataRenovacao: toInputDate(addPlanPeriod(hoje, dias)),
-        linkRenovacao: t.linkRenovacao, observacoes: t.observacoes,
+        dataRenovacao: calc.novaDataStr,
+        linkRenovacao: (trocouPlano && calc.planoRef.link) ? calc.planoRef.link : t.linkRenovacao,
+        observacoes: t.observacoes,
         msgSentAt: null, updatedAt: new Date().toISOString()
       };
       clients.push(novoCliente);
-      const valorVenda = parseValor(t.valor);
-      const taxa = calcularTaxaPlano(planoCad, valorVenda);
-      const painelId = (planoCad && planoCad.painelId) ? planoCad.painelId : paineis[0].id;
       movimentacoes.push({
         data: new Date().toISOString(), tipo: 'use', tipoCliente: 'novo',
-        valor: valorVenda, quantidade: creditosUsar, taxa: taxa,
-        planoNome: t.plano || '', clientId: novoCliente.id, clientNome: novoCliente.nome,
+        valor: valorVenda, quantidade: creditosUsar, taxa: taxa, ...(meses > 1 ? { meses } : {}),
+        planoNome: novoCliente.plano || '', clientId: novoCliente.id, clientNome: novoCliente.nome,
         painelId
       });
       testes.splice(idx, 1);
@@ -2878,13 +2997,12 @@ function whatsAppTeste(id) {
         renderIndicacoes();
       }
 
-      renderAll(); renderTestes();
-      atualizarCreditos(); atualizarHistorico();
-      atualizarGraficoClientes(); atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
-      atualizarSelectMesGestao();
       switchTab('clientes');
-      showToast(`${novoCliente.nome} ativado • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} • Vence em ${formatDate(novoCliente.dataRenovacao)}${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}${bonusMsg}`);
+      showToast(`${novoCliente.nome} ativado${meses > 1 ? ` • ${meses} períodos` : ''} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} • Vence em ${formatDate(novoCliente.dataRenovacao)}${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}${bonusMsg}`);
       abrirModalMensagemAtivacao(novoCliente, indContext);
+      // Atualizações de tela depois do essencial (uma falha aqui não desfaz a ativação)
+      [renderAll, renderTestes, atualizarCreditos, atualizarHistorico, atualizarGraficoClientes,
+       atualizarStatsFinanceiras, gerarTextoWhatsAppGestao, atualizarSelectMesGestao].forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
     }
 
     function excluirTeste(id) {
@@ -2959,6 +3077,8 @@ function whatsAppTeste(id) {
         id: els.clientId.value || generateId(),
         nome: els.nome.value.trim(), telefone: els.telefone.value.trim(),
         aplicativoId: aplicativoId || '', aplicativo: aplicativoCad ? aplicativoCad.nome : '',
+        aplicativoId2: (document.getElementById('aplicativo2') || {}).value || '',
+        aplicativo2: getAplicativoNomeDoSelect(document.getElementById('aplicativo2')),
         tipoAcesso,
         usuario: tipoAcesso === 'codigo_resgate' ? '' : els.usuario.value.trim(),
         senha: tipoAcesso === 'codigo_resgate' ? '' : els.senha.value.trim(),
@@ -2987,7 +3107,7 @@ function whatsAppTeste(id) {
       document.getElementById('ec_id').value = target.id;
       document.getElementById('ec_nome').value = target.nome || '';
       document.getElementById('ec_telefone').value = target.telefone || '';
-      selecionarAplicativoPorId(document.getElementById('ec_aplicativo'), target.aplicativoId || '');
+      carregarAplicativosNoForm('ec', target);
       alternarTipoAcesso('ec', target.tipoAcesso === 'codigo_resgate' ? 'codigo_resgate' : 'usuario_senha');
       document.getElementById('ec_usuario').value = target.usuario || '';
       document.getElementById('ec_senha').value = target.senha || '';
@@ -3061,6 +3181,8 @@ function whatsAppTeste(id) {
         nome: document.getElementById('ec_nome').value.trim(),
         telefone: document.getElementById('ec_telefone').value.trim(),
         aplicativoId: ecAplicativoId || '', aplicativo: ecAplicativoCad ? ecAplicativoCad.nome : '',
+        aplicativoId2: (document.getElementById('ec_aplicativo2') || {}).value || '',
+        aplicativo2: getAplicativoNomeDoSelect(document.getElementById('ec_aplicativo2')),
         tipoAcesso: ecTipoAcesso, usuario: ecUsuario, senha: ecSenha, codigoResgate: ecCodigoResgate,
         plano: planoNome, valor: document.getElementById('ec_valor').value.trim(),
         creditos: creditosFinal,
@@ -3164,6 +3286,8 @@ function whatsAppTeste(id) {
         id: generateId(), nome,
         telefone: document.getElementById('nc_telefone').value.trim(),
         aplicativoId: ncAplicativoId || '', aplicativo: ncAplicativoCad ? ncAplicativoCad.nome : '',
+        aplicativoId2: (document.getElementById('nc_aplicativo2') || {}).value || '',
+        aplicativo2: getAplicativoNomeDoSelect(document.getElementById('nc_aplicativo2')),
         tipoAcesso: ncTipoAcesso, usuario, senha, codigoResgate,
         plano: planoNome, valor, creditos: creditosFinal,
         dataInicio, dataPagamento: dataInicio, dataRenovacao,
@@ -3790,9 +3914,21 @@ function whatsAppTeste(id) {
         </div>`;
       }).join('');
     }
-    const APLICATIVO_SELECT_INFO_IDS = { aplicativo: 'aplicativoInfo', nc_aplicativo: 'ncAplicativoInfo', ec_aplicativo: 'ecAplicativoInfo' };
-    const PAINEL_APLICATIVO_PAIRS = { painel: 'aplicativo', nc_painel: 'nc_aplicativo', ec_painel: 'ec_aplicativo' };
-    const APLICATIVO_PAINEL_SELECT_IDS = { aplicativo: 'painel', nc_aplicativo: 'nc_painel', ec_aplicativo: 'ec_painel' };
+    const APLICATIVO_SELECT_INFO_IDS = {
+      aplicativo: 'aplicativoInfo', nc_aplicativo: 'ncAplicativoInfo', ec_aplicativo: 'ecAplicativoInfo',
+      aplicativo2: 'aplicativo2Info', nc_aplicativo2: 'ncAplicativo2Info', ec_aplicativo2: 'ecAplicativo2Info'
+    };
+    // [select de painel, select de aplicativo] — cada painel alimenta o Acesso 1 e o Acesso 2.
+    const PAINEL_APLICATIVO_PAIRS = [
+      ['painel', 'aplicativo'], ['painel', 'aplicativo2'],
+      ['nc_painel', 'nc_aplicativo'], ['nc_painel', 'nc_aplicativo2'],
+      ['ec_painel', 'ec_aplicativo'], ['ec_painel', 'ec_aplicativo2']
+    ];
+    const APLICATIVO_PAINEL_SELECT_IDS = {
+      aplicativo: 'painel', aplicativo2: 'painel',
+      nc_aplicativo: 'nc_painel', nc_aplicativo2: 'nc_painel',
+      ec_aplicativo: 'ec_painel', ec_aplicativo2: 'ec_painel'
+    };
 
     /* Filtra o select de aplicativo pelos aplicativos cadastrados no painel escolhido
        no select de painel correspondente. Enquanto nenhum painel for escolhido, o
@@ -3816,15 +3952,15 @@ function whatsAppTeste(id) {
       const filtrados = aplicativos.filter(a => a.painelId === painelId);
       aplSel.disabled = false;
       aplSel.innerHTML = filtrados.length
-        ? '<option value="">Selecione um aplicativo</option>' + filtrados.map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('')
+        ? `<option value="">${/2$/.test(aplicativoSelectId) ? 'Sem segundo acesso' : 'Selecione um aplicativo'}</option>` + filtrados.map(a => `<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('')
         : '<option value="">Nenhum aplicativo cadastrado para este painel</option>';
       aplSel.value = (manter && filtrados.some(a => String(a.id) === String(manter))) ? manter : '';
       atualizarInfoAplicativoSelecionado(aplicativoSelectId);
     }
 
     function atualizarSelectAplicativos() {
-      Object.keys(PAINEL_APLICATIVO_PAIRS).forEach(painelSelectId => {
-        atualizarAplicativosPorPainel(painelSelectId, PAINEL_APLICATIVO_PAIRS[painelSelectId]);
+      PAINEL_APLICATIVO_PAIRS.forEach(([painelSelectId, aplicativoSelectId]) => {
+        atualizarAplicativosPorPainel(painelSelectId, aplicativoSelectId);
       });
     }
     window.atualizarSelectAplicativos = atualizarSelectAplicativos;
@@ -3845,6 +3981,16 @@ function whatsAppTeste(id) {
       if (!selectEl) return '';
       const a = encontrarAplicativoPorId(selectEl.value);
       return a ? a.nome : '';
+    }
+    /* Seleciona painel + aplicativos do Acesso 1 e Acesso 2 num formulário (prefix: '' | 'nc' | 'ec'). */
+    function carregarAplicativosNoForm(prefix, entity) {
+      const p = prefix ? prefix + '_' : '';
+      const app1 = encontrarAplicativoPorId(entity.aplicativoId);
+      const app2 = encontrarAplicativoPorId(entity.aplicativoId2);
+      const painelSel = document.getElementById(p + 'painel');
+      if (painelSel) painelSel.value = (app1 && app1.painelId) || (app2 && app2.painelId) || '';
+      atualizarAplicativosPorPainel(p + 'painel', p + 'aplicativo', entity.aplicativoId || '');
+      atualizarAplicativosPorPainel(p + 'painel', p + 'aplicativo2', entity.aplicativoId2 || '');
     }
     function selecionarAplicativoPorId(selectEl, id) {
       if (!selectEl) return;
