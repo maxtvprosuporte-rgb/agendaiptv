@@ -3752,8 +3752,8 @@ function whatsAppTeste(id) {
       { id: 'android', nome: 'Android' },
       { id: 'ios', nome: 'iOS' },
       { id: 'windows', nome: 'Windows' },
-      { id: 'tizen', nome: 'Tizen' },
-      { id: 'webos', nome: 'webOS' },
+      { id: 'tizen', nome: 'Samsung' },
+      { id: 'webos', nome: 'LG' },
       { id: 'roku', nome: 'Roku' },
       { id: 'vegaos', nome: 'VegaOS' }
     ];
