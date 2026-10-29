@@ -1302,6 +1302,31 @@ function copyMessage(id) {
       return `${n}× (${dias * n}d)`;
     }
 
+    /* ---------- PACOTE DE CRÉDITO: nome + vínculo com o plano ---------- */
+    function getPacoteById(id) {
+      const n = Number(id);
+      return Number.isFinite(n) ? (pacotes.find(p => p.id === n) || null) : null;
+    }
+    function rotuloPacote(p) {
+      if (!p) return '';
+      return (p.nome && String(p.nome).trim()) ? String(p.nome).trim() : `Pacote #${p.id}`;
+    }
+    function pacoteIdDoPlanoNome(nome) {
+      const pl = nome ? encontrarPlanoPorNome(nome) : null;
+      return (pl && pl.pacoteId && getPacoteById(pl.pacoteId)) ? pl.pacoteId : null;
+    }
+    /* De qual pacote saiu o crédito de uma movimentação 'use': o pacoteId gravado na hora,
+       ou o pacote configurado no plano (pelo nome do plano ou pelo plano atual do cliente). */
+    function resolverPacoteDeUso(m) {
+      if (m.pacoteId && getPacoteById(m.pacoteId)) return m.pacoteId;
+      let id = m.planoNome ? pacoteIdDoPlanoNome(m.planoNome) : null;
+      if (!id && m.clientId) {
+        const c = clients.find(x => x.id === m.clientId);
+        if (c) id = pacoteIdDoPlanoNome(c.plano);
+      }
+      return id;
+    }
+
     /* Cálculo único de uma assinatura (renovação ou ativação): plano escolhido (ou o plano
        base do cliente), N períodos, valor cobrado (com desconto manual), créditos, taxa,
        custo e lucro estimados. O custo NÃO tem desconto: N períodos = N× os créditos. */
@@ -1321,9 +1346,10 @@ function copyMessage(id) {
       const creditosUsar = creditosMensais * meses;
       const taxa = calcularTaxaPlano(planoRef, valorVenda);
       const novaDataStr = toInputDate(addPlanPeriod(baseDate, dias * meses));
-      const custoEst = creditosUsar * custoUnitarioAtualPainel(painelId);
+      const pacoteId = (planoRef && planoRef.pacoteId && getPacoteById(planoRef.pacoteId)) ? planoRef.pacoteId : null;
+      const custoEst = creditosUsar * custoUnitarioAtualPacote(pacoteId, painelId);
       const lucroEst = valorVenda - taxa - custoEst;
-      return { planoSel, usandoBase, planoRef, dias, valorMensal, creditosMensais, painelId, valorCheio,
+      return { planoSel, usandoBase, planoRef, pacoteId, dias, valorMensal, creditosMensais, painelId, valorCheio,
                valorVenda, creditosUsar, taxa, novaDataStr, custoEst, lucroEst };
     }
 
@@ -1538,7 +1564,7 @@ function copyMessage(id) {
         movimentacoes.push({
           data: new Date().toISOString(), tipo: 'use', tipoCliente: 'renovacao',
           valor: valorVenda, quantidade: creditosUsar, taxa: taxa, meses,
-          planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
+          planoNome: client.plano || '', pacoteId: pacoteIdDoPlanoNome(client.plano), clientId: client.id, clientNome: client.nome,
           painelId
         });
         salvarMovimentacoes();
@@ -1684,7 +1710,7 @@ function copyMessage(id) {
       }
       Object.assign(reserva, {
         quantidade: creditosUsar, valor: 0, taxa: 0,
-        planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
+        planoNome: client.plano || '', pacoteId: pacoteIdDoPlanoNome(client.plano), clientId: client.id, clientNome: client.nome,
         painelId, pagamentoValor: Number(dados.valorVenda) || parseValor(client.valor),
         pagamentoTaxa: Number(dados.taxa) || 0
       });
@@ -1697,7 +1723,7 @@ function copyMessage(id) {
       const payload = {
         data: new Date().toISOString(), tipo: 'use', tipoCliente: 'renovacao',
         valor: Number(dados.valorVenda) || 0, quantidade: Number(dados.creditosUsar) || 0, taxa: Number(dados.taxa) || 0,
-        planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
+        planoNome: client.plano || '', pacoteId: pacoteIdDoPlanoNome(client.plano), clientId: client.id, clientNome: client.nome,
         painelId: dados.painelId || paineis[0].id
       };
       if (Number(dados.meses) > 1) payload.meses = Number(dados.meses);
@@ -3037,7 +3063,7 @@ function whatsAppTeste(id) {
       movimentacoes.push({
         data: new Date().toISOString(), tipo: 'use', tipoCliente: 'novo',
         valor: valorVenda, quantidade: creditosUsar, taxa: taxa, ...(meses > 1 ? { meses } : {}),
-        planoNome: novoCliente.plano || '', clientId: novoCliente.id, clientNome: novoCliente.nome,
+        planoNome: novoCliente.plano || '', pacoteId: pacoteIdDoPlanoNome(novoCliente.plano), clientId: novoCliente.id, clientNome: novoCliente.nome,
         painelId
       });
       testes.splice(idx, 1);
@@ -3376,7 +3402,7 @@ function whatsAppTeste(id) {
         movimentacoes.push({
           data: new Date().toISOString(), tipo: 'use', tipoCliente: 'novo',
           valor: valorVenda, quantidade: creditosFinal, taxa: taxa,
-          planoNome: planoNome, clientId: novo.id, clientNome: novo.nome,
+          planoNome: planoNome, pacoteId: pacoteIdDoPlanoNome(planoNome), clientId: novo.id, clientNome: novo.nome,
           painelId
         });
         salvarMovimentacoes();
@@ -3650,6 +3676,7 @@ function whatsAppTeste(id) {
       atualizarSelectsPaineis();
       const selPainel = document.getElementById('planoPainel');
       if (selPainel) selPainel.value = paineis[0].id;
+      atualizarSelectPacotePlano('');
       document.getElementById('modalPlano').classList.add('active');
     }
     function fecharModalPlano() {
@@ -3670,8 +3697,20 @@ function whatsAppTeste(id) {
       atualizarSelectsPaineis();
       const selPainel = document.getElementById('planoPainel');
       if (selPainel) selPainel.value = p.painelId || paineis[0].id;
+      atualizarSelectPacotePlano(p.pacoteId || '');
       document.getElementById('modalPlano').classList.add('active');
     }
+    /* Select de pacote do plano: só os pacotes do painel escolhido. */
+    function atualizarSelectPacotePlano(selecionado) {
+      const sel = document.getElementById('planoPacote'); if (!sel) return;
+      const painelId = (document.getElementById('planoPainel') || {}).value || paineis[0].id;
+      const atual = selecionado !== undefined ? String(selecionado) : sel.value;
+      const doPainel = pacotes.filter(pk => pk.painelId === painelId);
+      sel.innerHTML = '<option value="">' + (doPainel.length ? 'Selecione o pacote' : 'Nenhum pacote neste painel') + '</option>' +
+        doPainel.map(pk => `<option value="${pk.id}">${escapeHtml(rotuloPacote(pk))} • ${pk.quantidade} créd. • R$ ${Number(pk.preco).toFixed(2)}/un</option>`).join('');
+      sel.value = doPainel.some(pk => String(pk.id) === atual) ? atual : '';
+    }
+    window.atualizarSelectPacotePlano = atualizarSelectPacotePlano;
     function salvarPlano() {
       const nome = document.getElementById('planoNome').value.trim();
       const valor = parseFloat(document.getElementById('planoValor').value);
@@ -3683,14 +3722,17 @@ function whatsAppTeste(id) {
       const taxaValorRaw = document.getElementById('planoTaxaValor').value;
       const taxaValor = taxaTipo === 'none' ? 0 : Math.max(0, parseFloat(taxaValorRaw) || 0);
       const painelId = (document.getElementById('planoPainel') || {}).value || paineis[0].id;
+      const pacoteSelVal = (document.getElementById('planoPacote') || {}).value || '';
+      const pacoteId = pacoteSelVal ? parseInt(pacoteSelVal) : null;
       if (!nome || isNaN(valor) || !dias || dias < 1) { showToast('Preencha nome, valor e dias (>=1).', true); return; }
+      if (!pacoteId && pacotes.some(pk => pk.painelId === painelId)) { showToast('Selecione o pacote de crédito de onde este plano desconta.', true); return; }
       if (taxaTipo !== 'none' && taxaValor <= 0) { showToast('Informe o valor da taxa (maior que zero) ou escolha "Sem taxa".', true); return; }
       if (planoEditandoId) {
         const idx = planos.findIndex(p => p.id === planoEditandoId);
-        if (idx >= 0) planos[idx] = { id: planoEditandoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor, painelId };
+        if (idx >= 0) planos[idx] = { id: planoEditandoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor, painelId, pacoteId };
       } else {
         const novoId = planos.length > 0 ? Math.max(...planos.map(p => p.id)) + 1 : 1;
-        planos.push({ id: novoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor, painelId });
+        planos.push({ id: novoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor, painelId, pacoteId });
       }
       salvarPlanos();
       atualizarListaPlanos(); atualizarSelectPlanos();
@@ -3715,13 +3757,14 @@ function whatsAppTeste(id) {
         const taxaColor = (p.taxaTipo && p.taxaTipo !== 'none' && parseFloat(p.taxaValor) > 0) ? 'var(--warning)' : 'var(--muted)';
         const painelCls = getPainelIdxClass(p.painelId);
         const painelNome = getPainelNome(p.painelId);
+        const pacotePlano = getPacoteById(p.pacoteId);
         return `
         <div class="list-item" data-testid="plano-item-${p.id}">
           <div class="list-item-content">
             <div class="list-item-icon"><i class="fas fa-list-ul"></i></div>
             <div style="flex:1; min-width:0;">
               <div class="list-item-text">${escapeHtml(p.nome)} <span class="painel-badge ${painelCls}" data-testid="plano-painel-badge-${p.id}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span></div>
-              <div class="list-item-sub">${p.dias} dias • <span style="color:var(--primary);"><i class="fas fa-coins"></i> ${cred} créd.</span> • <span style="color:${taxaColor};"><i class="fas fa-percent"></i> Taxa: ${escapeHtml(taxaInfo)}</span>${p.link ? ` • <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--info); text-decoration:none;">link</a>` : ''}</div>
+              <div class="list-item-sub">${p.dias} dias • <span style="color:var(--primary);"><i class="fas fa-coins"></i> ${cred} créd.</span> • <span style="color:${pacotePlano ? 'var(--info)' : 'var(--warning)'};"><i class="fas fa-box"></i> ${pacotePlano ? escapeHtml(rotuloPacote(pacotePlano)) : 'Sem pacote'}</span> • <span style="color:${taxaColor};"><i class="fas fa-percent"></i> Taxa: ${escapeHtml(taxaInfo)}</span>${p.link ? ` • <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--info); text-decoration:none;">link</a>` : ''}</div>
             </div>
           </div>
           <div class="list-item-badge">R$ ${Number(p.valor).toFixed(2)}</div>
@@ -4234,6 +4277,7 @@ function aplicarDiasExtras() {
         quantidade: creditosUsar,
         taxa: taxa,
         planoNome: plano.nome || '',
+        pacoteId: (plano.pacoteId && getPacoteById(plano.pacoteId)) ? plano.pacoteId : null,
         clientId: cli.id,
         clientNome: cli.nome,
         diasExtras: dias,
@@ -4342,7 +4386,7 @@ function aplicarDiasExtras() {
       sel.innerHTML = '<option value="">Selecione um pacote cadastrado</option>' +
         pacotes.map(p => {
           const painelNome = getPainelNome(p.painelId);
-          return `<option value="${p.id}">[${escapeHtml(painelNome)}] ${p.quantidade} créditos • R$ ${p.preco.toFixed(2)}/un • Total R$ ${(p.quantidade * p.preco).toFixed(2)}</option>`;
+          return `<option value="${p.id}">[${escapeHtml(painelNome)}] ${escapeHtml(rotuloPacote(p))} • ${p.quantidade} créditos • R$ ${p.preco.toFixed(2)}/un • Total R$ ${(p.quantidade * p.preco).toFixed(2)}</option>`;
         }).join('');
     }
 
@@ -4907,8 +4951,8 @@ function aplicarDiasExtras() {
           <div class="list-item-content">
             <div class="list-item-icon"><i class="fas fa-box"></i></div>
             <div>
-              <div class="list-item-text">${p.quantidade} créditos <span class="painel-badge ${painelCls}" data-testid="pacote-painel-badge-${p.id}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span></div>
-              <div class="list-item-sub">Total: R$ ${(p.quantidade * p.preco).toFixed(2)}</div>
+              <div class="list-item-text">${escapeHtml(rotuloPacote(p))} <span class="painel-badge ${painelCls}" data-testid="pacote-painel-badge-${p.id}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span></div>
+              <div class="list-item-sub">${p.quantidade} créditos • Total: R$ ${(p.quantidade * p.preco).toFixed(2)}</div>
             </div>
           </div>
           <div class="list-item-badge">R$ ${p.preco.toFixed(2)} /un</div>
@@ -4920,7 +4964,7 @@ function aplicarDiasExtras() {
     function atualizarSelectPacotes() {
       const select = document.getElementById('pacoteSelecionado');
       select.innerHTML = '<option value="">Selecione um pacote</option>' +
-        pacotes.map(p => `<option value="${p.id}">${p.quantidade} créditos - R$ ${p.preco.toFixed(2)} cada</option>`).join('');
+        pacotes.map(p => `<option value="${p.id}">${escapeHtml(rotuloPacote(p))} • ${p.quantidade} créditos - R$ ${p.preco.toFixed(2)} cada</option>`).join('');
     }
     let pacoteEditandoId = null;
     function abrirModalPacote() {
@@ -4931,11 +4975,13 @@ function aplicarDiasExtras() {
       if (selPainel) selPainel.value = paineis[0].id;
       document.getElementById('modalPacote').classList.add('active');
       document.getElementById('qtdCreditos').value = ''; document.getElementById('precoCredito').value = '';
+      document.getElementById('pacoteNome').value = '';
     }
     function editarPacote(id) {
       const p = pacotes.find(x => x.id === id); if (!p) return;
       pacoteEditandoId = id;
       document.querySelector('#modalPacote .modal-title').textContent = 'Editar Pacote';
+      document.getElementById('pacoteNome').value = p.nome || '';
       document.getElementById('qtdCreditos').value = p.quantidade;
       document.getElementById('precoCredito').value = p.preco;
       atualizarSelectsPaineis();
@@ -4948,13 +4994,14 @@ function aplicarDiasExtras() {
       const quantidade = parseInt(document.getElementById('qtdCreditos').value);
       const preco = parseFloat(document.getElementById('precoCredito').value);
       const painelId = (document.getElementById('pacotePainel') || {}).value || paineis[0].id;
+      const nome = document.getElementById('pacoteNome').value.trim();
       if (!quantidade || !preco) { showToast('Preencha todos os campos.', true); return; }
       if (pacoteEditandoId) {
         const idx = pacotes.findIndex(p => p.id === pacoteEditandoId);
-        if (idx >= 0) pacotes[idx] = { id: pacoteEditandoId, quantidade, preco, painelId };
+        if (idx >= 0) pacotes[idx] = { id: pacoteEditandoId, nome, quantidade, preco, painelId };
       } else {
         const novoId = pacotes.length > 0 ? Math.max(...pacotes.map(p => p.id)) + 1 : 1;
-        pacotes.push({ id: novoId, quantidade, preco, painelId });
+        pacotes.push({ id: novoId, nome, quantidade, preco, painelId });
       }
       salvarPacotes();
       atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
@@ -4964,6 +5011,9 @@ function aplicarDiasExtras() {
     function removerPacote(id) {
       if (!confirmar('Remover este pacote?')) return;
       pacotes = pacotes.filter(p => p.id !== id);
+      let planoMut = false;
+      planos.forEach(pl => { if (pl.pacoteId === id) { pl.pacoteId = null; planoMut = true; } });
+      if (planoMut) { salvarPlanos(); atualizarListaPlanos(); }
       salvarPacotes(); atualizarListaPacotes(); atualizarSelectPacotes(); atualizarSelectPacotesAddCredito();
     }
     window.abrirModalPacote = abrirModalPacote; window.fecharModalPacote = fecharModalPacote;
@@ -5063,7 +5113,7 @@ function aplicarDiasExtras() {
             <h3><i class="fas fa-box"></i> Pacote</h3>
             <div class="result-row">
               <div class="result-label">Pacote selecionado</div>
-              <div class="result-value">${pacote.quantidade} créditos • R$ ${pacote.preco.toFixed(2)} cada</div>
+              <div class="result-value">${escapeHtml(rotuloPacote(pacote))} • ${pacote.quantidade} créditos • R$ ${pacote.preco.toFixed(2)} cada</div>
             </div>
           </div>
           <div class="result-section">
@@ -5202,8 +5252,14 @@ function aplicarDiasExtras() {
       return doPainel.reduce((s, pk) => s + Number(pk.preco), 0) / doPainel.length;
     }
 
+    function precoReferenciaPacote(pacoteId) {
+      const pk = getPacoteById(pacoteId);
+      return (pk && Number(pk.preco) > 0) ? Number(pk.preco) : 0;
+    }
+
     function calcularCustoCreditoCore() {
       const porPainel = {};
+      const porPacote = {};   // custo médio ponderado por PACOTE (compras 'add' com pacoteId)
       const atribuido = new Map();
       const primeiroPainelId = paineis[0] && paineis[0].id;
       const ordenadas = movimentacoes
@@ -5222,22 +5278,47 @@ function aplicarDiasExtras() {
           const custoAcumulado = (p.saldo * p.custoMedio) + custoCompra;
           p.custoMedio = novoSaldo > 0 ? custoAcumulado / novoSaldo : 0;
           p.saldo = novoSaldo;
+          if (m.pacoteId != null && getPacoteById(m.pacoteId)) {
+            const pk = porPacote[m.pacoteId] || (porPacote[m.pacoteId] = { saldo: 0, custoMedio: 0 });
+            const nSaldo = pk.saldo + qtd;
+            pk.custoMedio = nSaldo > 0 ? ((pk.saldo * pk.custoMedio) + custoCompra) / nSaldo : 0;
+            pk.saldo = nSaldo;
+          }
         } else if (m.tipo === 'use') {
           const qtd = Number(m.quantidade) || 0;
           // Se ainda não há nenhuma compra registrada pra esse painel (custo médio
           // zerado), usa o preço do pacote cadastrado como estimativa de custo.
-          const custoUnitario = p.custoMedio > 0 ? p.custoMedio : precoReferenciaCreditoPainel(pid);
+          // Se o plano define de qual pacote desconta, o custo vem do custo médio desse pacote
+          // (ou do preço cadastrado dele, se ainda não houve compra). Sem pacote no plano,
+          // mantém o custo médio do painel (comportamento antigo).
+          const pkId = resolverPacoteDeUso(m);
+          let custoUnitario;
+          if (pkId != null) {
+            const pk = porPacote[pkId] || (porPacote[pkId] = { saldo: 0, custoMedio: 0 });
+            custoUnitario = pk.custoMedio > 0 ? pk.custoMedio : precoReferenciaPacote(pkId);
+            pk.saldo -= qtd;
+          } else {
+            custoUnitario = p.custoMedio > 0 ? p.custoMedio : precoReferenciaCreditoPainel(pid);
+          }
 
           atribuido.set(m, qtd * custoUnitario);
           p.saldo -= qtd;
         }
       });
-      return { atribuido, porPainel };
+      return { atribuido, porPainel, porPacote };
     }
     function computeCustoCreditoAtribuido() { return calcularCustoCreditoCore().atribuido; }
 
     /* Custo unitário (custo médio ponderado) que o PRÓXIMO crédito usado de um painel
        vai carregar — usado na prévia de custo/lucro da renovação. */
+    function custoUnitarioAtualPacote(pacoteId, painelId) {
+      if (pacoteId != null && getPacoteById(pacoteId)) {
+        const { porPacote } = calcularCustoCreditoCore();
+        const pk = porPacote[pacoteId];
+        return (pk && pk.custoMedio > 0) ? pk.custoMedio : precoReferenciaPacote(pacoteId);
+      }
+      return custoUnitarioAtualPainel(painelId);
+    }
     function custoUnitarioAtualPainel(painelId) {
       const { porPainel } = calcularCustoCreditoCore();
       const p = porPainel[painelId];
@@ -6043,7 +6124,7 @@ function aplicarDiasExtras() {
       movimentacoes.push({
         data: new Date().toISOString(), tipo: 'use', tipoCliente: 'renovacao',
         valor: valorVenda, quantidade: creditosAmigo, taxa: taxa,
-        planoNome: client.plano || '', clientId: client.id, clientNome: client.nome,
+        planoNome: client.plano || '', pacoteId: pacoteIdDoPlanoNome(client.plano), clientId: client.id, clientNome: client.nome,
         painelId: painelIdAmigo
       });
       saveClients();

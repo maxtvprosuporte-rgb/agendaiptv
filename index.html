@@ -798,6 +798,11 @@
         <button class="modal-close" onclick="fecharModalPacote()"><i class="fas fa-times"></i></button>
       </div>
       <div class="form-group">
+        <label class="form-label"><i class="fas fa-tag"></i> Nome do Pacote</label>
+        <input type="text" id="pacoteNome" class="form-input" placeholder="Ex: Pacote 50 créditos - Fornecedor X" maxlength="60" data-testid="pacote-nome">
+        <p class="card-hint" style="margin: 6px 0 0;">Esse nome aparece na lista de pacotes e na hora de escolher de qual pacote o plano desconta o crédito.</p>
+      </div>
+      <div class="form-group">
         <label class="form-label"><i class="fas fa-layer-group"></i> Painel</label>
         <select id="pacotePainel" class="form-select" data-testid="pacote-painel"></select>
         <p class="card-hint" style="margin: 6px 0 0;">A qual painel este pacote pertence (Painel 1 ou Painel 2).</p>
@@ -826,8 +831,13 @@
       </div>
       <div class="form-group">
         <label class="form-label"><i class="fas fa-layer-group"></i> Painel</label>
-        <select id="planoPainel" class="form-select" data-testid="plano-painel"></select>
+        <select id="planoPainel" class="form-select" onchange="atualizarSelectPacotePlano()" data-testid="plano-painel"></select>
         <p class="card-hint" style="margin: 6px 0 0;">A qual painel este plano pertence — os créditos serão descontados do saldo desse painel.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-box"></i> Pacote de crédito (de onde desconta)</label>
+        <select id="planoPacote" class="form-select" data-testid="plano-pacote"></select>
+        <p class="card-hint" style="margin: 6px 0 0;">Escolha o pacote cujo preço por crédito será usado no custo e no lucro deste plano. Só aparecem os pacotes do painel selecionado.</p>
       </div>
       <div class="form-group">
         <label class="form-label"><i class="fas fa-money-bill-wave"></i> Valor (R$)</label>
