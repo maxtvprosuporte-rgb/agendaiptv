@@ -2568,17 +2568,22 @@ let ativacaoClienteAtual = null;
 
     function extrairHorasDuracaoTeste(duracaoTeste) {
       if (!duracaoTeste) return 3;
-      const m = String(duracaoTeste).match(/(\d+)/);
-      return m ? parseInt(m[1], 10) : 3;
+      const s = String(duracaoTeste);
+      const m = s.match(/(\d+)/);
+      if (!m) return 3;
+      const n = parseInt(m[1], 10);
+      return /dia/i.test(s) ? n * 24 : n;   // "3 Dias" = 72 horas
     }
     function formatarContagemRegressiva(ms) {
       if (ms <= 0) return { texto: 'Teste finalizado', encerrado: true };
       const totalSeg = Math.floor(ms / 1000);
-      const h = Math.floor(totalSeg / 3600);
+      const d = Math.floor(totalSeg / 86400);
+      const h = Math.floor((totalSeg % 86400) / 3600);
       const m = Math.floor((totalSeg % 3600) / 60);
       const s = totalSeg % 60;
       const pad = n => String(n).padStart(2, '0');
-      return { texto: `Encerra em ${pad(h)}:${pad(m)}:${pad(s)}`, encerrado: false };
+      const prefixoDias = d > 0 ? `${d}d ` : '';
+      return { texto: `Encerra em ${prefixoDias}${pad(h)}:${pad(m)}:${pad(s)}`, encerrado: false };
     }
     function atualizarContadoresTestes() {
       document.querySelectorAll('.teste-countdown[data-end]').forEach(el => {
@@ -2925,6 +2930,10 @@ function whatsAppTeste(id) {
         : `<div class="renew-confirm-item"><div class="lbl">Usuário</div><div class="val">${escapeHtml(t.usuario || '—')}</div></div>
            <div class="renew-confirm-item"><div class="lbl">Senha</div><div class="val">${escapeHtml(t.senha || '—')}</div></div>`;
       const apps = [t.aplicativo, t.aplicativo2].filter(Boolean).map(escapeHtml).join(' + ') || '—';
+      const planoNomeExib = (calc.planoRef && calc.planoRef.nome) || t.plano || '—';
+      const fimTesteMs = t.createdAt ? new Date(t.createdAt).getTime() + extrairHorasDuracaoTeste(t.duracaoTeste) * 3600000 : null;
+      const fimTesteTxt = fimTesteMs ? formatDateTimeSaoPaulo(new Date(fimTesteMs).toISOString()) : '—';
+      const diasTotal = calc.dias * st.meses;
       document.getElementById('ativGrid').innerHTML = `
         <div class="renew-confirm-item full">
           <div class="lbl">Nome</div>
@@ -2936,16 +2945,28 @@ function whatsAppTeste(id) {
           <div class="val">${apps}</div>
         </div>
         <div class="renew-confirm-item">
+          <div class="lbl">Plano</div>
+          <div class="val">${escapeHtml(planoNomeExib)}</div>
+        </div>
+        <div class="renew-confirm-item">
           <div class="lbl">Valor mensal</div>
           <div class="val">${fmtBRL(calc.valorMensal)}</div>
         </div>
-        <div class="renew-confirm-item highlight">
-          <div class="lbl">Vencimento</div>
+        <div class="renew-confirm-item">
+          <div class="lbl">Teste (${escapeHtml(t.duracaoTeste || '3 Horas')})</div>
+          <div class="val" style="font-size:13px;">${escapeHtml(fimTesteTxt)}</div>
+        </div>
+        <div class="renew-confirm-item">
+          <div class="lbl">Meses assinados</div>
+          <div class="val" data-testid="ativ-meses-assinados">${escapeHtml(rotuloPeriodoRenovacao(st.meses, calc.dias))}</div>
+        </div>
+        <div class="renew-confirm-item highlight full">
+          <div class="lbl">Vencimento da assinatura</div>
           <div class="val" data-testid="ativ-nova-data">${escapeHtml(formatDate(calc.novaDataStr))}</div>
         </div>
         <div class="renew-confirm-item full">
           <div class="lbl">Cálculo da ativação</div>
-          <div class="val" style="font-size:13px;">Assinatura de ${rotuloPeriodoRenovacao(st.meses, calc.dias)} — ${calc.dias * st.meses} dias a partir de hoje
+          <div class="val" style="font-size:13px;">Assinatura de ${escapeHtml(rotuloPeriodoRenovacao(st.meses, calc.dias))} — contando ${diasTotal} dias a partir de hoje
             <div style="margin-top:8px; display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px 14px; font-size:12.5px;" data-testid="ativ-calculo">
               <span>Receita: <b>${fmtBRL(calc.valorVenda)}</b></span>
               <span>Créditos: <b>−${calc.creditosUsar}</b> (${escapeHtml(painelNome)})</span>
@@ -3171,7 +3192,11 @@ function whatsAppTeste(id) {
       const renovWrap = document.getElementById('ec_renovacao_wrap');
       const datasSection = document.getElementById('ec_datas_section');
       const duracaoTesteWrap = document.getElementById('ec_duracaoTeste_wrap');
-      document.getElementById('ec_duracaoTeste').value = target.duracaoTeste || '';
+      const ecDuracaoSel = document.getElementById('ec_duracaoTeste');
+      if (target.duracaoTeste && !Array.from(ecDuracaoSel.options).some(o => o.value === target.duracaoTeste)) {
+        ecDuracaoSel.add(new Option(target.duracaoTeste, target.duracaoTeste));   // mantém testes antigos (ex.: 5 Horas)
+      }
+      ecDuracaoSel.value = target.duracaoTeste || '';
       if (duracaoTesteWrap) duracaoTesteWrap.style.display = editKind === 'teste' ? '' : 'none';
       if (editKind === 'client') {
         if (datasSection) datasSection.style.display = '';
