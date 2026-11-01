@@ -225,6 +225,8 @@ const DEFAULT_MESSAGE_TEMPLATES = Object.freeze({
     '',
     '✅ O número *{{numero}}* gerado pela indicação foi convertido em *1 MÊS GRÁTIS* para você. 🥳',
     '',
+    '🗓️ *Nova data de vencimento*: {{data_renovacao}}',
+    '',
     'Obrigado por indicar nossos serviços! Continue indicando para concorrer ao sorteio mensal. 🎰'
   ].join('\n'),
   indicacao_ganhador: [
@@ -264,7 +266,7 @@ const MESSAGE_TEMPLATE_META = Object.freeze({
   dias_extras: { label: 'Dias extras', variables: ['dias', 'usuario', 'senha', 'valor_adicional', 'data_renovacao'] },
   pagamento_pendente: { label: 'Pagamento pendente', variables: ['nome', 'usuario', 'senha', 'codigo_resgate', 'plano', 'valor', 'data_renovacao', 'link_renovacao'] },
   indicacao_teste: { label: 'Indicação registrada', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
-  indicacao_mes_gratis: { label: 'Indicação convertida', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
+  indicacao_mes_gratis: { label: 'Indicação convertida', variables: ['indicador_nome', 'amigo_nome', 'numero', 'data_renovacao'] },
   indicacao_ganhador: { label: 'Ganhador do sorteio', variables: ['indicador_nome', 'amigo_nome', 'numero'] },
   teste_vencido: { label: 'Teste vencido (não assinou)', variables: ['nome', 'link_renovacao'] }
 });
@@ -411,7 +413,8 @@ function getMessageTemplateSamples() {
     indicacao_mes_gratis: {
       indicador_nome: ind.indicadorNome || 'Cliente Indicador',
       amigo_nome: ind.amigoNome || 'Amigo Indicado',
-      numero: ind.numero || '074'
+      numero: ind.numero || '074',
+      data_renovacao: formatDate(cli.dataRenovacao)
     },
     indicacao_ganhador: {
       indicador_nome: ind.indicadorNome || 'Cliente Indicador',
@@ -2523,8 +2526,14 @@ function buildIndicacaoMesGratisMessage(ind, indicador, amigoNome) {
   return renderMessageTemplate('indicacao_mes_gratis', {
     indicador_nome: (indicador && indicador.nome) || ind.indicadorNome || '',
     amigo_nome: amigoNome || ind.amigoNome || '',
-    numero: ind.numero || ''
+    numero: ind.numero || '',
+    // vencimento JÁ com o mês grátis somado (o cliente indicador é atualizado antes da mensagem)
+    data_renovacao: formatDate(dataRenovacaoIndicador(ind, indicador))
   });
+}
+function dataRenovacaoIndicador(ind, indicador) {
+  const cli = indicador || clients.find(c => c.id === ind.indicadorId);
+  return cli ? cli.dataRenovacao : '';
 }
 
 let ativacaoClienteAtual = null;
@@ -6325,7 +6334,8 @@ function whatsappAvisarMesGratis(id) {
   const msg = renderMessageTemplate('indicacao_mes_gratis', {
     indicador_nome: ind.indicadorNome || '',
     amigo_nome: ind.amigoNome || '',
-    numero: ind.numero || ''
+    numero: ind.numero || '',
+    data_renovacao: formatDate(dataRenovacaoIndicador(ind, null))
   });
   whatsappIndicador(id, msg);
 }
