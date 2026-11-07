@@ -4404,26 +4404,41 @@ function aplicarDiasExtras() {
        detalhada painel a painel, pra saber quanto separar de cada um. Recebe a
        month key (não um filtro genérico) porque também precisa aplicar a mesma
        regra de "fixo do mês" usada nos lançamentos de Lucro/Custo Extra. */
-    function computeReservaRecargaPorPainel(mk) {
+    /* Quantas vezes um lançamento de Lucro/Custo extra conta, acumulado até o mês atual:
+       fixo = 1x por mês desde o mês em que foi criado; avulso = 1x. */
+    function ocorrenciasLucroCustoAcumuladas(lc, mkAtual) {
+      const s = monthKey(lc.data);
+      if (!s || s > mkAtual) return 0;
+      if (!lc.fixo) return 1;
+      const [sy, sm] = s.split('-').map(Number);
+      const [ey, em] = mkAtual.split('-').map(Number);
+      return (ey - sy) * 12 + (em - sm) + 1;
+    }
+
+    /* RESERVA P/ RECARGA por painel — ACUMULADA, não zera na virada do mês:
+         + custo dos créditos consumidos (renovação, novo cliente, dias extras, mês grátis...)
+         − valor gasto nas recargas/compras de créditos do painel
+         ± Lucro/Custo extra vinculado ao painel (fixo conta 1x por mês desde a criação) */
+    function computeReservaRecargaPorPainel() {
+      const mkAtual = getCurrentMonthKey();
       const custoAtribuido = computeCustoCreditoAtribuido();
       const porPainel = {};
       const primeiroPainelId = paineis[0] && paineis[0].id;
+      const pidDe = m => (m.painelId && paineis.some(p => p.id === m.painelId)) ? m.painelId : primeiroPainelId;
       movimentacoes.forEach(m => {
-        if (m.tipo !== 'use' || monthKey(m.data) !== mk) return;
-        const pid = (m.painelId && paineis.some(p => p.id === m.painelId)) ? m.painelId : primeiroPainelId;
-        if (!pid) return;
-        porPainel[pid] = (porPainel[pid] || 0) + (custoAtribuido.get(m) || 0);
+        if (m.tipo === 'use') {
+          const pid = pidDe(m); if (!pid) return;
+          porPainel[pid] = (porPainel[pid] || 0) + (custoAtribuido.get(m) || 0);
+        } else if (m.tipo === 'add') {
+          const pid = pidDe(m); if (!pid) return;
+          porPainel[pid] = (porPainel[pid] || 0) - (Number(m.custo) || 0);   // recarga sai da reserva
+        }
       });
-      // Lucro/Custo Extra vinculado a um painel específico sai do mesmo "bolso" da
-      // reserva daquele painel: custo extra reduz o que sobra reservado, lucro extra
-      // reforça a reserva — mesma regra aplicada no total do Dashboard.
       lucrosCustos.forEach(lc => {
         if (!lc.painelId || !paineis.some(p => p.id === lc.painelId)) return;
-        const startKey = monthKey(lc.data);
-        if (!startKey) return;
-        const aplicaNoMes = lc.fixo ? (startKey <= mk) : (startKey === mk);
-        if (!aplicaNoMes) return;
-        porPainel[lc.painelId] = (porPainel[lc.painelId] || 0) + Number(lc.valor || 0);
+        const ocorr = ocorrenciasLucroCustoAcumuladas(lc, mkAtual);
+        if (!ocorr) return;
+        porPainel[lc.painelId] = (porPainel[lc.painelId] || 0) + Number(lc.valor || 0) * ocorr;
       });
       return porPainel;
     }
@@ -4458,7 +4473,7 @@ function aplicarDiasExtras() {
         else if (m.tipo === 'reserve') { s.reservados += Number(m.quantidade) || 0; s.disponiveis -= Number(m.quantidade) || 0; }
       });
       const mkAtual = getCurrentMonthKey();
-      const reservaPorPainel = computeReservaRecargaPorPainel(mkAtual);
+      const reservaPorPainel = computeReservaRecargaPorPainel();
       const clientesAtivosPorPainel = contarClientesAtivosPorPainel();
       const grid = document.getElementById('paineisGrid');
       if (grid) {
@@ -4516,7 +4531,7 @@ function aplicarDiasExtras() {
                   </div>
                   <div class="painel-stat" title="Custo dos créditos usados neste painel no mês atual — reserve esse valor antes de contar como lucro.">
                     <div class="painel-stat-value" style="color: #a02323;" data-testid="painel-reserva-${p.id}">R$ ${reservaRecarga.toFixed(2)}</div>
-                    <div class="painel-stat-label">Reserva p/ Recarga (mês)</div>
+                    <div class="painel-stat-label">Reserva p/ Recarga</div>
                   </div>
                   <div class="painel-stat">
                     <div class="painel-stat-value" style="color: var(--primary);" data-testid="painel-clientes-ativos-${p.id}">${clientesAtivos}</div>
@@ -5525,6 +5540,22 @@ function aplicarDiasExtras() {
       return { custo, custoCredito: reservaAjustada, custoCreditoBase, custoExtra: custo - custoCreditoBase, lucro, taxas, liquido: lucro - custo - taxas, porTipo };
     }
 
+    /* LUCRO LÍQUIDO ACUMULADO — não zera na virada do mês. Soma tudo desde o início
+       (receita − custo dos créditos − taxas) e só diminui/aumenta com o que for lançado
+       em Lucro/Custo nas configurações (fixo conta 1x por mês desde a criação). */
+    function computeLiquidoAcumulado() {
+      const mkAtual = getCurrentMonthKey();
+      const { custoCredito, lucro: lucroUso, taxas } = computeResumoUsoCreditos(() => true);
+      let lucro = lucroUso, custo = custoCredito;
+      lucrosCustos.forEach(lc => {
+        const ocorr = ocorrenciasLucroCustoAcumuladas(lc, mkAtual);
+        if (!ocorr) return;
+        if (lc.valor >= 0) lucro += lc.valor * ocorr;
+        else custo += Math.abs(lc.valor) * ocorr;
+      });
+      return lucro - custo - taxas;
+    }
+
     function computeLucroEstimadoMes() {
       // Previsão: soma o valor do plano apenas dos clientes cujo vencimento
       // (dataRenovacao) cai dentro do mês atual — ou seja, quem realmente
@@ -5546,7 +5577,9 @@ function aplicarDiasExtras() {
     }
 
     function atualizarDashboardFinanceiro() {
-      const { custoCredito, lucro, taxas, liquido } = computeTotaisMesAtual();
+      const { lucro, taxas } = computeTotaisMesAtual();
+      const liquido = computeLiquidoAcumulado();
+      const reservaTotal = Object.values(computeReservaRecargaPorPainel()).reduce((s, v) => s + v, 0);
       const fmt = v => `R$ ${v.toFixed(2).replace('.', ',')}`;
       const elL = document.getElementById('dashTotalLucro');
       const elT = document.getElementById('dashTotalTaxas');
@@ -5559,10 +5592,9 @@ function aplicarDiasExtras() {
       if (elT) elT.textContent = fmt(taxas);
       if (elN) { elN.textContent = fmt(liquido); elN.style.color = liquido >= 0 ? 'var(--info)' : '#ff9b9b'; }
       if (elE) elE.textContent = fmt(computeLucroEstimadoMes());
-      // Valor que precisa ficar reservado (não gasto) para recomprar, ao custo médio
-      // atual, os créditos já consumidos neste mês — ou seja, o que garante que o
-      // painel continue "vivo" na próxima recarga, além do lucro de fato.
-      if (elR) elR.textContent = fmt(custoCredito);
+      // Reserva acumulada (não zera na virada do mês): custo dos créditos consumidos,
+      // menos o que já foi gasto em recargas, ± lançamentos vinculados ao painel.
+      if (elR) { elR.textContent = fmt(reservaTotal); elR.style.color = reservaTotal >= 0 ? '#a02323' : '#ff9b9b'; }
 
       atualizarFiltrosDashboardGrafico();
       const tagEl = document.getElementById('dashChartMesTag');
