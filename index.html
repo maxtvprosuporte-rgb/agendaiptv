@@ -959,6 +959,7 @@
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-circle-info"></i> Outras Informações</div>
           <div class="form-grid">
+            <div class="field" id="ec_formaPagamento_wrap"><label for="ec_formaPagamento">Forma de pagamento</label><select id="ec_formaPagamento" data-testid="ec-forma-pagamento"><option value="pix_manual">Pix manual</option><option value="pix_automatico">Pix automático</option></select></div>
             <div class="field" style="grid-column: span 2;"><label for="ec_linkRenovacao">Link de ativação / renovação</label><input id="ec_linkRenovacao" placeholder="https://..." data-testid="ec-link" /></div>
             <div class="field" style="grid-column: span 3;"><label for="ec_observacoes">Observações</label><input id="ec_observacoes" data-testid="ec-observacoes" /></div>
           </div>
@@ -1033,6 +1034,7 @@
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-circle-info"></i> Outras Informações</div>
           <div class="form-grid">
+            <div class="field"><label for="nc_formaPagamento">Forma de pagamento</label><select id="nc_formaPagamento" data-testid="nc-forma-pagamento"><option value="pix_manual">Pix manual</option><option value="pix_automatico">Pix automático</option></select></div>
             <div class="field" style="grid-column: span 2;"><label for="nc_linkRenovacao">Link de ativação / renovação</label><input id="nc_linkRenovacao" placeholder="https://..." data-testid="nc-link" /></div>
             <div class="field" style="grid-column: span 3;"><label for="nc_observacoes">Observações</label><input id="nc_observacoes" placeholder="Opcional" data-testid="nc-observacoes" /></div>
           </div>
@@ -1151,6 +1153,10 @@
             <i class="fas fa-coins"></i> Pagou outro valor
           </label>
         </div>
+        <div class="field" id="cpCodigoWrap" style="margin-top:10px; display:none;">
+          <label for="cpCodigoInput">Novo código de resgate</label>
+          <input type="text" id="cpCodigoInput" placeholder="Ex.: ABC-123" autocomplete="off" data-testid="cp-codigo-input" />
+        </div>
         <div class="field" id="cp_valorOutro_wrap" style="margin-top:10px; display:none;">
           <label for="cp_valorOutro">Valor pago (R$)</label>
           <input type="text" inputmode="decimal" id="cp_valorOutro" placeholder="Ex.: 20,00" data-testid="cp-valor-outro" />
@@ -1205,6 +1211,17 @@
         <label class="form-label" for="renValorTotal"><i class="fas fa-tags"></i> Valor total cobrado (com desconto)</label>
         <input type="text" inputmode="decimal" id="renValorTotal" class="form-input" placeholder="Ex.: 85,00" oninput="editarValorTotalRenovacao()" data-testid="ren-valor-total">
         <p class="card-hint" id="renDescontoInfo" style="margin: 6px 0 0;"></p>
+        <div style="margin-top:12px;">
+          <label class="form-label" for="renTaxaManual"><i class="fas fa-percent"></i> Taxa bancária deste pagamento <span style="font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted);">(opcional)</span></label>
+          <input type="text" inputmode="decimal" id="renTaxaManual" class="form-input" placeholder="Em branco = taxa do plano" oninput="editarTaxaRenovacao()" data-testid="ren-taxa-manual">
+          <p class="card-hint" id="renTaxaInfo" style="margin: 6px 0 0;"></p>
+        </div>
+      </div>
+
+      <div class="form-group" id="renCodigoWrap" style="display:none; margin: 14px 0 0;">
+        <label class="form-label" for="renCodigoInput"><i class="fas fa-ticket-alt"></i> Novo código de resgate</label>
+        <input type="text" id="renCodigoInput" class="form-input" placeholder="Ex.: ABC-123" autocomplete="off" data-testid="ren-codigo-input">
+        <p class="card-hint" style="margin: 6px 0 0;" id="renCodigoHint">Obrigatório quando o pagamento já foi realizado. Vai junto com a mensagem de renovação.</p>
       </div>
 
       <div class="form-group" style="margin: 14px 0;">
@@ -1316,6 +1333,10 @@
         <p class="card-hint" id="ativPlanoAviso" style="margin: 6px 0 0;"></p>
       </div>
       <div class="form-group" style="margin: 14px 0 0;">
+        <label class="form-label" for="ativFormaPagamento"><i class="fas fa-bolt"></i> Forma de pagamento</label>
+        <select id="ativFormaPagamento" class="form-select" data-testid="ativ-forma-pagamento"><option value="pix_manual">Pix manual</option><option value="pix_automatico">Pix automático</option></select>
+      </div>
+      <div class="form-group" style="margin: 14px 0 0;">
         <label class="form-label"><i class="fas fa-calendar-plus"></i> Período da assinatura (dias)</label>
         <div class="radio-group ren-meses-group" role="radiogroup" aria-label="Dias de assinatura" id="ativMesesGroup"></div>
       </div>
@@ -1323,6 +1344,11 @@
         <label class="form-label" for="ativValorTotal"><i class="fas fa-tags"></i> Valor total cobrado (com desconto)</label>
         <input type="text" inputmode="decimal" id="ativValorTotal" class="form-input" placeholder="Ex.: 85,00" oninput="editarValorTotalAtivacao()" data-testid="ativ-valor-total">
         <p class="card-hint" id="ativDescontoInfo" style="margin: 6px 0 0;"></p>
+        <div style="margin-top:12px;">
+          <label class="form-label" for="ativTaxaManual"><i class="fas fa-percent"></i> Taxa bancária deste pagamento <span style="font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted);">(opcional)</span></label>
+          <input type="text" inputmode="decimal" id="ativTaxaManual" class="form-input" placeholder="Em branco = taxa do plano" oninput="editarTaxaAtivacao()" data-testid="ativ-taxa-manual">
+          <p class="card-hint" id="ativTaxaInfo" style="margin: 6px 0 0;"></p>
+        </div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn-primary" onclick="confirmarAtivacaoTeste()" data-testid="ativ-confirmar"><i class="fas fa-bolt"></i> Ativar e gerar mensagem</button>

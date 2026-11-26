@@ -1136,6 +1136,14 @@ function setupMessageEditor() {
       if (diff <= 7) return { label: `Vence em ${diff}d`, cls: 'pill-week' };
       return { label: `${diff}d restantes`, cls: 'pill-ok' };
     }
+    /* Forma de pagamento do cliente: 'pix_manual' (padrão) ou 'pix_automatico'. */
+    const FORMAS_PAGAMENTO = { pix_manual: 'Pix manual', pix_automatico: 'Pix automático' };
+    function getFormaPagamento(c) { return c && c.formaPagamento === 'pix_automatico' ? 'pix_automatico' : 'pix_manual'; }
+    function rotuloFormaPagamento(c) { return FORMAS_PAGAMENTO[getFormaPagamento(c)]; }
+    function pagBadgeHtml(c, testid) {
+      const auto = getFormaPagamento(c) === 'pix_automatico';
+      return `<span class="pay-badge ${auto ? 'pay-auto' : 'pay-manual'}" title="Forma de pagamento${auto ? ' — conferir o débito no banco' : ''}"${testid ? ` data-testid="${testid}"` : ''}><i class="fas ${auto ? 'fa-bolt' : 'fa-hand-holding-dollar'}" style="font-size:9px;"></i> ${rotuloFormaPagamento(c)}</span>`;
+    }
     function escapeHtml(text) { return String(text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
     function generateId() {
       if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
@@ -1344,7 +1352,7 @@ function copyMessage(id) {
     /* Cálculo único de uma assinatura (renovação ou ativação): plano escolhido (ou o plano
        base do cliente), N períodos, valor cobrado (com desconto manual), créditos, taxa,
        custo e lucro estimados. O custo NÃO tem desconto: N períodos = N× os créditos. */
-    function calcularAssinatura({ planoId, planoBase, valorBase, creditosBase, diasPeriodo, valorTotalManual, baseDate }) {
+    function calcularAssinatura({ planoId, planoBase, valorBase, creditosBase, diasPeriodo, valorTotalManual, taxaManualRaw, baseDate }) {
       const planoSel = planoId != null ? (planos.find(p => p.id === planoId) || null) : null;
       const usandoBase = !planoSel || !!(planoBase && planoSel.id === planoBase.id);
       const planoRef = planoSel || planoBase;                 // fonte de dias / painel / taxa
@@ -1359,18 +1367,26 @@ function copyMessage(id) {
       const manualOk = diasPeriodo > 30 && valorTotalManual != null && Number.isFinite(valorTotalManual);
       const valorVenda = manualOk ? valorTotalManual : valorCheio;
       const creditosUsar = Math.round(creditosMensais * unidades * 1000) / 1000;
-      const taxa = calcularTaxaPlano(planoRef, valorVenda);
+      const taxaPlano = calcularTaxaPlano(planoRef, valorVenda);
+      // Acima de 30 dias a taxa pode ser informada à parte ("2%" ou valor em R$); em branco mantém a do plano.
+      let taxa = taxaPlano, taxaPersonalizada = false;
+      const rawT = String(taxaManualRaw == null ? '' : taxaManualRaw).trim();
+      if (diasPeriodo > 30 && rawT !== '') {
+        const n = parseValor(rawT);
+        taxa = rawT.includes('%') ? r2((valorVenda * n) / 100) : r2(n);
+        taxaPersonalizada = true;
+      }
       const novaDataStr = toInputDate(addDays(baseDate, diasPeriodo));   // vencimento = dias escolhidos (corridos)
       const pacoteId = (planoRef && planoRef.pacoteId && getPacoteById(planoRef.pacoteId)) ? planoRef.pacoteId : null;
       const custoEst = creditosUsar * custoUnitarioAtualPacote(pacoteId, painelId);
       const lucroEst = valorVenda - taxa - custoEst;
-      return { planoSel, usandoBase, planoRef, pacoteId, dias, diasPeriodo, unidades, valorMensal, creditosMensais, painelId, valorCheio,
+      return { planoSel, usandoBase, planoRef, pacoteId, dias, diasPeriodo, unidades, taxaPlano, taxaPersonalizada, valorMensal, creditosMensais, painelId, valorCheio,
                valorVenda, creditosUsar, taxa, novaDataStr, custoEst, lucroEst };
     }
 
     /* Botões de período (1 a 4) + campo "valor total com desconto". prefix: 'ren' | 'ativ'. */
     function renderPeriodoEDesconto(prefix, st, handlerName, opts = {}) {
-      const { diasPeriodo, valorVenda, valorCheio, creditosUsar } = st;
+      const { diasPeriodo, valorVenda, valorCheio, creditosUsar, taxaPlano, taxaPersonalizada, taxa } = st;
       const grp = document.getElementById(prefix + 'MesesGroup');
       if (grp) {
         grp.innerHTML = PERIODOS_RENOVACAO.map(n =>
@@ -1381,6 +1397,12 @@ function copyMessage(id) {
       if (box) box.style.display = diasPeriodo > 30 ? '' : 'none';
       const totalInput = document.getElementById(prefix + 'ValorTotal');
       if (totalInput && diasPeriodo > 30 && !opts.manterCampoTotal) totalInput.value = valorVenda.toFixed(2).replace('.', ',');
+      const taxaInfo = document.getElementById(prefix + 'TaxaInfo');
+      if (taxaInfo) {
+        taxaInfo.innerHTML = taxaPersonalizada
+          ? `Taxa informada: <b>${fmtBRL(taxa)}</b> (a do plano seria ${fmtBRL(taxaPlano)}). Digite um valor em R$ ou uma porcentagem, ex.: 2%.`
+          : `Taxa do plano: <b>${fmtBRL(taxaPlano)}</b>. Informe outro valor em R$ ou uma porcentagem (ex.: 2%) se for diferente.`;
+      }
       const descInfo = document.getElementById(prefix + 'DescontoInfo');
       if (descInfo) {
         if (diasPeriodo > 30) {
@@ -1401,7 +1423,7 @@ function copyMessage(id) {
       const client = clients.find(c => c.id === id);
       if (!client) return;
       const planoAtual = encontrarPlanoPorNome(client.plano);
-      renovacaoPendente = { id: client.id, planoId: planoAtual ? planoAtual.id : null, diasPeriodo: periodoPadraoDoPlano(planoAtual), valorTotalManual: null };
+      renovacaoPendente = { id: client.id, planoId: planoAtual ? planoAtual.id : null, diasPeriodo: periodoPadraoDoPlano(planoAtual), valorTotalManual: null, taxaManualRaw: '' };
 
       // Select de planos: o plano atual do cliente vem selecionado, mas dá pra escolher outro.
       const sel = document.getElementById('renPlano');
@@ -1417,6 +1439,13 @@ function copyMessage(id) {
       }
       const totalInput = document.getElementById('renValorTotal');
       if (totalInput) totalInput.value = '';
+      const taxaInp = document.getElementById('renTaxaManual'); if (taxaInp) taxaInp.value = '';
+      // Cliente com código de resgate: pede o NOVO código na renovação
+      const ehCodigoRen = client.tipoAcesso === 'codigo_resgate';
+      const codWrap = document.getElementById('renCodigoWrap');
+      if (codWrap) codWrap.style.display = ehCodigoRen ? '' : 'none';
+      const codInp = document.getElementById('renCodigoInput'); if (codInp) codInp.value = '';
+      atualizarHintCodigoRenovacao();
       recalcularRenovacao();
       document.getElementById('modalConfirmarRenovacao').classList.add('active');
     }
@@ -1427,14 +1456,30 @@ function copyMessage(id) {
       renovacaoPendente.planoId = v === '' ? null : parseInt(v);
       renovacaoPendente.diasPeriodo = periodoPadraoDoPlano(renovacaoPendente.planoId != null ? planos.find(p => p.id === renovacaoPendente.planoId) : null);
       renovacaoPendente.valorTotalManual = null;   // novo plano → volta ao valor cheio
+      renovacaoPendente.taxaManualRaw = ''; const ti = document.getElementById('renTaxaManual'); if (ti) ti.value = '';
       recalcularRenovacao();
     }
     function selecionarMesesRenovacao(n) {
       if (!renovacaoPendente) return;
       renovacaoPendente.diasPeriodo = n;
       renovacaoPendente.valorTotalManual = null;   // novo período → volta ao valor cheio
+      renovacaoPendente.taxaManualRaw = ''; const ti = document.getElementById('renTaxaManual'); if (ti) ti.value = '';
       recalcularRenovacao();
     }
+    function editarTaxaRenovacao() {
+      if (!renovacaoPendente) return;
+      renovacaoPendente.taxaManualRaw = document.getElementById('renTaxaManual').value;
+      recalcularRenovacao({ manterCampoTotal: true });
+    }
+    function atualizarHintCodigoRenovacao() {
+      const hint = document.getElementById('renCodigoHint'); if (!hint) return;
+      const checked = document.querySelector('input[name="pag_status"]:checked');
+      const pend = checked && checked.value === 'pendente';
+      hint.textContent = pend
+        ? 'Pagamento pendente: o código pode ser informado agora ou na confirmação do pagamento. O cliente só recebe o novo código após pagar.'
+        : 'Obrigatório: informe o novo código de resgate. Ele vai junto com a mensagem de renovação.';
+    }
+    window.atualizarHintCodigoRenovacao = atualizarHintCodigoRenovacao;
     function editarValorTotalRenovacao() {
       if (!renovacaoPendente) return;
       const raw = document.getElementById('renValorTotal').value.trim();
@@ -1453,7 +1498,7 @@ function copyMessage(id) {
       const calc = calcularAssinatura({
         planoId: st.planoId, planoBase: planoAtual, valorBase: parseValor(client.valor),
         creditosBase: resolverCreditosCliente(client), diasPeriodo: st.diasPeriodo,
-        valorTotalManual: st.valorTotalManual, baseDate
+        valorTotalManual: st.valorTotalManual, taxaManualRaw: st.taxaManualRaw, baseDate
       });
       Object.assign(st, calc, { usandoAtual: calc.usandoBase, planoAtual });
       renderRenovacaoModal(client, opts);
@@ -1552,6 +1597,16 @@ function copyMessage(id) {
         showToast('Informe o valor total cobrado (maior que zero).', true); return;
       }
 
+      // Cliente com código de resgate: o novo código é exigido (se o pagamento está pendente, pode vir na confirmação).
+      const ehCodigoCli = client.tipoAcesso === 'codigo_resgate';
+      const pagStatusPre = document.querySelector('input[name="pag_status"]:checked');
+      const pagoAgora = !pagStatusPre || pagStatusPre.value === 'realizado';
+      const novoCodigo = ehCodigoCli ? String((document.getElementById('renCodigoInput') || {}).value || '').trim() : '';
+      if (ehCodigoCli && pagoAgora && !novoCodigo) { showToast('Informe o novo código de resgate para renovar.', true); return; }
+      if (ehCodigoCli && novoCodigo && novoCodigo === String(client.codigoResgate || '').trim()) {
+        showToast('Esse é o código atual do cliente. Informe o NOVO código de resgate.', true); return;
+      }
+
       // Plano trocado na renovação: o cliente passa a ter o plano (valor, créditos e link) escolhido.
       if (st.planoRef && !st.usandoAtual) {
         client.plano = st.planoRef.nome;
@@ -1576,10 +1631,11 @@ function copyMessage(id) {
         // Pagamento realizado - processa imediatamente
         client.pagamentoPendente = false;
         delete client._renovacaoPendente;
+        if (ehCodigoCli && novoCodigo) client.codigoResgate = novoCodigo;
 
         movimentacoes.push({
           data: new Date().toISOString(), tipo: 'use', tipoCliente: 'renovacao',
-          valor: valorVenda, quantidade: creditosUsar, taxa: taxa, diasPeriodo,
+          valor: valorVenda, quantidade: creditosUsar, taxa: taxa, diasPeriodo, formaPagamento: getFormaPagamento(client),
           planoNome: client.plano || '', pacoteId: pacoteIdDoPlanoNome(client.plano), clientId: client.id, clientNome: client.nome,
           painelId
         });
@@ -1593,7 +1649,7 @@ function copyMessage(id) {
         // Pagamento pendente - reserva o crédito agora, sem contabilizar lucro/taxa ainda
         client.pagamentoPendente = true;
         const reservaId = reservarCreditoPagamentoPendente(client, { valorVenda, painelId, creditosUsar, taxa });
-        client._renovacaoPendente = { valorVenda, painelId, creditosUsar, taxa, reservaId, diasPeriodo };
+        client._renovacaoPendente = { valorVenda, painelId, creditosUsar, taxa, reservaId, diasPeriodo, ...(novoCodigo ? { codigoResgate: novoCodigo } : {}) };
         saveClients();
         fecharModalConfirmarRenovacao();
         abrirModalMensagemRenovacao(client);
@@ -1606,16 +1662,22 @@ function copyMessage(id) {
     window.mudarPlanoRenovacao = mudarPlanoRenovacao;
     window.selecionarMesesRenovacao = selecionarMesesRenovacao;
     window.editarValorTotalRenovacao = editarValorTotalRenovacao;
+    window.editarTaxaRenovacao = editarTaxaRenovacao;
 
     function confirmarPagamento(id, valorPago = null) {
       const client = clients.find(c => c.id === id);
-      if (!client || !client.pagamentoPendente) return;
+      if (!client || !client.pagamentoPendente) return false;
       const dados = client._renovacaoPendente || {};
       const valorEsperado = Number(dados.valorVenda) || parseValor(client.valor);
       const valorFinal = (valorPago !== null && Number.isFinite(Number(valorPago))) ? Number(valorPago) : valorEsperado;
       const painelId = dados.painelId || ((encontrarPlanoPorNome(client.plano) || {}).painelId) || paineis[0].id;
       const creditosUsar = Number(dados.creditosUsar) || resolverCreditosCliente(client);
       const taxa = Number(dados.taxa) || 0;
+      if (client.tipoAcesso === 'codigo_resgate') {
+        const cod = String(dados.codigoResgate || (document.getElementById('cpCodigoInput') || {}).value || '').trim();
+        if (!cod) { showToast('Informe o novo código de resgate para confirmar o pagamento.', true); return false; }
+        client.codigoResgate = cod;
+      }
       client.pagamentoPendente = false;
       delete client._renovacaoPendente;
       client.updatedAt = new Date().toISOString();
@@ -1635,6 +1697,7 @@ function copyMessage(id) {
         : '';
       showToast(`Pagamento confirmado de ${client.nome} • -${creditosUsar} crédito${creditosUsar === 1 ? '' : 's'} (${getPainelNome(painelId)})${taxa > 0 ? ` • Taxa: R$ ${taxa.toFixed(2)}` : ''}${divergenciaMsg}`);
       abrirModalMensagemPagamentoConfirmado(client);
+      return true;
     }
     window.confirmarPagamento = confirmarPagamento;
     window.abrirModalMensagemPagamentoConfirmado = abrirModalMensagemPagamentoConfirmado;
@@ -1654,6 +1717,9 @@ function copyMessage(id) {
       if (nomeEl) nomeEl.textContent = client.nome || '—';
       if (totalLabelEl) totalLabelEl.textContent = `Pagou o valor total (${fmtMoney(valorEsperado)})`;
       if (outroInput) outroInput.value = '';
+      const cpCodWrap = document.getElementById('cpCodigoWrap');
+      if (cpCodWrap) cpCodWrap.style.display = (client.tipoAcesso === 'codigo_resgate' && !dados.codigoResgate) ? '' : 'none';
+      const cpCodInp = document.getElementById('cpCodigoInput'); if (cpCodInp) cpCodInp.value = '';
       const radioTotal = document.querySelector('input[name="cp_valor_opcao"][value="total"]');
       if (radioTotal) radioTotal.checked = true;
       atualizarRadioCp();
@@ -1693,7 +1759,7 @@ function copyMessage(id) {
         if (!Number.isFinite(v) || v < 0) { showToast('Informe um valor válido para o pagamento.', true); return; }
         valorPago = v;
       }
-      confirmarPagamento(pagamentoConfirmAtualId, valorPago);
+      if (confirmarPagamento(pagamentoConfirmAtualId, valorPago) === false) return;   // faltou o código: mantém o modal aberto
       fecharModalConfirmarPagamento();
     }
     window.abrirModalConfirmarPagamento = abrirModalConfirmarPagamento;
@@ -1742,6 +1808,7 @@ function copyMessage(id) {
         planoNome: client.plano || '', pacoteId: pacoteIdDoPlanoNome(client.plano), clientId: client.id, clientNome: client.nome,
         painelId: dados.painelId || paineis[0].id
       };
+      payload.formaPagamento = getFormaPagamento(client);
       if (Number(dados.diasPeriodo) > 30) payload.diasPeriodo = Number(dados.diasPeriodo);
       else if (Number(dados.meses) > 1) payload.meses = Number(dados.meses);   // legado
       if (reserva) {
@@ -1839,6 +1906,11 @@ let renovacaoClienteAtual = null;
       abrirModalMensagemPosAcao(client, buildRenewMessage, 'Renovação confirmada! Use os botões abaixo para enviar ao cliente.');
     }
     function abrirModalMensagemPagamentoConfirmado(client) {
+      // Código de resgate: o pagamento confirmado libera o NOVO código, então vai a mensagem de renovação com ele.
+      if (client.tipoAcesso === 'codigo_resgate') {
+        abrirModalMensagemPosAcao(client, buildRenewMessage, 'Pagamento recebido! Envie o novo código de resgate ao cliente.');
+        return;
+      }
       abrirModalMensagemPosAcao(client, buildPagamentoConfirmadoMessage, 'Pagamento recebido! Avise o cliente e agradeça a preferência.');
     }
     function fecharModalMensagemRenovacao() {
@@ -1962,6 +2034,7 @@ let renovacaoClienteAtual = null;
                 ${escapeHtml(c.nome || '—')}
                 <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
                 <span class="painel-badge ${painelCls}" title="Painel (uso interno)" data-testid="venc-painel-${c.id}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span>
+                ${pagBadgeHtml(c, `venc-pag-${c.id}`)}
               </div>
               <div class="client-row-meta">
                 <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
@@ -2168,6 +2241,7 @@ let renovacaoClienteAtual = null;
                   ${escapeHtml(c.nome || '—')}
                   <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
                   <span class="painel-badge ${painelCls}" title="Painel (uso interno)" data-testid="cliente-painel-${c.id}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span>
+                  ${pagBadgeHtml(c, `cliente-pag-${c.id}`)}
                 </div>
                 <div class="client-row-meta">
                   <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
@@ -2325,6 +2399,7 @@ let renovacaoClienteAtual = null;
           ${fichaSubBoxCamposHtml('fa-tags', 'Plano', [
             ['Plano', c.plano],
             ['Valor', c.valor],
+            ['Forma de pagamento', rotuloFormaPagamento(c)],
             ['Link de pagamento', c.linkRenovacao, { link: true }]
           ], 'ficha-sub-plano')}
           ${c.observacoes ? fichaSubBoxCamposHtml('fa-note-sticky', 'Observações', [['Observações', c.observacoes]], 'ficha-sub-obs') : ''}
@@ -2918,7 +2993,7 @@ function whatsAppTeste(id) {
     function ativarTeste(id) {
       const t = testes.find(x => x.id === id); if (!t) return;
       const planoBase = encontrarPlanoPorNome(t.plano);
-      ativacaoPendente = { id: t.id, planoId: planoBase ? planoBase.id : null, diasPeriodo: periodoPadraoDoPlano(planoBase), valorTotalManual: null };
+      ativacaoPendente = { id: t.id, planoId: planoBase ? planoBase.id : null, diasPeriodo: periodoPadraoDoPlano(planoBase), valorTotalManual: null, taxaManualRaw: '' };
 
       const sel = document.getElementById('ativPlano');
       const opcoes = planos.map(p => {
@@ -2934,6 +3009,8 @@ function whatsAppTeste(id) {
       document.getElementById('ativCodigoWrap').style.display = ehCodigo ? '' : 'none';
       const inp = document.getElementById('ativCodigoInput'); inp.value = t.codigoResgate || '';
       document.getElementById('ativValorTotal').value = '';
+      const fpA = document.getElementById('ativFormaPagamento'); if (fpA) fpA.value = 'pix_manual';
+      const tiA = document.getElementById('ativTaxaManual'); if (tiA) tiA.value = '';
       recalcularAtivacao();
       document.getElementById('modalAtivacaoTeste').classList.add('active');
       if (ehCodigo) setTimeout(() => inp.focus(), 80);
@@ -2948,14 +3025,22 @@ function whatsAppTeste(id) {
       ativacaoPendente.planoId = v === '' ? null : parseInt(v);
       ativacaoPendente.diasPeriodo = periodoPadraoDoPlano(ativacaoPendente.planoId != null ? planos.find(p => p.id === ativacaoPendente.planoId) : null);
       ativacaoPendente.valorTotalManual = null;
+      ativacaoPendente.taxaManualRaw = ''; const tiA = document.getElementById('ativTaxaManual'); if (tiA) tiA.value = '';
       recalcularAtivacao();
     }
     function selecionarMesesAtivacao(n) {
       if (!ativacaoPendente) return;
       ativacaoPendente.diasPeriodo = n;
       ativacaoPendente.valorTotalManual = null;
+      ativacaoPendente.taxaManualRaw = ''; const tiA = document.getElementById('ativTaxaManual'); if (tiA) tiA.value = '';
       recalcularAtivacao();
     }
+    function editarTaxaAtivacao() {
+      if (!ativacaoPendente) return;
+      ativacaoPendente.taxaManualRaw = document.getElementById('ativTaxaManual').value;
+      recalcularAtivacao({ manterCampoTotal: true });
+    }
+    window.editarTaxaAtivacao = editarTaxaAtivacao;
     function editarValorTotalAtivacao() {
       if (!ativacaoPendente) return;
       const raw = document.getElementById('ativValorTotal').value.trim();
@@ -2969,7 +3054,7 @@ function whatsAppTeste(id) {
       const planoBase = encontrarPlanoPorNome(t.plano);
       const calc = calcularAssinatura({
         planoId: st.planoId, planoBase, valorBase: parseValor(t.valor), creditosBase: resolverCreditosCliente(t),
-        diasPeriodo: st.diasPeriodo, valorTotalManual: st.valorTotalManual, baseDate: todayLocalDate()
+        diasPeriodo: st.diasPeriodo, valorTotalManual: st.valorTotalManual, taxaManualRaw: st.taxaManualRaw, baseDate: todayLocalDate()
       });
       Object.assign(st, calc, { planoBase });
 
@@ -3049,7 +3134,7 @@ function whatsAppTeste(id) {
       if (st.diasPeriodo > 30 && st.valorTotalManual != null && !(st.valorTotalManual > 0)) {
         showToast('Informe o valor total cobrado (maior que zero).', true); return;
       }
-      const calc = { ...st };
+      const calc = { ...st, formaPagamento: (document.getElementById('ativFormaPagamento') || {}).value === 'pix_automatico' ? 'pix_automatico' : 'pix_manual' };
       fecharModalAtivacaoTeste();
       executarAtivacaoTeste(t.id, calc, codigo);
     }
@@ -3079,6 +3164,7 @@ function whatsAppTeste(id) {
         creditos: calc.creditosMensais,
         dataInicio: toInputDate(hoje), dataPagamento: toInputDate(hoje),
         dataRenovacao: calc.novaDataStr,
+        formaPagamento: calc.formaPagamento || 'pix_manual',
         linkRenovacao: (trocouPlano && calc.planoRef.link) ? calc.planoRef.link : t.linkRenovacao,
         observacoes: t.observacoes,
         msgSentAt: null, updatedAt: new Date().toISOString()
@@ -3086,7 +3172,7 @@ function whatsAppTeste(id) {
       clients.push(novoCliente);
       movimentacoes.push({
         data: new Date().toISOString(), tipo: 'use', tipoCliente: 'novo',
-        valor: valorVenda, quantidade: creditosUsar, taxa: taxa, ...(diasPeriodo > 30 ? { diasPeriodo } : {}),
+        valor: valorVenda, quantidade: creditosUsar, taxa: taxa, formaPagamento: calc.formaPagamento || 'pix_manual', ...(diasPeriodo > 30 ? { diasPeriodo } : {}),
         planoNome: novoCliente.plano || '', pacoteId: pacoteIdDoPlanoNome(novoCliente.plano), clientId: novoCliente.id, clientNome: novoCliente.nome,
         painelId
       });
@@ -3237,6 +3323,8 @@ function whatsAppTeste(id) {
       const creditosFallback = (encontrarPlanoPorNome(target.plano) || {}).creditos;
       document.getElementById('ec_creditos').value = Number.isFinite(parseInt(target.creditos)) ? target.creditos : (Number.isFinite(parseInt(creditosFallback)) ? creditosFallback : 1);
       document.getElementById('ec_linkRenovacao').value = target.linkRenovacao || '';
+      const ecPagSel = document.getElementById('ec_formaPagamento'); if (ecPagSel) ecPagSel.value = getFormaPagamento(target);
+      const ecPagWrap = document.getElementById('ec_formaPagamento_wrap'); if (ecPagWrap) ecPagWrap.style.display = editKind === 'client' ? '' : 'none';
       document.getElementById('ec_observacoes').value = target.observacoes || '';
       const inicioWrap = document.getElementById('ec_inicio_wrap');
       const renovWrap = document.getElementById('ec_renovacao_wrap');
@@ -3311,6 +3399,7 @@ function whatsAppTeste(id) {
         linkRenovacao: document.getElementById('ec_linkRenovacao').value.trim(),
         observacoes: document.getElementById('ec_observacoes').value.trim()
       };
+      if (kind === 'client') base.formaPagamento = (document.getElementById('ec_formaPagamento') || {}).value === 'pix_automatico' ? 'pix_automatico' : 'pix_manual';
       if (kind === 'client') {
         const idx = clients.findIndex(x => x.id === id);
         if (idx < 0) { showToast('Cliente não encontrado.', true); return; }
@@ -3414,6 +3503,7 @@ function whatsAppTeste(id) {
         plano: planoNome, valor, creditos: creditosFinal,
         dataInicio, dataPagamento: dataInicio, dataRenovacao,
         linkRenovacao: document.getElementById('nc_linkRenovacao').value.trim(),
+        formaPagamento: (document.getElementById('nc_formaPagamento') || {}).value === 'pix_automatico' ? 'pix_automatico' : 'pix_manual',
         observacoes: document.getElementById('nc_observacoes').value.trim(),
         msgSentAt: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
       };
@@ -5091,6 +5181,7 @@ function aplicarDiasExtras() {
         const v = document.querySelector('input[name="pag_status"]:checked').value;
         if (v === 'realizado') { realizado.classList.add('active'); pendente.classList.remove('active'); }
         else { pendente.classList.add('active'); realizado.classList.remove('active'); }
+        if (typeof atualizarHintCodigoRenovacao === 'function') atualizarHintCodigoRenovacao();
       }
       realizado.addEventListener('click', () => { realizado.querySelector('input').checked = true; update(); });
       pendente.addEventListener('click', () => { pendente.querySelector('input').checked = true; update(); });
@@ -5766,19 +5857,28 @@ function aplicarDiasExtras() {
       const parent = document.querySelector('#gestao .chart-container');
       if (!parent) return;
       const porMes = {};
-      const ensure = k => { if (!porMes[k]) porMes[k] = { novos: 0, renovacoes: 0, naoRenovou: 0, vencidos: 0, testes: 0 }; };
+      const ensure = k => { if (!porMes[k]) porMes[k] = { novos: 0, renovacoes: 0, naoRenovou: 0, vencidos: 0, testes: 0, pixAuto: 0 }; };
+      const formaDaMov = m => m.formaPagamento || getFormaPagamento(clients.find(x => x.id === m.clientId));
       movimentacoes.forEach(m => {
         if (!passaFiltroMes(m.data)) return;
         const k = monthKey(m.data); if (!k) return;
         ensure(k);
         if (m.tipo === 'use' && m.tipoCliente === 'novo') porMes[k].novos += 1;
-        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') porMes[k].renovacoes += 1;
+        else if (m.tipo === 'use' && m.tipoCliente === 'renovacao') {
+          // Pix automático entra na linha própria; Pix manual continua em "Renovações" (só quando renovado)
+          if (formaDaMov(m) === 'pix_automatico') porMes[k].pixAuto += 1; else porMes[k].renovacoes += 1;
+        }
         else if (m.tipo === 'churn') porMes[k].naoRenovou += (m.quantidade || 1);
         else if (m.tipo === 'teste') porMes[k].testes += (m.quantidade || 1);
       });
       const today = todayLocalDate();
       clients.forEach(c => {
         const due = parseDate(c.dataRenovacao); if (!due) return;
+        // Pix automático: conta no mês da data de renovação como se já estivesse ativo (inclui meses futuros)
+        if (getFormaPagamento(c) === 'pix_automatico' && !c.bloqueado) {
+          const kA = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}`;
+          if (state.filtroMes === 'all' || kA === state.filtroMes) { ensure(kA); porMes[kA].pixAuto += 1; }
+        }
         const overdue = diffInDays(today, due);
         if (overdue <= 0) return;
         if (overdue >= 20) {
@@ -5814,6 +5914,7 @@ function aplicarDiasExtras() {
         graficoClientes.data.datasets[2].data = meses.map(m => porMes[m].renovacoes);
         graficoClientes.data.datasets[3].data = meses.map(m => porMes[m].naoRenovou);
         graficoClientes.data.datasets[4].data = meses.map(m => porMes[m].vencidos);
+        graficoClientes.data.datasets[5].data = meses.map(m => porMes[m].pixAuto);
         graficoClientes.options.plugins.title.text = tituloTexto;
         graficoClientes.update('none');
         return;
@@ -5825,9 +5926,10 @@ function aplicarDiasExtras() {
           datasets: [
             { label: 'Testes', data: meses.map(m => porMes[m].testes), borderColor: '#ffe45c', backgroundColor: 'rgba(255,228,92,.15)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
             { label: 'Novos Clientes', data: meses.map(m => porMes[m].novos), borderColor: '#39ff14', backgroundColor: 'rgba(57,255,20,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'Renovações', data: meses.map(m => porMes[m].renovacoes), borderColor: '#5cf0ff', backgroundColor: 'rgba(92,240,255,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Renovações (Pix manual)', data: meses.map(m => porMes[m].renovacoes), borderColor: '#5cf0ff', backgroundColor: 'rgba(92,240,255,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
             { label: 'Não Renovaram (20+ dias)', data: meses.map(m => porMes[m].naoRenovou), borderColor: '#ff9b5c', backgroundColor: 'rgba(255,155,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6, borderDash: [6,4] },
-            { label: 'Vencidos (1-19 dias)', data: meses.map(m => porMes[m].vencidos), borderColor: '#ff5c5c', backgroundColor: 'rgba(255,92,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 }
+            { label: 'Vencidos (1-19 dias)', data: meses.map(m => porMes[m].vencidos), borderColor: '#ff5c5c', backgroundColor: 'rgba(255,92,92,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Pix automático (na data de renovação)', data: meses.map(m => porMes[m].pixAuto), borderColor: '#b388ff', backgroundColor: 'rgba(179,136,255,.18)', borderWidth: 3, tension: .4, fill: false, pointRadius: 4, pointHoverRadius: 6 }
           ]
         },
         options: {
