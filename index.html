@@ -868,6 +868,14 @@
         </div>
         <p class="card-hint" style="margin: 6px 0 0;">Taxa cobrada pelo banco ou gateway de pagamento a cada transação. Será automaticamente subtraída do lucro no painel de gestão.</p>
       </div>
+      <div class="form-group">
+        <label class="form-label" for="planoFormaPagamento"><i class="fas fa-bolt"></i> Forma de pagamento</label>
+        <select id="planoFormaPagamento" class="form-select" data-testid="plano-forma-pagamento">
+          <option value="pix_manual">Pix manual</option>
+          <option value="pix_automatico">Pix automático</option>
+        </select>
+        <p class="card-hint" style="margin: 6px 0 0;">Vale para todos os clientes deste plano. No Pix automático o cliente aparece no dashboard com o aviso para conferir no banco e entra no gráfico na data de renovação.</p>
+      </div>
       <button class="btn-primary btn-block" onclick="salvarPlano()" data-testid="save-plano"><i class="fas fa-check"></i> Salvar Plano</button>
     </div>
   </div>
@@ -959,7 +967,6 @@
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-circle-info"></i> Outras Informações</div>
           <div class="form-grid">
-            <div class="field" id="ec_formaPagamento_wrap"><label for="ec_formaPagamento">Forma de pagamento</label><select id="ec_formaPagamento" data-testid="ec-forma-pagamento"><option value="pix_manual">Pix manual</option><option value="pix_automatico">Pix automático</option></select></div>
             <div class="field" style="grid-column: span 2;"><label for="ec_linkRenovacao">Link de ativação / renovação</label><input id="ec_linkRenovacao" placeholder="https://..." data-testid="ec-link" /></div>
             <div class="field" style="grid-column: span 3;"><label for="ec_observacoes">Observações</label><input id="ec_observacoes" data-testid="ec-observacoes" /></div>
           </div>
@@ -1034,7 +1041,6 @@
         <div class="form-section">
           <div class="form-section-title"><i class="fas fa-circle-info"></i> Outras Informações</div>
           <div class="form-grid">
-            <div class="field"><label for="nc_formaPagamento">Forma de pagamento</label><select id="nc_formaPagamento" data-testid="nc-forma-pagamento"><option value="pix_manual">Pix manual</option><option value="pix_automatico">Pix automático</option></select></div>
             <div class="field" style="grid-column: span 2;"><label for="nc_linkRenovacao">Link de ativação / renovação</label><input id="nc_linkRenovacao" placeholder="https://..." data-testid="nc-link" /></div>
             <div class="field" style="grid-column: span 3;"><label for="nc_observacoes">Observações</label><input id="nc_observacoes" placeholder="Opcional" data-testid="nc-observacoes" /></div>
           </div>
@@ -1331,10 +1337,6 @@
         <label class="form-label" for="ativPlano"><i class="fas fa-box"></i> Plano do cliente</label>
         <select id="ativPlano" class="form-select" onchange="mudarPlanoAtivacao()" data-testid="ativ-plano"></select>
         <p class="card-hint" id="ativPlanoAviso" style="margin: 6px 0 0;"></p>
-      </div>
-      <div class="form-group" style="margin: 14px 0 0;">
-        <label class="form-label" for="ativFormaPagamento"><i class="fas fa-bolt"></i> Forma de pagamento</label>
-        <select id="ativFormaPagamento" class="form-select" data-testid="ativ-forma-pagamento"><option value="pix_manual">Pix manual</option><option value="pix_automatico">Pix automático</option></select>
       </div>
       <div class="form-group" style="margin: 14px 0 0;">
         <label class="form-label"><i class="fas fa-calendar-plus"></i> Período da assinatura (dias)</label>

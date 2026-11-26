@@ -1136,9 +1136,12 @@ function setupMessageEditor() {
       if (diff <= 7) return { label: `Vence em ${diff}d`, cls: 'pill-week' };
       return { label: `${diff}d restantes`, cls: 'pill-ok' };
     }
-    /* Forma de pagamento do cliente: 'pix_manual' (padrão) ou 'pix_automatico'. */
+    /* Forma de pagamento: configurada em cada plano — 'pix_manual' (padrão) ou 'pix_automatico'. */
     const FORMAS_PAGAMENTO = { pix_manual: 'Pix manual', pix_automatico: 'Pix automático' };
-    function getFormaPagamento(c) { return c && c.formaPagamento === 'pix_automatico' ? 'pix_automatico' : 'pix_manual'; }
+    function getFormaPagamento(c) {   // definida no PLANO do cliente
+      const pl = c ? encontrarPlanoPorNome(c.plano) : null;
+      return pl && pl.formaPagamento === 'pix_automatico' ? 'pix_automatico' : 'pix_manual';
+    }
     function rotuloFormaPagamento(c) { return FORMAS_PAGAMENTO[getFormaPagamento(c)]; }
     function pagBadgeHtml(c, testid) {
       const auto = getFormaPagamento(c) === 'pix_automatico';
@@ -3009,7 +3012,6 @@ function whatsAppTeste(id) {
       document.getElementById('ativCodigoWrap').style.display = ehCodigo ? '' : 'none';
       const inp = document.getElementById('ativCodigoInput'); inp.value = t.codigoResgate || '';
       document.getElementById('ativValorTotal').value = '';
-      const fpA = document.getElementById('ativFormaPagamento'); if (fpA) fpA.value = 'pix_manual';
       const tiA = document.getElementById('ativTaxaManual'); if (tiA) tiA.value = '';
       recalcularAtivacao();
       document.getElementById('modalAtivacaoTeste').classList.add('active');
@@ -3134,7 +3136,7 @@ function whatsAppTeste(id) {
       if (st.diasPeriodo > 30 && st.valorTotalManual != null && !(st.valorTotalManual > 0)) {
         showToast('Informe o valor total cobrado (maior que zero).', true); return;
       }
-      const calc = { ...st, formaPagamento: (document.getElementById('ativFormaPagamento') || {}).value === 'pix_automatico' ? 'pix_automatico' : 'pix_manual' };
+      const calc = { ...st };
       fecharModalAtivacaoTeste();
       executarAtivacaoTeste(t.id, calc, codigo);
     }
@@ -3164,7 +3166,6 @@ function whatsAppTeste(id) {
         creditos: calc.creditosMensais,
         dataInicio: toInputDate(hoje), dataPagamento: toInputDate(hoje),
         dataRenovacao: calc.novaDataStr,
-        formaPagamento: calc.formaPagamento || 'pix_manual',
         linkRenovacao: (trocouPlano && calc.planoRef.link) ? calc.planoRef.link : t.linkRenovacao,
         observacoes: t.observacoes,
         msgSentAt: null, updatedAt: new Date().toISOString()
@@ -3172,7 +3173,7 @@ function whatsAppTeste(id) {
       clients.push(novoCliente);
       movimentacoes.push({
         data: new Date().toISOString(), tipo: 'use', tipoCliente: 'novo',
-        valor: valorVenda, quantidade: creditosUsar, taxa: taxa, formaPagamento: calc.formaPagamento || 'pix_manual', ...(diasPeriodo > 30 ? { diasPeriodo } : {}),
+        valor: valorVenda, quantidade: creditosUsar, taxa: taxa, formaPagamento: getFormaPagamento(novoCliente), ...(diasPeriodo > 30 ? { diasPeriodo } : {}),
         planoNome: novoCliente.plano || '', pacoteId: pacoteIdDoPlanoNome(novoCliente.plano), clientId: novoCliente.id, clientNome: novoCliente.nome,
         painelId
       });
@@ -3323,8 +3324,6 @@ function whatsAppTeste(id) {
       const creditosFallback = (encontrarPlanoPorNome(target.plano) || {}).creditos;
       document.getElementById('ec_creditos').value = Number.isFinite(parseInt(target.creditos)) ? target.creditos : (Number.isFinite(parseInt(creditosFallback)) ? creditosFallback : 1);
       document.getElementById('ec_linkRenovacao').value = target.linkRenovacao || '';
-      const ecPagSel = document.getElementById('ec_formaPagamento'); if (ecPagSel) ecPagSel.value = getFormaPagamento(target);
-      const ecPagWrap = document.getElementById('ec_formaPagamento_wrap'); if (ecPagWrap) ecPagWrap.style.display = editKind === 'client' ? '' : 'none';
       document.getElementById('ec_observacoes').value = target.observacoes || '';
       const inicioWrap = document.getElementById('ec_inicio_wrap');
       const renovWrap = document.getElementById('ec_renovacao_wrap');
@@ -3399,7 +3398,6 @@ function whatsAppTeste(id) {
         linkRenovacao: document.getElementById('ec_linkRenovacao').value.trim(),
         observacoes: document.getElementById('ec_observacoes').value.trim()
       };
-      if (kind === 'client') base.formaPagamento = (document.getElementById('ec_formaPagamento') || {}).value === 'pix_automatico' ? 'pix_automatico' : 'pix_manual';
       if (kind === 'client') {
         const idx = clients.findIndex(x => x.id === id);
         if (idx < 0) { showToast('Cliente não encontrado.', true); return; }
@@ -3503,7 +3501,6 @@ function whatsAppTeste(id) {
         plano: planoNome, valor, creditos: creditosFinal,
         dataInicio, dataPagamento: dataInicio, dataRenovacao,
         linkRenovacao: document.getElementById('nc_linkRenovacao').value.trim(),
-        formaPagamento: (document.getElementById('nc_formaPagamento') || {}).value === 'pix_automatico' ? 'pix_automatico' : 'pix_manual',
         observacoes: document.getElementById('nc_observacoes').value.trim(),
         msgSentAt: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
       };
@@ -3787,6 +3784,7 @@ function whatsAppTeste(id) {
       document.getElementById('planoCreditos').value = '1';
       document.getElementById('planoTaxaTipo').value = 'none';
       document.getElementById('planoTaxaValor').value = '';
+      document.getElementById('planoFormaPagamento').value = 'pix_manual';
       atualizarSelectsPaineis();
       const selPainel = document.getElementById('planoPainel');
       if (selPainel) selPainel.value = paineis[0].id;
@@ -3807,6 +3805,7 @@ function whatsAppTeste(id) {
       document.getElementById('planoDias').value = p.dias;
       document.getElementById('planoCreditos').value = Number.isFinite(parseInt(p.creditos)) ? p.creditos : 1;
       document.getElementById('planoTaxaTipo').value = p.taxaTipo || 'none';
+      document.getElementById('planoFormaPagamento').value = p.formaPagamento === 'pix_automatico' ? 'pix_automatico' : 'pix_manual';
       document.getElementById('planoTaxaValor').value = (p.taxaValor !== undefined && p.taxaValor !== null && p.taxaValor !== 0) ? p.taxaValor : '';
       atualizarSelectsPaineis();
       const selPainel = document.getElementById('planoPainel');
@@ -3833,6 +3832,7 @@ function whatsAppTeste(id) {
       const creditosRaw = document.getElementById('planoCreditos').value;
       const creditos = creditosRaw === '' ? 1 : Math.max(0, parseInt(creditosRaw) || 0);
       const taxaTipo = document.getElementById('planoTaxaTipo').value || 'none';
+      const formaPagamento = document.getElementById('planoFormaPagamento').value === 'pix_automatico' ? 'pix_automatico' : 'pix_manual';
       const taxaValorRaw = document.getElementById('planoTaxaValor').value;
       const taxaValor = taxaTipo === 'none' ? 0 : Math.max(0, parseFloat(taxaValorRaw) || 0);
       const painelId = (document.getElementById('planoPainel') || {}).value || paineis[0].id;
@@ -3843,14 +3843,15 @@ function whatsAppTeste(id) {
       if (taxaTipo !== 'none' && taxaValor <= 0) { showToast('Informe o valor da taxa (maior que zero) ou escolha "Sem taxa".', true); return; }
       if (planoEditandoId) {
         const idx = planos.findIndex(p => p.id === planoEditandoId);
-        if (idx >= 0) planos[idx] = { id: planoEditandoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor, painelId, pacoteId };
+        if (idx >= 0) planos[idx] = { id: planoEditandoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor, painelId, pacoteId, formaPagamento };
       } else {
         const novoId = planos.length > 0 ? Math.max(...planos.map(p => p.id)) + 1 : 1;
-        planos.push({ id: novoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor, painelId, pacoteId });
+        planos.push({ id: novoId, nome, valor, link, dias, creditos, taxaTipo, taxaValor, painelId, pacoteId, formaPagamento });
       }
       salvarPlanos();
       atualizarListaPlanos(); atualizarSelectPlanos();
       atualizarStatsFinanceiras(); gerarTextoWhatsAppGestao();
+      try { renderAll(); atualizarGraficoClientes(); } catch (e) { console.error(e); }   // forma de pagamento mudou: atualiza dashboard e gráfico
       fecharModalPlano();
       showToast(planoEditandoId ? 'Plano atualizado.' : 'Plano adicionado.');
     }
@@ -3878,7 +3879,7 @@ function whatsAppTeste(id) {
             <div class="list-item-icon"><i class="fas fa-list-ul"></i></div>
             <div style="flex:1; min-width:0;">
               <div class="list-item-text">${escapeHtml(p.nome)} <span class="painel-badge ${painelCls}" data-testid="plano-painel-badge-${p.id}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span></div>
-              <div class="list-item-sub">${p.dias} dias • <span style="color:var(--primary);"><i class="fas fa-coins"></i> ${cred} créd.</span> • <span style="color:${pacotePlano ? 'var(--info)' : 'var(--warning)'};"><i class="fas fa-box"></i> ${pacotePlano ? escapeHtml(rotuloPacote(pacotePlano)) : 'Sem pacote'}</span> • <span style="color:${taxaColor};"><i class="fas fa-percent"></i> Taxa: ${escapeHtml(taxaInfo)}</span>${p.link ? ` • <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--info); text-decoration:none;">link</a>` : ''}</div>
+              <div class="list-item-sub">${p.dias} dias • <span style="color:var(--primary);"><i class="fas fa-coins"></i> ${cred} créd.</span> • <span style="color:${pacotePlano ? 'var(--info)' : 'var(--warning)'};"><i class="fas fa-box"></i> ${pacotePlano ? escapeHtml(rotuloPacote(pacotePlano)) : 'Sem pacote'}</span> • <span style="color:${taxaColor};"><i class="fas fa-percent"></i> Taxa: ${escapeHtml(taxaInfo)}</span> • ${pagBadgeHtml({ plano: p.nome })}${p.link ? ` • <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener noreferrer" style="color:var(--info); text-decoration:none;">link</a>` : ''}</div>
             </div>
           </div>
           <div class="list-item-badge">R$ ${Number(p.valor).toFixed(2)}</div>
