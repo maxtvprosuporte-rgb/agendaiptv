@@ -758,3 +758,31 @@ button:focus-visible, .btn:focus-visible, a:focus-visible, [tabindex="0"]:focus-
   button, .btn, .sidebar, .client-row, .list-item { transition: none; }
 }
 
+
+/* ===== Lista de vencimentos (dashboard) — linha limpa: nome, plano, valor, dias a vencer, pagamento ===== */
+.venc-list { container-type: inline-size; }
+.client-row.venc-row.client-row-clickable { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto; align-items: center; gap: 16px; padding: 14px 18px; }
+.venc-id { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.venc-name { font-weight: 700; font-size: 15.5px; color: var(--text); line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.venc-plano { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 7px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.venc-plano i { font-size: 11px; opacity: .8; }
+.venc-stats { display: flex; align-items: center; }
+.venc-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding: 0 18px; border-left: 1px solid var(--border-faint); }
+.venc-cell:nth-child(1) { border-left: 0; width: 112px; }
+.venc-cell:nth-child(2) { width: 150px; }
+.venc-cell:nth-child(3) { width: 172px; }
+.venc-label { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); line-height: 1; }
+.venc-valor { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.5; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.venc-cell .pill, .venc-cell .pay-badge { white-space: nowrap; }
+@container (max-width: 700px) {
+  .client-row.venc-row.client-row-clickable { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "id dias" "valor pag"; gap: 0; column-gap: 0; padding: 14px; align-items: start; }
+  .venc-id { grid-area: id; padding: 0 10px 12px 0; }
+  .venc-name { white-space: normal; font-size: 15px; }
+  .venc-row .client-row-chevron { display: none; }
+  .venc-stats { display: contents; }
+  .venc-cell, .venc-cell:nth-child(n) { padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--border-faint); width: auto; min-width: 0; }
+  .venc-cell:nth-child(1) { grid-area: valor; }
+  .venc-cell:nth-child(2) { grid-area: dias; align-self: start; align-items: flex-end; padding: 0; border-top: 0; }
+  .venc-cell:nth-child(2) .venc-label { display: none; }
+  .venc-cell:nth-child(3) { grid-area: pag; align-items: flex-end; }
+}

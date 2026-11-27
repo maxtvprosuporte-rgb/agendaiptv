@@ -2023,29 +2023,21 @@ let renovacaoClienteAtual = null;
 
     function renderVencimentoList(targetEl, list, isExpired = false) {
       if (!list.length) { targetEl.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Nenhum cliente nesta faixa.</p></div>`; return; }
+      targetEl.classList.add('venc-list');
       targetEl.innerHTML = list.map(c => {
         const st = getStatus(c);
-        const metaLabel = isExpired ? 'Vencimento' : 'Renovação';
-        const planoCad = encontrarPlanoPorNome(c.plano);
-        const painelId = planoCad && planoCad.painelId ? planoCad.painelId : paineis[0].id;
-        const painelCls = getPainelIdxClass(painelId);
-        const painelNome = getPainelNome(painelId);
+        const valorNum = parseValor(c.valor);
+        const valorTxt = valorNum > 0 ? fmtBRL(valorNum) : (c.valor || '—');
         return `
-          <div class="client-row client-row-clickable" data-testid="venc-row-${c.id}" onclick="abrirDetalheCliente('${c.id}')" role="button" tabindex="0">
-            <div class="client-row-main" data-testid="venc-abrir-ficha-${c.id}">
-              <div class="client-row-name">
-                ${escapeHtml(c.nome || '—')}
-                <span class="pill ${st.cls}">${escapeHtml(st.label)}</span>
-                <span class="painel-badge ${painelCls}" title="Painel (uso interno)" data-testid="venc-painel-${c.id}"><i class="fas fa-layer-group" style="font-size:9px;"></i> ${escapeHtml(painelNome)}</span>
-                ${pagBadgeHtml(c, `venc-pag-${c.id}`)}
-              </div>
-              <div class="client-row-meta">
-                <span><b>Tel:</b> ${escapeHtml(c.telefone || '—')}</span>
-                <span><b>${c.tipoAcesso === 'codigo_resgate' ? 'Código' : 'User'}:</b> ${escapeHtml((c.tipoAcesso === 'codigo_resgate' ? c.codigoResgate : c.usuario) || '—')}</span>
-                <span><b>Plano:</b> ${escapeHtml(c.plano || '—')}</span>
-                <span><b>Valor:</b> ${escapeHtml(c.valor || '—')}</span>
-                <span><b>${metaLabel}:</b> ${escapeHtml(formatDate(c.dataRenovacao))}</span>
-              </div>
+          <div class="client-row client-row-clickable venc-row" data-testid="venc-row-${c.id}" onclick="abrirDetalheCliente('${c.id}')" role="button" tabindex="0">
+            <div class="venc-id" data-testid="venc-abrir-ficha-${c.id}">
+              <div class="venc-name">${escapeHtml(c.nome || '—')}</div>
+              <div class="venc-plano"><i class="fas fa-tags"></i> ${escapeHtml(c.plano || 'Sem plano')}</div>
+            </div>
+            <div class="venc-stats">
+              <div class="venc-cell"><span class="venc-label">Valor</span><span class="venc-valor">${escapeHtml(valorTxt)}</span></div>
+              <div class="venc-cell"><span class="venc-label">${isExpired ? 'Vencimento' : 'A vencer'}</span><span class="pill ${st.cls}">${escapeHtml(st.label)}</span></div>
+              <div class="venc-cell"><span class="venc-label">Pagamento</span>${pagBadgeHtml(c, `venc-pag-${c.id}`)}</div>
             </div>
             <div class="client-row-chevron"><i class="fas fa-chevron-right"></i></div>
           </div>`;
